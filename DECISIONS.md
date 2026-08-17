@@ -61,3 +61,32 @@ Keep entries short. Prefer more entries over long ones. Do not delete or rewrite
 - If the referenced approved Day 1 architecture doc says something different, this file gets superseded, not silently overwritten.
 
 **Links:** `ARCHITECTURE.md`.
+llama tag b10472
+ADR-004: llama.cpp tag bXXXX uses --load-mode mlock instead of --mlock. Older tutorials will show the old flag; ours must use the new one.
+
+## ADR-005: Python interpreter mismatch on host
+Date: 2026-08-17
+Status: Accepted
+Context: `python3` on this Mac resolves to Python 3.14; pydantic-core 
+wheels don't build against PyO3 0.22 on 3.14 yet.
+Decision: Use `/usr/local/bin/python3.11` explicitly for the venv:
+`python3.11 -m venv .venv` (not `python3 -m venv .venv`).
+Consequences: setup.sh on Day 7 must detect and use 3.11 specifically. 
+Judges' machines may also have this issue.
+
+## ADR-006: FastAPI trailing-slash routing
+Date: 2026-08-17
+Status: Accepted
+Context: FastAPI's default trailing-slash redirect on `POST /api/farms/` 
+returns 307 and curl drops the body on redirect.
+Decision: Route paths inside prefixed routers use `""` not `"/"`, so 
+`POST /api/farms` resolves directly without redirect.
+Consequences: All future routers follow this convention.
+
+## ADR-007: Vite dev server binds to IPv4 explicitly
+Date: 2026-08-17
+Status: Accepted
+Context: Vite 9 defaults to IPv6-only loopback, causing 127.0.0.1 to refuse.
+Decision: Set `server.host: '127.0.0.1'` in vite.config.ts.
+Consequences: setup.sh instructions and README can use either 127.0.0.1 
+or localhost consistently.

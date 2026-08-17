@@ -83,3 +83,29 @@ Measured during a 5-query burst with everything loaded.
 | — | Airplane-mode full demo (text) | not yet run | — |
 | — | Airplane-mode full demo (voice, if STT shipped) | not yet run | — |
 | — | Runtime egress audit (no outbound HTTP) | not yet run | — |
+
+# FarmTwin Benchmarks
+
+## Day 1 baseline measurements (2026-08-17)
+
+### Environment
+- Host: Intel Mac, macOS
+- llama.cpp tag: b10472  
+- Build flags: `-DGGML_METAL=OFF -DGGML_ACCELERATE=OFF`  (CPU-only, no acceleration)
+- Threads: 4
+- Context size: 4096
+- Note: These are dev-machine (macOS) measurements. Official ADTC target-hardware
+  benchmarks will be run in Docker/Linux on Day 6 and reported separately.
+
+### Qwen2.5-3B-Instruct Q4_K_M
+- Peak RSS: 2.15 GB (2,310,877,184 bytes)
+- Load + 3 short queries wall-clock: 39.28 s
+- Load mode: mlock
+- Status: ✅ Well within 7 GB ceiling
+
+### Llama-3.2-3B-Instruct Q4_K_M
+- Peak RSS: 2.36 GB (2,535,174,144 bytes)
+- Load + 3 short queries wall-clock: 54.87 s
+- Load mode: mlock
+- Status: ✅ Well within 7 GB ceiling
+- Note: ~10% heavier RSS and ~40% slower than Qwen2.5-3B on this hardware

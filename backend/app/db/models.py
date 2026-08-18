@@ -122,7 +122,12 @@ class DocumentChunk(Base):
     id = Column(Integer, primary_key=True, index=True)
     source_id = Column(String, nullable=True, index=True)
     source_title = Column(String, nullable=True)
+    source_org = Column(String, nullable=True, index=True)
+    source_url = Column(String, nullable=True)
+    source_note = Column(Text, nullable=True)
     region = Column(String, nullable=True, index=True)
     crop = Column(String, nullable=True, index=True)
     topics = Column(Text, nullable=True)  # JSON string
+    chunk_title = Column(String, nullable=True)
+    token_count = Column(Integer, nullable=True)
     content = Column(Text, nullable=False)

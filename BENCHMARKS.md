@@ -109,3 +109,24 @@ Measured during a 5-query burst with everything loaded.
 - Load mode: mlock
 - Status: ✅ Well within 7 GB ceiling
 - Note: ~10% heavier RSS and ~40% slower than Qwen2.5-3B on this hardware
+
+## Day 2 shape test (2026-08-18)
+
+### Environment
+- Same as Day 1 (Intel Mac, macOS, CPU-only)
+- Model: Qwen2.5-3B-Instruct Q4_K_M
+- Prompt structure: RAG-augmented (farm facts + top-6 chunks + question)
+- Retrieval: sentence-transformers all-MiniLM-L6-v2 embeddings, sqlite-vec KNN
+
+### Shape test results (single query, not a benchmark)
+- Prompt size: 6,574 chars / ~1,259 tokens
+- Prompt eval: 74.9 s (18.8 tok/s) — cold cache
+- Generation: 89.5 s for 402 tokens (4.5 tok/s)
+- Total wall-clock: 164.5 s
+- Response quality: farm-specific, correctly grounded in retrieved chunks
+- JSON block: valid and parseable when correctly extracted
+
+### Notes
+- First-prompt cold cache dominated eval time; subsequent shared prefixes should be much faster
+- Model echoed the system prompt (Qwen chat-template issue — fixable Day 3)
+- Only 1 recommendation returned; needs few-shot examples for 2-3 (Day 3)

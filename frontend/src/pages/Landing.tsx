@@ -30,35 +30,88 @@ export default function Landing() {
         ? "Backend: OK"
         : "Backend: offline";
 
+  const statusPillCls =
+    health === "ok"
+      ? "bg-primary-tint text-primary"
+      : "bg-white border border-border text-ink-muted";
+
   const statusDot =
     health === "ok"
-      ? "bg-emerald-600"
+      ? "bg-primary"
       : health === "offline"
-        ? "bg-stone-400"
-        : "bg-amber-500";
+        ? "bg-ink-faint"
+        : "bg-ink-faint";
 
   return (
-    <main className="min-h-screen bg-stone-50 text-stone-800 flex items-center justify-center px-6">
-      <div className="max-w-xl w-full text-center space-y-8">
-        <h1 className="text-5xl font-semibold tracking-tight text-emerald-900">
-          FarmTwin
-        </h1>
-        <p className="text-lg text-stone-600">
-          A quiet, offline companion for your farm.
-        </p>
-        <div className="inline-flex items-center gap-2 text-sm text-stone-600 bg-white/60 border border-stone-200 rounded-full px-4 py-1.5">
-          <span className={`inline-block h-2 w-2 rounded-full ${statusDot}`} />
-          {statusLabel}
-        </div>
-        <div>
-          <Link
-            to="/setup"
-            className="inline-block bg-emerald-700 hover:bg-emerald-800 text-white font-medium px-6 py-3 rounded-lg transition-colors"
-          >
-            Create your farm
-          </Link>
-        </div>
-      </div>
-    </main>
+    <div className="min-h-screen flex flex-col">
+      <header className="px-6 py-5 max-w-6xl mx-auto w-full">
+        <span className="text-lg font-semibold text-primary">🌱 FarmTwin</span>
+      </header>
+
+      <main className="flex-1 flex flex-col items-center justify-center px-6 pb-16">
+        <section className="w-full max-w-[640px] mx-auto text-center">
+          <h1 className="text-5xl md:text-6xl font-semibold tracking-tight leading-[1.05]">
+            Know your farm. Predict what's next. Protect your harvest.
+          </h1>
+          <p className="text-lg text-ink-muted mt-6 max-w-xl mx-auto">
+            FarmTwin builds a digital representation of your farm from what you
+            tell it and what you observe. It pairs that with local agricultural
+            knowledge to help you spot risks early and decide what to do next.
+          </p>
+
+          <div className="mt-10">
+            <Link
+              to="/setup"
+              className="inline-block bg-primary text-white hover:bg-primary-hover rounded-xl px-8 py-4 text-base font-medium transition-colors"
+            >
+              Create your farm
+            </Link>
+            <p className="text-sm text-ink-faint mt-3">
+              Runs entirely on this laptop — no internet required.
+            </p>
+          </div>
+
+          <div className="mt-10 flex justify-center">
+            <span
+              className={`inline-flex items-center gap-2 text-xs rounded-full px-3 py-1 ${statusPillCls}`}
+            >
+              <span className={`inline-block h-1.5 w-1.5 rounded-full ${statusDot}`} />
+              {statusLabel}
+            </span>
+          </div>
+        </section>
+
+        <section className="w-full max-w-5xl mx-auto mt-24 grid grid-cols-1 md:grid-cols-3 gap-2">
+          <div className="p-6">
+            <div className="text-2xl">🗺️</div>
+            <h3 className="text-base font-semibold mt-3">Add your farm</h3>
+            <p className="text-sm text-ink-muted mt-2">
+              Sketch out your farm's location, fields, and the crops you have in
+              the ground. It only takes a minute.
+            </p>
+          </div>
+          <div className="p-6">
+            <div className="text-2xl">📝</div>
+            <h3 className="text-base font-semibold mt-3">Log what you see</h3>
+            <p className="text-sm text-ink-muted mt-2">
+              Record rainfall, humidity, pests, and other observations so
+              FarmTwin has the ground truth of your fields.
+            </p>
+          </div>
+          <div className="p-6">
+            <div className="text-2xl">💬</div>
+            <h3 className="text-base font-semibold mt-3">Ask FarmTwin</h3>
+            <p className="text-sm text-ink-muted mt-2">
+              Ask farm-specific questions and get recommendations grounded in
+              your data and trusted agronomy sources.
+            </p>
+          </div>
+        </section>
+      </main>
+
+      <footer className="text-xs text-ink-faint py-8 text-center">
+        Built for the Africa Deep Tech Challenge 2026
+      </footer>
+    </div>
   );
 }

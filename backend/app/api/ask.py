@@ -261,6 +261,7 @@ def ask(payload: AskRequest, db: Session = Depends(get_db)) -> AskResponse:
                 "source_org": ch.get("source_org"),
                 "source_title": ch.get("source_title"),
                 "chunk_title": ch.get("chunk_title"),
+                "content": ch.get("content"),
                 "region": ch.get("region"),
                 "crop": ch.get("crop"),
                 "topics": ch.get("topics"),

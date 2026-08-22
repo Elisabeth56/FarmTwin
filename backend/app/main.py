@@ -11,7 +11,7 @@ http://127.0.0.1:8000. Health check: GET /api/health.
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import ask, crops, farms, fields, observations, weather
+from app.api import ask, crops, farms, fields, observations, transcribe, weather
 from app.db import models  # noqa: F401  (ensure models are registered on Base)
 from app.db.session import Base, engine
 
@@ -42,3 +42,4 @@ app.include_router(crops.router)
 app.include_router(observations.router)
 app.include_router(weather.router)
 app.include_router(ask.router)
+app.include_router(transcribe.router)

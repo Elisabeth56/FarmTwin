@@ -118,3 +118,39 @@ Consequences:
 - Real end-to-end test happens once during Day 5 integration
 - Day 6 benchmark measurements taken during clean-boot state, not mid-dev-session
 - REPORT.md notes hardware development context (dev machine same class as target)
+
+
+## ADR-010: whisper.cpp pinned tag
+Date: 2026-08-22
+Status: Accepted
+Context: Need reproducible STT for Day 7 submission.
+Decision: whisper.cpp tag v1.9.3, built CPU-only with GGML_METAL=OFF, GGML_ACCELERATE=OFF, WHISPER_COREML=OFF. Located at ~/dev/tools/whisper.cpp/.
+Consequences: setup.sh on Day 7 must clone + checkout this tag + build with same flags.
+
+
+## ADR-011: STT model swap — Nigerian-accented English fine-tune, EN-only
+Date: 2026-08-22
+Status: Accepted
+
+Context: Day 5.5 evaluation of whisper.cpp base (60MB, multilingual) on 15 recorded clips
+(8 English, 7 Nigerian Pidgin recorded by native speaker) showed:
+- English: 32.8% mean WER
+- Pidgin: 56.1% mean WER — above 40% gate threshold
+
+Investigated NCAIR1/NigerianAccentedEnglish (gated, requires manual access approval)
+and Orinode (Q3 2026 product, unclear open-model availability). Evaluated
+rishabbahal/whisper-small-nigerian-accent (967MB, public, Whisper-small fine-tune):
+- English: 17.9% mean WER (45% relative improvement over base)
+- Pidgin: 58.7% mean WER — still above gate
+
+Decision: Ship rishabbahal/whisper-small-nigerian-accent as EN-only STT rebranded
+"Nigerian English". Pidgin STT deferred to future work.
+
+Consequences:
+- Backend: whisper_client.py replaced with HF transformers (module-level singleton loader).
+  Previous whisper.cpp subprocess client preserved as whisper_cli_client.py for reference.
+- Frontend: language toggle removed, mic button labeled "Voice input (Nigerian English)".
+- Memory: HF Whisper-small resident + PyTorch runtime + llama-server. Verified in
+  Day 5.5 memory test — total stays under 7GB ceiling.
+- REPORT.md: honest documentation of Pidgin gap in open ASR ecosystem, with pointers
+  to Orinode and NCAIR1 as future integration paths.

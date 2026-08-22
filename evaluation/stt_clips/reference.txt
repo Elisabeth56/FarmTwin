@@ -1,0 +1,29 @@
+en_01.m4a|What should I do this week?
+
+en_02.m4a|Is my maize at risk from the rain?
+
+en_03.m4a|How can I tell if my crop has fungal disease?
+
+en_04.m4a|The humidity has been high for three days. What now?
+
+en_05.m4a|My plants are yellowing in the lower leaves. What could cause that?
+
+en_06.m4a|When should I apply fertilizer to my maize?
+
+en_07.m4a|There were pests in the whorls yesterday. Should I be worried?
+
+en_08.m4a|How much rain is too much rain for maize at this stage?
+
+pidgin_01.m4a|Wetin I go do dis week?
+
+pidgin_02.m4a|My maize dey risk from the rain?
+
+pidgin_03.m4a|How I go know say my crop get fungus?
+
+pidgin_04.m4a|Humidity don high for three days. Wetin i go do?
+
+pidgin_05.m4a|My plants dey yellow for the down leaves. Wetin fit cause am?
+
+pidgin_06.m4a|Wetin be the time to put fertilizer for my maize?
+
+pidgin_07.m4a|Pest dey inside the whorl yesterday. Make I worry?

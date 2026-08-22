@@ -252,6 +252,145 @@ export type AskResponse = {
   saved_recommendation_ids: number[];
 };
 
+export type StreamEvent =
+  | { type: "ready"; cited_chunks: CitedChunk[] }
+  | { type: "token"; content: string }
+  | {
+      type: "recommendation_ready";
+      narrative: string;
+      recommendations: Recommendation[];
+      cited_chunks?: CitedChunk[];
+      saved_recommendation_ids: number[];
+      model_name: string;
+      timing_ms: {
+        prompt_ms?: number;
+        generation_ms?: number;
+        llm_wallclock_ms?: number;
+        total_ms: number;
+      };
+    }
+  | { type: "error"; message: string };
+
+export async function askQuestionStream(
+  req: AskRequest,
+  onEvent: (event: StreamEvent) => void,
+  signal?: AbortSignal,
+): Promise<void> {
+  let res: Response;
+  try {
+    res = await fetch(`${BASE_URL}/ask/stream`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(req),
+      signal,
+    });
+  } catch (err) {
+    if (err instanceof DOMException && err.name === "AbortError") return;
+    const message = err instanceof Error ? err.message : "Network error";
+    onEvent({ type: "error", message });
+    return;
+  }
+
+  if (!res.ok) {
+    if (res.status === 503) {
+      onEvent({
+        type: "error",
+        message: "Local model not available. Start llama-server first.",
+      });
+      return;
+    }
+    let detail = "";
+    try {
+      const body = await res.text();
+      detail = body ? ` — ${body}` : "";
+    } catch {
+      /* ignore */
+    }
+    onEvent({
+      type: "error",
+      message: `Ask failed: ${res.status} ${res.statusText}${detail}`,
+    });
+    return;
+  }
+
+  if (!res.body) {
+    onEvent({ type: "error", message: "No response body from server." });
+    return;
+  }
+
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder("utf-8");
+  let buffer = "";
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+
+      let sepIdx: number;
+      while ((sepIdx = buffer.indexOf("\n\n")) !== -1) {
+        const rawEvent = buffer.slice(0, sepIdx);
+        buffer = buffer.slice(sepIdx + 2);
+        // An SSE event can have multiple `data:` lines; concatenate their payloads.
+        const dataLines: string[] = [];
+        for (const line of rawEvent.split("\n")) {
+          const trimmed = line.trimStart();
+          if (trimmed.startsWith("data:")) {
+            dataLines.push(trimmed.slice(5).trimStart());
+          }
+        }
+        if (dataLines.length === 0) continue;
+        const payload = dataLines.join("\n");
+        try {
+          const parsed = JSON.parse(payload) as StreamEvent;
+          onEvent(parsed);
+        } catch {
+          // Skip malformed events but keep the stream alive.
+        }
+      }
+    }
+  } catch (err) {
+    if (err instanceof DOMException && err.name === "AbortError") return;
+    const message = err instanceof Error ? err.message : "Stream read error";
+    onEvent({ type: "error", message });
+  } finally {
+    try {
+      reader.releaseLock();
+    } catch {
+      /* ignore */
+    }
+  }
+}
+
+// ---------- Transcribe ----------
+
+export type TranscribeResponse = {
+  text: string;
+  language_requested: string;
+  language_used: string;
+  duration_ms: number;
+};
+
+export async function transcribeAudio(
+  audioBlob: Blob,
+  language: "en" = "en",
+): Promise<TranscribeResponse> {
+  const formData = new FormData();
+  formData.append("audio", audioBlob, "recording.webm");
+  formData.append("language", language);
+  const response = await fetch(`${BASE_URL}/transcribe`, {
+    method: "POST",
+    body: formData,
+    signal: AbortSignal.timeout(90000),
+  });
+  if (!response.ok) {
+    const text = await response.text().catch(() => "Unknown error");
+    throw new Error(`Transcription failed (${response.status}): ${text}`);
+  }
+  return (await response.json()) as TranscribeResponse;
+}
+
 export async function askQuestion(req: AskRequest): Promise<AskResponse> {
   try {
     const res = await fetch(`${BASE_URL}/ask`, {

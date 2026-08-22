@@ -130,3 +130,77 @@ Measured during a 5-query burst with everything loaded.
 - First-prompt cold cache dominated eval time; subsequent shared prefixes should be much faster
 - Model echoed the system prompt (Qwen chat-template issue — fixable Day 3)
 - Only 1 recommendation returned; needs few-shot examples for 2-3 (Day 3)
+
+
+# FarmTwin Benchmarks
+
+## Day 6 model selection benchmark (2026-08-22)
+
+### Environment
+- Host: Intel Mac (2014 MacBook Pro), macOS
+- RAM: 8 GB
+- CPU: 4-core Intel
+- llama.cpp: pinned tag (see ADR-003)
+- Build flags: `-DGGML_METAL=OFF -DGGML_ACCELERATE=OFF` (CPU-only)
+- Runtime: `--ctx-size 4096 --threads 4 --load-mode mlock`
+- Test set: 10 gold prompts from `evaluation/gold_prompts.json`
+- All prompts include the 2 official ADTC test prompts (PRODUCT.md §34) plus 8 farm-scenario variants
+- Manual rubric grading on 5 dimensions (0-5 each): farm-context grounding, retrieval grounding, agronomic factuality, actionability, structure conformance
+- Scoring weights: Accuracy 60%, Throughput 25%, Efficiency 15% (compressed from original 50/30/20 given smaller test set)
+
+### Candidates
+
+Two candidates benchmarked. Third candidate (Gemma-2-2B) cut for time given single-day compressed schedule.
+
+#### Qwen2.5-3B-Instruct Q4_K_M (WINNER)
+
+| Metric | Value |
+|---|---|
+| Accuracy | 87.6 / 100 |
+| — Farm-context grounding | 4.80 / 5.00 |
+| — Retrieval grounding | 4.20 / 5.00 |
+| — Agronomic factuality | 4.90 / 5.00 |
+| — Actionability | 4.00 / 5.00 |
+| — Structure conformance | 4.00 / 5.00 |
+| Prompt eval | 19.0 tok/s (mean) |
+| Generation | 5.4 tok/s (mean) |
+| Wall clock (10 prompts) | 24.1 min |
+| Peak RSS | 3063 MB (44% of 7 GB ceiling) |
+| Completion rate | 10/10 |
+| **Composite** | **83.5** |
+
+#### Llama-3.2-3B-Instruct Q4_K_M
+
+| Metric | Value |
+|---|---|
+| Accuracy | 82.8 / 100 |
+| — Farm-context grounding | 5.00 / 5.00 |
+| — Retrieval grounding | 2.60 / 5.00 |
+| — Agronomic factuality | 4.30 / 5.00 |
+| — Actionability | 4.00 / 5.00 |
+| — Structure conformance | 4.80 / 5.00 |
+| Prompt eval | 18.1 tok/s (mean) |
+| Generation | 3.8 tok/s (mean) |
+| Wall clock (10 prompts) | 29.6 min |
+| Peak RSS | 3530 MB (50% of 7 GB ceiling) |
+| Completion rate | 10/10 |
+| **Composite** | **72.9** |
+
+### Decision: Qwen2.5-3B-Instruct Q4_K_M
+
+Reasoning:
+1. **Higher accuracy overall** (87.6 vs 82.8)
+2. **Substantially better retrieval grounding** (4.20 vs 2.60) — Llama cited chunks that did not support its claims, a critical failure mode for a RAG system where fabricated citations undermine the entire "grounded reasoning" value proposition
+3. **42% faster generation** (5.4 vs 3.8 tok/s), 23% faster overall
+4. **15% lower memory footprint** (467 MB additional headroom vs Llama, meaningful on the 7 GB ceiling)
+5. Equal completion rate (10/10)
+6. Llama produced slightly cleaner JSON structure but that advantage does not offset the retrieval grounding deficit
+
+### Notes and honest caveats
+
+- Small test set (10 prompts). LLM-as-judge grading of a larger set was cut for time.
+- Manual grading has grader bias. Same grader graded both models with same rubric.
+- Benchmarks run on Intel Mac 8GB dev machine, not the ADTC Ubuntu target. Numbers should be interpreted as lower-bound proxy — Ubuntu target hardware likely produces equal or better performance.
+- Gemma-2-2B candidate cut from selection process. Original 3-way benchmark planned but time-boxed to 2 candidates.
+- Docker-based Ubuntu benchmark cut for the same reason. See ADR-009 for hardware constraint context.
+- Both models fit comfortably within 7 GB ceiling. Neither breaches memory limits under normal operation.

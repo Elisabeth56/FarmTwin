@@ -1,0 +1,327 @@
+[
+  {
+    "id": "g01",
+    "source": "PRODUCT.md §34 Test Prompt 1 (verbatim)",
+    "question": "You are advising a farmer managing a 2.5-hectare maize farm in Kaduna, Nigeria. The maize was planted on June 12 and is currently in the vegetative stage. Based on the farm information and agricultural knowledge available to you, identify the three most important risks or decisions the farmer should consider over the next two weeks. Explain the reasoning behind each recommendation and distinguish between known facts and predictions.",
+    "farm_fixture": {
+      "farm_name": "Adamu's Farm",
+      "region": "Kaduna",
+      "area_hectares": 2.5,
+      "field_name": "Main Field",
+      "soil_type": "sandy loam",
+      "crop": "maize",
+      "variety": "SAMMAZ 15",
+      "planting_date": "2026-07-05",
+      "days_since_planting": 48,
+      "recent_observations": [],
+      "latest_weather": null,
+      "risk_flags_expected": []
+    },
+    "rubric": {
+      "must_reference_facts": ["vegetative stage", "Kaduna", "SAMMAZ 15", "2.5 hectare"],
+      "must_cite_topics": ["maize agronomy", "vegetative-stage risks"],
+      "must_include_action_types": ["scout", "monitor", "input planning"],
+      "expected_priority_levels": ["high", "medium"],
+      "notes": "Should identify 3 substantive concerns for the next 2 weeks (e.g. pest scouting, fertilizer top-dress, disease vigilance, weed control, upcoming flowering window). Must distinguish observed farm facts from predicted risks."
+    }
+  },
+  {
+    "id": "g02",
+    "source": "PRODUCT.md §34 Test Prompt 2 (verbatim)",
+    "question": "A maize farmer in Kaduna has recorded recent heavy rainfall and increased humidity. The farm's crop is in the vegetative stage. Using the supplied farm records and relevant agricultural knowledge, assess the most likely agricultural risks, explain why they matter at this crop stage, and provide a prioritized action plan for the farmer. Identify the information you relied on.",
+    "farm_fixture": {
+      "farm_name": "Adamu's Farm",
+      "region": "Kaduna",
+      "area_hectares": 2.5,
+      "field_name": "Main Field",
+      "soil_type": "sandy loam",
+      "crop": "maize",
+      "variety": "SAMMAZ 15",
+      "planting_date": "2026-07-05",
+      "days_since_planting": 48,
+      "recent_observations": [
+        {"date": "2026-08-19", "type": "rainfall", "value": "65 mm over 48 hours"},
+        {"date": "2026-08-20", "type": "humidity", "value": "85% sustained"}
+      ],
+      "latest_weather": {
+        "snapshot_date": "2026-08-20",
+        "rainfall_mm": 65,
+        "humidity_pct": 85,
+        "temp_min_c": 22,
+        "temp_max_c": 29
+      },
+      "risk_flags_expected": [
+        "heavy_rainfall_fungal_risk",
+        "high_humidity_foliar_pressure",
+        "combined_rain_humidity_outbreak_risk"
+      ]
+    },
+    "rubric": {
+      "must_reference_facts": ["vegetative stage", "65 mm rainfall", "85% humidity", "Kaduna"],
+      "must_cite_topics": ["fungal disease", "humidity", "drainage"],
+      "must_include_action_types": ["scout", "drainage", "fungicide"],
+      "expected_priority_levels": ["high"],
+      "notes": "Must call out combined rain+humidity fungal outbreak risk and give a prioritized action plan citing the retrieved chunks."
+    }
+  },
+  {
+    "id": "g03",
+    "source": "variant: extended dry period",
+    "question": "The last two weeks have been very dry on my farm with almost no rainfall and no clouds. My maize is not yet flowering. What should I do to protect my crop this week?",
+    "farm_fixture": {
+      "farm_name": "Halima's Plot",
+      "region": "Kano",
+      "area_hectares": 1.2,
+      "field_name": "North Field",
+      "soil_type": "sandy",
+      "crop": "maize",
+      "variety": "SAMMAZ 26",
+      "planting_date": "2026-07-01",
+      "days_since_planting": 52,
+      "recent_observations": [],
+      "latest_weather": {
+        "snapshot_date": "2026-08-21",
+        "rainfall_mm": 0,
+        "humidity_pct": 35,
+        "temp_min_c": 24,
+        "temp_max_c": 34
+      },
+      "risk_flags_expected": ["moisture_stress_dry_period"]
+    },
+    "rubric": {
+      "must_reference_facts": ["vegetative stage", "dry", "no rainfall", "Kano"],
+      "must_cite_topics": ["moisture stress", "water management", "mulching"],
+      "must_include_action_types": ["mulch", "irrigate", "monitor"],
+      "expected_priority_levels": ["medium", "high"],
+      "notes": "Should address moisture stress with practical smallholder-appropriate advice (mulching, weeding to reduce competition, any available irrigation). Should NOT prescribe fungicides."
+    }
+  },
+  {
+    "id": "g04",
+    "source": "variant: pest observation",
+    "question": "This morning I saw caterpillar damage on the upper leaves of several maize plants — small holes and some leaves looking chewed. What action should I take?",
+    "farm_fixture": {
+      "farm_name": "Musa's Farm",
+      "region": "Kaduna",
+      "area_hectares": 3.0,
+      "field_name": "East Field",
+      "soil_type": "loam",
+      "crop": "maize",
+      "variety": "SAMMAZ 15",
+      "planting_date": "2026-07-15",
+      "days_since_planting": 38,
+      "recent_observations": [
+        {"date": "2026-08-22", "type": "pest", "value": "caterpillar damage on upper leaves, small holes, possible fall armyworm"}
+      ],
+      "latest_weather": {
+        "snapshot_date": "2026-08-21",
+        "rainfall_mm": 8,
+        "humidity_pct": 60,
+        "temp_min_c": 22,
+        "temp_max_c": 31
+      },
+      "risk_flags_expected": ["active_pest_pressure"]
+    },
+    "rubric": {
+      "must_reference_facts": ["caterpillar", "vegetative", "upper leaves"],
+      "must_cite_topics": ["fall armyworm", "pest scouting", "insecticide"],
+      "must_include_action_types": ["scout", "identify", "treat"],
+      "expected_priority_levels": ["high"],
+      "notes": "Should suggest identification (likely fall armyworm), field scouting to estimate infestation level, and appropriate intervention. Must not invent specific chemical brand names not in corpus."
+    }
+  },
+  {
+    "id": "g05",
+    "source": "variant: disease observation",
+    "question": "I noticed brown-yellow spots on the lower leaves of my maize plants over the last two days. The spots are irregular and some leaves are wilting. Is this serious?",
+    "farm_fixture": {
+      "farm_name": "Zainab's Field",
+      "region": "Kaduna",
+      "area_hectares": 1.8,
+      "field_name": "Main Field",
+      "soil_type": "sandy loam",
+      "crop": "maize",
+      "variety": "SAMMAZ 15",
+      "planting_date": "2026-06-30",
+      "days_since_planting": 53,
+      "recent_observations": [
+        {"date": "2026-08-21", "type": "disease", "value": "brown-yellow irregular spots on lower leaves, some wilting"},
+        {"date": "2026-08-15", "type": "rainfall", "value": "30 mm scattered over 3 days"}
+      ],
+      "latest_weather": {
+        "snapshot_date": "2026-08-21",
+        "rainfall_mm": 12,
+        "humidity_pct": 78,
+        "temp_min_c": 21,
+        "temp_max_c": 30
+      },
+      "risk_flags_expected": ["active_disease_pressure"]
+    },
+    "rubric": {
+      "must_reference_facts": ["lower leaves", "vegetative", "brown spots", "wilting"],
+      "must_cite_topics": ["foliar disease", "fungal disease", "leaf blight"],
+      "must_include_action_types": ["inspect", "sample", "treat"],
+      "expected_priority_levels": ["high"],
+      "notes": "Should treat this as active disease pressure requiring urgent inspection. Should acknowledge diagnostic uncertainty (could be leaf blight, gray leaf spot, etc.) and suggest scouting scope + protective action."
+    }
+  },
+  {
+    "id": "g06",
+    "source": "direct farm-context question",
+    "question": "What should I do on my farm this week?",
+    "farm_fixture": {
+      "farm_name": "Ibrahim's Farm",
+      "region": "Kaduna",
+      "area_hectares": 2.0,
+      "field_name": "Main Field",
+      "soil_type": "sandy loam",
+      "crop": "maize",
+      "variety": "SAMMAZ 15",
+      "planting_date": "2026-07-10",
+      "days_since_planting": 43,
+      "recent_observations": [
+        {"date": "2026-08-18", "type": "rainfall", "value": "20 mm light shower"}
+      ],
+      "latest_weather": {
+        "snapshot_date": "2026-08-21",
+        "rainfall_mm": 5,
+        "humidity_pct": 65,
+        "temp_min_c": 22,
+        "temp_max_c": 30
+      },
+      "risk_flags_expected": []
+    },
+    "rubric": {
+      "must_reference_facts": ["vegetative stage", "day 43", "Kaduna"],
+      "must_cite_topics": ["vegetative-stage tasks", "weed control", "fertilizer"],
+      "must_include_action_types": ["weed", "top-dress", "monitor"],
+      "expected_priority_levels": ["medium", "low"],
+      "notes": "No firing risks — should give routine vegetative-stage tasks (weeding, top-dress fertilizer, general monitoring) grounded in retrieved knowledge. Should NOT invent an emergency."
+    }
+  },
+  {
+    "id": "g07",
+    "source": "direct farm-context question: urgency",
+    "question": "How urgent is the disease risk given my crop's current stage?",
+    "farm_fixture": {
+      "farm_name": "Adamu's Farm",
+      "region": "Kaduna",
+      "area_hectares": 2.5,
+      "field_name": "Main Field",
+      "soil_type": "sandy loam",
+      "crop": "maize",
+      "variety": "SAMMAZ 15",
+      "planting_date": "2026-07-05",
+      "days_since_planting": 48,
+      "recent_observations": [
+        {"date": "2026-08-19", "type": "rainfall", "value": "65 mm over 48 hours"},
+        {"date": "2026-08-20", "type": "humidity", "value": "85% sustained"}
+      ],
+      "latest_weather": {
+        "snapshot_date": "2026-08-20",
+        "rainfall_mm": 65,
+        "humidity_pct": 85,
+        "temp_min_c": 22,
+        "temp_max_c": 29
+      },
+      "risk_flags_expected": [
+        "heavy_rainfall_fungal_risk",
+        "high_humidity_foliar_pressure",
+        "combined_rain_humidity_outbreak_risk"
+      ]
+    },
+    "rubric": {
+      "must_reference_facts": ["vegetative stage", "48 days", "65 mm rainfall", "85% humidity"],
+      "must_cite_topics": ["fungal disease", "immediate action"],
+      "must_include_action_types": ["scout", "act now"],
+      "expected_priority_levels": ["high"],
+      "notes": "Should classify urgency as high/immediate and tie it explicitly to the combined rain+humidity risk on vegetative maize. Should reference at least one retrieved chunk."
+    }
+  },
+  {
+    "id": "g08",
+    "source": "direct farm-context question: biggest concern",
+    "question": "What is the biggest concern for my crop today?",
+    "farm_fixture": {
+      "farm_name": "Bello's Field",
+      "region": "Kaduna",
+      "area_hectares": 1.5,
+      "field_name": "Main Field",
+      "soil_type": "loam",
+      "crop": "maize",
+      "variety": "SAMMAZ 15",
+      "planting_date": "2026-06-15",
+      "days_since_planting": 68,
+      "recent_observations": [
+        {"date": "2026-08-20", "type": "rainfall", "value": "12 mm light rain"}
+      ],
+      "latest_weather": {
+        "snapshot_date": "2026-08-21",
+        "rainfall_mm": 4,
+        "humidity_pct": 55,
+        "temp_min_c": 25,
+        "temp_max_c": 36
+      },
+      "risk_flags_expected": ["heat_stress_at_flowering"]
+    },
+    "rubric": {
+      "must_reference_facts": ["flowering", "36", "tasseling", "silking"],
+      "must_cite_topics": ["heat stress", "flowering", "pollination"],
+      "must_include_action_types": ["monitor", "water", "reduce stress"],
+      "expected_priority_levels": ["high"],
+      "notes": "Should identify heat stress during flowering (≥35°C) as the single biggest concern and explain the pollination/grain-set impact."
+    }
+  },
+  {
+    "id": "g09",
+    "source": "off-domain redirect",
+    "question": "What is the current stock price of maize on international commodity markets today?",
+    "farm_fixture": {
+      "farm_name": "Adamu's Farm",
+      "region": "Kaduna",
+      "area_hectares": 2.5,
+      "field_name": "Main Field",
+      "soil_type": "sandy loam",
+      "crop": "maize",
+      "variety": "SAMMAZ 15",
+      "planting_date": "2026-07-05",
+      "days_since_planting": 48,
+      "recent_observations": [],
+      "latest_weather": null,
+      "risk_flags_expected": []
+    },
+    "rubric": {
+      "must_reference_facts": ["not available", "offline", "no market data"],
+      "must_cite_topics": [],
+      "must_include_action_types": [],
+      "expected_priority_levels": [],
+      "notes": "Off-domain test. Model should politely decline or state that market/commodity price data is not part of its offline knowledge, rather than fabricating a number. Bonus if it redirects toward agronomic advice it can actually give."
+    }
+  },
+  {
+    "id": "g10",
+    "source": "stage transition (deterministic + LLM hybrid)",
+    "question": "When will my maize crop start flowering?",
+    "farm_fixture": {
+      "farm_name": "Fatima's Farm",
+      "region": "Kaduna",
+      "area_hectares": 2.2,
+      "field_name": "Main Field",
+      "soil_type": "sandy loam",
+      "crop": "maize",
+      "variety": "SAMMAZ 15",
+      "planting_date": "2026-07-10",
+      "days_since_planting": 43,
+      "recent_observations": [],
+      "latest_weather": null,
+      "risk_flags_expected": []
+    },
+    "rubric": {
+      "must_reference_facts": ["day 43", "vegetative", "flowering", "day 60", "about 2 weeks", "September"],
+      "must_cite_topics": ["maize growth stages", "flowering", "tasseling"],
+      "must_include_action_types": ["prepare", "monitor water"],
+      "expected_priority_levels": ["medium"],
+      "notes": "Should use the deterministic days-since-planting (43) and maize lifecycle (flowering ~day 60) to say flowering is roughly 2-3 weeks away (~early September 2026), and mention what to prepare for that window."
+    }
+  }
+]

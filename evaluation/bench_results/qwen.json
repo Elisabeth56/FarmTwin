@@ -1,0 +1,605 @@
+{
+  "model_name": "qwen",
+  "run_date": "2026-08-22",
+  "environment": {
+    "os": "macOS",
+    "cpu": "Intel Core (2014 MacBook Pro)",
+    "ram_gb": 8,
+    "llama_cpp_tag": "b10472",
+    "n_ctx": 4096,
+    "threads": 4,
+    "load_mode": "mlock"
+  },
+  "aggregate": {
+    "n_prompts": 10,
+    "mean_prompt_tokens": 1347.4,
+    "mean_gen_tokens": 402.6,
+    "mean_prompt_eval_tok_s": 18.96,
+    "mean_gen_tok_s": 5.46,
+    "mean_wall_clock_s": 144.38,
+    "peak_rss_mb": 3063,
+    "total_time_min": 24.09,
+    "json_parse_rate": 0.8
+  },
+  "per_prompt": [
+    {
+      "id": "g01",
+      "question": "You are advising a farmer managing a 2.5-hectare maize farm in Kaduna, Nigeria. The maize was planted on June 12 and is currently in the vegetative stage. Based on the farm information and agricultural knowledge available to you, identify the three most important risks or decisions the farmer should consider over the next two weeks. Explain the reasoning behind each recommendation and distinguish between known facts and predictions.",
+      "farm_fixture_id": "Adamu's Farm",
+      "computed_stage": "vegetative",
+      "days_since_planting": 48,
+      "risk_flags_fired": [
+        "moisture_stress_dry_period"
+      ],
+      "retrieved_chunk_ids": [
+        4,
+        8,
+        25,
+        1,
+        26,
+        27
+      ],
+      "prompt_chars": 9189,
+      "prompt_tokens": 1974,
+      "gen_tokens": 548,
+      "prompt_eval_tok_s": 20.086364243422516,
+      "gen_tok_s": 5.490310084483125,
+      "prompt_ms": 98275.625,
+      "predicted_ms": 99630.074,
+      "wall_clock_s": 197.93,
+      "response_full": "# Narrative\nOn Adamu's 2.5-hectare maize farm in Kaduna, the crop is currently in the vegetative stage, with 48 days since planting. No significant rainfall has been observed in the last 10 days, which is a concern during the vegetative growth period. The maize variety is SAMMAZ 15, which is a medium-duration variety suited to the region's rainfall pattern.\n\nGiven the current conditions, the farmer should prioritize the following actions:\n\n1. **Monitor Soil Moisture Levels**: The lack of recent rainfall combined with the current vegetative growth stage puts the crop at risk of moisture stress. Soil moisture levels should be checked daily, especially in the morning when the soil is cooler and more absorbent. If the soil is dry, immediate action is needed to prevent yield losses.\n\n2. **Prepare for a Protective Fungicide Application**: The vegetative growth stage is more tolerant of short-term moisture stress, but sustained dry spells can lead to yield losses. A protective fungicide application is recommended to prevent fungal diseases that could occur if the dry period continues. The application should be made during the next dry window, which is likely within the next week, to minimize the risk of disease development.\n\n3. **Maintain Good Soil Cover**: To reduce evaporation and maintain soil moisture, the farmer should ensure that the field is well-covered with mulch or other organic matter. This practice helps to retain soil moisture and reduce the risk of moisture stress during dry periods.\n\n```json\n{\n  \"recommendations\": [\n    {\"what\": \"Check soil moisture levels daily and apply water if necessary\", \"why\": \"Maintaining adequate soil moisture is crucial for preventing moisture stress and yield losses\", \"when_urgency\": \"immediate\", \"risk_if_ignored\": \"Moisture stress can reduce yield by 10-30 percent if not addressed\", \"priority\": \"high\"},\n    {\"what\": \"Prepare a protective fungicide application during the next dry window\", \"why\": \"Fungicides can protect against foliar fungal diseases that may occur under moisture stress conditions\", \"when_urgency\": \"this_week\", \"risk_if_ignored\": \"Without protection, yield losses can be significant\", \"priority\": \"medium\"},\n    {\"what\": \"Maintain good soil cover to reduce evaporation\", \"why\": \"Covering the soil with mulch or organic matter helps retain moisture and reduces evaporation\", \"when_urgency\": \"ongoing\", \"risk_if_ignored\": \"Moisture stress can reduce yield by 10-30 percent if not addressed\", \"priority\": \"high\"}\n  ]\n}\n```",
+      "response_narrative_preview": "# Narrative\nOn Adamu's 2.5-hectare maize farm in Kaduna, the crop is currently in the vegetative stage, with 48 days since planting. No significant rainfall has been observed in the last 10 days, which is a concern during the vegetative growth period. The maize variety is SAMMAZ 15, which is a medium-duration variety suited to the region's rainfall pattern.\n\nGiven the current conditions, the farmer should prioritize the following actions:\n\n1. **Monitor Soil Moisture Levels**: The lack of recent ",
+      "recommendations_parsed": [
+        {
+          "what": "Check soil moisture levels daily and apply water if necessary",
+          "why": "Maintaining adequate soil moisture is crucial for preventing moisture stress and yield losses",
+          "when_urgency": "immediate",
+          "risk_if_ignored": "Moisture stress can reduce yield by 10-30 percent if not addressed",
+          "priority": "high"
+        },
+        {
+          "what": "Prepare a protective fungicide application during the next dry window",
+          "why": "Fungicides can protect against foliar fungal diseases that may occur under moisture stress conditions",
+          "when_urgency": "this_week",
+          "risk_if_ignored": "Without protection, yield losses can be significant",
+          "priority": "medium"
+        },
+        {
+          "what": "Maintain good soil cover to reduce evaporation",
+          "why": "Covering the soil with mulch or organic matter helps retain moisture and reduces evaporation",
+          "when_urgency": "ongoing",
+          "risk_if_ignored": "Moisture stress can reduce yield by 10-30 percent if not addressed",
+          "priority": "high"
+        }
+      ],
+      "cited_chunks": [],
+      "json_parseable": true,
+      "grade": {
+        "farm_grounding": 5,
+        "retrieval_grounding": 1,
+        "agronomic_factuality": 5,
+        "actionability": 4,
+        "structure": 5
+      }
+    },
+    {
+      "id": "g02",
+      "question": "A maize farmer in Kaduna has recorded recent heavy rainfall and increased humidity. The farm's crop is in the vegetative stage. Using the supplied farm records and relevant agricultural knowledge, assess the most likely agricultural risks, explain why they matter at this crop stage, and provide a prioritized action plan for the farmer. Identify the information you relied on.",
+      "farm_fixture_id": "Adamu's Farm",
+      "computed_stage": "vegetative",
+      "days_since_planting": 48,
+      "risk_flags_fired": [
+        "heavy_rainfall_fungal_risk",
+        "high_humidity_foliar_pressure",
+        "combined_rain_humidity_outbreak_risk"
+      ],
+      "retrieved_chunk_ids": [
+        10,
+        15,
+        25,
+        4,
+        8,
+        9
+      ],
+      "prompt_chars": 9786,
+      "prompt_tokens": 1566,
+      "gen_tokens": 301,
+      "prompt_eval_tok_s": 18.845583118805372,
+      "gen_tok_s": 5.394967746724824,
+      "prompt_ms": 83096.394,
+      "predicted_ms": 55607.376,
+      "wall_clock_s": 138.82,
+      "response_full": "Heavy rainfall over the past 48 hours combined with sustained humidity puts this vegetative maize crop at elevated risk of foliar fungal disease [K1]. Extension guidance for the region recommends immediate scouting for early lesions and improving field drainage [K2]. If lesions are already visible, a protective fungicide application is advised within the next few days [K1].\n\n```json\n{\n  \"recommendations\": [\n    {\"what\": \"Scout every row today for leaf lesions or wilting\", \"why\": \"Early detection lets you contain a fungal outbreak before it spreads across the field\", \"when_urgency\": \"immediate\", \"risk_if_ignored\": \"A single missed hot-spot can seed a field-wide outbreak within a week\", \"priority\": \"high\"},\n    {\"what\": \"Clear standing water and improve drainage between rows\", \"why\": \"Waterlogged soil under vegetative maize compounds fungal pressure and stresses roots\", \"when_urgency\": \"this_week\", \"risk_if_ignored\": \"Prolonged waterlogging weakens plants and creates persistent disease conditions\", \"priority\": \"high\"},\n    {\"what\": \"Prepare a protective fungicide application for the next dry window\", \"why\": \"Extension guidance recommends protective spraying under these humidity + rainfall conditions\", \"when_urgency\": \"this_week\", \"risk_if_ignored\": \"Without protection, an outbreak can cost a large share of the yield\", \"priority\": \"medium\"}\n  ]\n}\n```",
+      "response_narrative_preview": "Heavy rainfall over the past 48 hours combined with sustained humidity puts this vegetative maize crop at elevated risk of foliar fungal disease [K1]. Extension guidance for the region recommends immediate scouting for early lesions and improving field drainage [K2]. If lesions are already visible, a protective fungicide application is advised within the next few days [K1].\n\n```json\n{\n  \"recommendations\": [\n    {\"what\": \"Scout every row today for leaf lesions or wilting\", \"why\": \"Early detection",
+      "recommendations_parsed": [
+        {
+          "what": "Scout every row today for leaf lesions or wilting",
+          "why": "Early detection lets you contain a fungal outbreak before it spreads across the field",
+          "when_urgency": "immediate",
+          "risk_if_ignored": "A single missed hot-spot can seed a field-wide outbreak within a week",
+          "priority": "high"
+        },
+        {
+          "what": "Clear standing water and improve drainage between rows",
+          "why": "Waterlogged soil under vegetative maize compounds fungal pressure and stresses roots",
+          "when_urgency": "this_week",
+          "risk_if_ignored": "Prolonged waterlogging weakens plants and creates persistent disease conditions",
+          "priority": "high"
+        },
+        {
+          "what": "Prepare a protective fungicide application for the next dry window",
+          "why": "Extension guidance recommends protective spraying under these humidity + rainfall conditions",
+          "when_urgency": "this_week",
+          "risk_if_ignored": "Without protection, an outbreak can cost a large share of the yield",
+          "priority": "medium"
+        }
+      ],
+      "cited_chunks": [
+        "[K1]",
+        "[K2]"
+      ],
+      "json_parseable": true,
+      "grade": {
+        "farm_grounding": 4,
+        "retrieval_grounding": 5,
+        "agronomic_factuality": 5,
+        "actionability": 5,
+        "structure": 5
+      }
+    },
+    {
+      "id": "g03",
+      "question": "The last two weeks have been very dry on my farm with almost no rainfall and no clouds. My maize is not yet flowering. What should I do to protect my crop this week?",
+      "farm_fixture_id": "Halima's Plot",
+      "computed_stage": "vegetative",
+      "days_since_planting": 52,
+      "risk_flags_fired": [
+        "moisture_stress_dry_period"
+      ],
+      "retrieved_chunk_ids": [
+        8,
+        3,
+        15,
+        10,
+        31,
+        38
+      ],
+      "prompt_chars": 8859,
+      "prompt_tokens": 1335,
+      "gen_tokens": 311,
+      "prompt_eval_tok_s": 19.56310329551539,
+      "gen_tok_s": 5.593424846094209,
+      "prompt_ms": 68240.707,
+      "predicted_ms": 55422.216,
+      "wall_clock_s": 123.77,
+      "response_full": "The last two weeks have been very dry on Halima's Plot, with almost no rainfall and no clouds. The maize crop is in the vegetative stage, and flowering is still to come. The moisture stress dry period risk flag indicates that no significant rainfall has been observed in the last 10 days, which is a moisture-sensitive stage. This puts the crop at elevated risk of water stress and potential yield losses if the dry period continues.\n\n```json\n{\n  \"recommendations\": [\n    {\"what\": \"Maintain soil moisture by leaving crop residue on the surface\", \"why\": \"Reducing evaporation helps maintain soil moisture between rainfall events\", \"when_urgency\": \"this_week\", \"risk_if_ignored\": \"The crop will lose more moisture to evaporation, risking water stress\", \"priority\": \"high\"},\n    {\"what\": \"Encourage early canopy closure and soil cover\", \"why\": \"Reduces surface crusting after heavy rain and improves subsequent water infiltration\", \"when_urgency\": \"this_week\", \"risk_if_ignored\": \"Exposed soil can lose moisture quickly, reducing available moisture for the crop\", \"priority\": \"high\"},\n    {\"what\": \"Monitor for early signs of water stress\", \"why\": \"Detecting water stress early allows for timely interventions to prevent yield losses\", \"when_urgency\": \"this_week\", \"risk_if_ignored\": \"If water stress persists, it can severely impact yield and quality\", \"priority\": \"medium\"}\n  ]\n}\n```",
+      "response_narrative_preview": "The last two weeks have been very dry on Halima's Plot, with almost no rainfall and no clouds. The maize crop is in the vegetative stage, and flowering is still to come. The moisture stress dry period risk flag indicates that no significant rainfall has been observed in the last 10 days, which is a moisture-sensitive stage. This puts the crop at elevated risk of water stress and potential yield losses if the dry period continues.\n\n```json\n{\n  \"recommendations\": [\n    {\"what\": \"Maintain soil mois",
+      "recommendations_parsed": [
+        {
+          "what": "Maintain soil moisture by leaving crop residue on the surface",
+          "why": "Reducing evaporation helps maintain soil moisture between rainfall events",
+          "when_urgency": "this_week",
+          "risk_if_ignored": "The crop will lose more moisture to evaporation, risking water stress",
+          "priority": "high"
+        },
+        {
+          "what": "Encourage early canopy closure and soil cover",
+          "why": "Reduces surface crusting after heavy rain and improves subsequent water infiltration",
+          "when_urgency": "this_week",
+          "risk_if_ignored": "Exposed soil can lose moisture quickly, reducing available moisture for the crop",
+          "priority": "high"
+        },
+        {
+          "what": "Monitor for early signs of water stress",
+          "why": "Detecting water stress early allows for timely interventions to prevent yield losses",
+          "when_urgency": "this_week",
+          "risk_if_ignored": "If water stress persists, it can severely impact yield and quality",
+          "priority": "medium"
+        }
+      ],
+      "cited_chunks": [],
+      "json_parseable": true,
+      "grade": {
+        "farm_grounding": 5,
+        "retrieval_grounding": 1,
+        "agronomic_factuality": 5,
+        "actionability": 4,
+        "structure": 5
+      }
+    },
+    {
+      "id": "g04",
+      "question": "This morning I saw caterpillar damage on the upper leaves of several maize plants \u2014 small holes and some leaves looking chewed. What action should I take?",
+      "farm_fixture_id": "Musa's Farm",
+      "computed_stage": "vegetative",
+      "days_since_planting": 38,
+      "risk_flags_fired": [
+        "active_pest_pressure"
+      ],
+      "retrieved_chunk_ids": [
+        21,
+        24,
+        13,
+        15,
+        11,
+        3
+      ],
+      "prompt_chars": 8760,
+      "prompt_tokens": 1385,
+      "gen_tokens": 307,
+      "prompt_eval_tok_s": 19.27949533102128,
+      "gen_tok_s": 5.548397739684301,
+      "prompt_ms": 71837.98,
+      "predicted_ms": 55151.057,
+      "wall_clock_s": 127.09,
+      "response_full": "This morning's observation of caterpillar damage on upper leaves aligns with the IITA guidance on fall armyworm [K1]. Fall armyworm larvae feed on the whorl, creating characteristic windowing damage and wet-looking frass inside the whorl. Given the recent pest report on 2026-08-22, immediate action is warranted to prevent a widespread outbreak.\n\n```json\n{\n  \"recommendations\": [\n    {\"what\": \"Scout every row today for fall armyworm larvae and frass\", \"why\": \"Early detection lets you contain a pest outbreak before it spreads\", \"when_urgency\": \"immediate\", \"risk_if_ignored\": \"A single missed hot-spot can seed a field-wide outbreak within a week\", \"priority\": \"high\"},\n    {\"what\": \"Prepare a protective insecticide application for the next dry window\", \"why\": \"Extension guidance recommends protective spraying under these conditions\", \"when_urgency\": \"this_week\", \"risk_if_ignored\": \"Without protection, an outbreak can cost a large share of the yield\", \"priority\": \"medium\"},\n    {\"what\": \"Monitor for new infestations and adjust scouting frequency\", \"why\": \"Continued monitoring helps catch new infestations early and prevents spread\", \"when_urgency\": \"monitor\", \"risk_if_ignored\": \"If new infestations are missed, they can quickly overwhelm the field\", \"priority\": \"high\"}\n  ]\n}\n```",
+      "response_narrative_preview": "This morning's observation of caterpillar damage on upper leaves aligns with the IITA guidance on fall armyworm [K1]. Fall armyworm larvae feed on the whorl, creating characteristic windowing damage and wet-looking frass inside the whorl. Given the recent pest report on 2026-08-22, immediate action is warranted to prevent a widespread outbreak.\n\n```json\n{\n  \"recommendations\": [\n    {\"what\": \"Scout every row today for fall armyworm larvae and frass\", \"why\": \"Early detection lets you contain a pes",
+      "recommendations_parsed": [
+        {
+          "what": "Scout every row today for fall armyworm larvae and frass",
+          "why": "Early detection lets you contain a pest outbreak before it spreads",
+          "when_urgency": "immediate",
+          "risk_if_ignored": "A single missed hot-spot can seed a field-wide outbreak within a week",
+          "priority": "high"
+        },
+        {
+          "what": "Prepare a protective insecticide application for the next dry window",
+          "why": "Extension guidance recommends protective spraying under these conditions",
+          "when_urgency": "this_week",
+          "risk_if_ignored": "Without protection, an outbreak can cost a large share of the yield",
+          "priority": "medium"
+        },
+        {
+          "what": "Monitor for new infestations and adjust scouting frequency",
+          "why": "Continued monitoring helps catch new infestations early and prevents spread",
+          "when_urgency": "monitor",
+          "risk_if_ignored": "If new infestations are missed, they can quickly overwhelm the field",
+          "priority": "high"
+        }
+      ],
+      "cited_chunks": [
+        "[K1]"
+      ],
+      "json_parseable": true,
+      "grade": {
+        "farm_grounding": 5,
+        "retrieval_grounding": 5,
+        "agronomic_factuality": 5,
+        "actionability": 5,
+        "structure": 5
+      }
+    },
+    {
+      "id": "g05",
+      "question": "I noticed brown-yellow spots on the lower leaves of my maize plants over the last two days. The spots are irregular and some leaves are wilting. Is this serious?",
+      "farm_fixture_id": "Zainab's Field",
+      "computed_stage": "vegetative",
+      "days_since_planting": 53,
+      "risk_flags_fired": [
+        "active_disease_pressure"
+      ],
+      "retrieved_chunk_ids": [
+        13,
+        11,
+        7,
+        15,
+        12,
+        9
+      ],
+      "prompt_chars": 8915,
+      "prompt_tokens": 1420,
+      "gen_tokens": 324,
+      "prompt_eval_tok_s": 18.89754792870631,
+      "gen_tok_s": 5.480603076739302,
+      "prompt_ms": 75142.024,
+      "predicted_ms": 58935.12,
+      "wall_clock_s": 134.18,
+      "response_full": "# Narrative\nThe brown-yellow irregular spots on the lower leaves of your maize plants, combined with some wilting, are indicative of a foliar fungal disease, likely Gray Leaf Spot (GLS) [K1] or Northern Corn Leaf Blight (NCLB) [K2], which are common in Sub-Saharan Africa, including Nigeria. The recent rainfall and humidity conditions are favorable for these diseases. Immediate action is recommended to prevent further spread and potential yield loss.\n\n```json\n{\n  \"recommendations\": [\n    {\"what\": \"Scout every row today for leaf lesions or wilting\", \"why\": \"Early detection lets you contain a fungal outbreak before it spreads across the field\", \"when_urgency\": \"immediate\", \"risk_if_ignored\": \"A single missed hot-spot can seed a field-wide outbreak within a week\", \"priority\": \"high\"},\n    {\"what\": \"Prepare a protective fungicide application for the next dry window\", \"why\": \"Extension guidance recommends protective spraying under these humidity + rainfall conditions\", \"when_urgency\": \"this_week\", \"risk_if_ignored\": \"Without protection, an outbreak can cost a large share of the yield\", \"priority\": \"medium\"},\n    {\"what\": \"Clear standing water and improve drainage between rows\", \"why\": \"Waterlogged soil under vegetative maize compounds fungal pressure and stresses roots\", \"when_urgency\": \"this_week\", \"risk_if_ignored\": \"Prolonged waterlogging weakens plants and creates persistent disease conditions\", \"priority\": \"high\"}\n  ]\n}\n```",
+      "response_narrative_preview": "# Narrative\nThe brown-yellow irregular spots on the lower leaves of your maize plants, combined with some wilting, are indicative of a foliar fungal disease, likely Gray Leaf Spot (GLS) [K1] or Northern Corn Leaf Blight (NCLB) [K2], which are common in Sub-Saharan Africa, including Nigeria. The recent rainfall and humidity conditions are favorable for these diseases. Immediate action is recommended to prevent further spread and potential yield loss.\n\n```json\n{\n  \"recommendations\": [\n    {\"what\":",
+      "recommendations_parsed": [
+        {
+          "what": "Scout every row today for leaf lesions or wilting",
+          "why": "Early detection lets you contain a fungal outbreak before it spreads across the field",
+          "when_urgency": "immediate",
+          "risk_if_ignored": "A single missed hot-spot can seed a field-wide outbreak within a week",
+          "priority": "high"
+        },
+        {
+          "what": "Prepare a protective fungicide application for the next dry window",
+          "why": "Extension guidance recommends protective spraying under these humidity + rainfall conditions",
+          "when_urgency": "this_week",
+          "risk_if_ignored": "Without protection, an outbreak can cost a large share of the yield",
+          "priority": "medium"
+        },
+        {
+          "what": "Clear standing water and improve drainage between rows",
+          "why": "Waterlogged soil under vegetative maize compounds fungal pressure and stresses roots",
+          "when_urgency": "this_week",
+          "risk_if_ignored": "Prolonged waterlogging weakens plants and creates persistent disease conditions",
+          "priority": "high"
+        }
+      ],
+      "cited_chunks": [
+        "[K1]",
+        "[K2]"
+      ],
+      "json_parseable": true,
+      "grade": {
+        "farm_grounding": 5,
+        "retrieval_grounding": 5,
+        "agronomic_factuality": 5,
+        "actionability": 5,
+        "structure": 5
+      }
+    },
+    {
+      "id": "g06",
+      "question": "What should I do on my farm this week?",
+      "farm_fixture_id": "Ibrahim's Farm",
+      "computed_stage": "vegetative",
+      "days_since_planting": 43,
+      "risk_flags_fired": [],
+      "retrieved_chunk_ids": [
+        45,
+        4,
+        6,
+        25,
+        8,
+        27
+      ],
+      "prompt_chars": 8681,
+      "prompt_tokens": 1324,
+      "gen_tokens": 600,
+      "prompt_eval_tok_s": 18.887624752654503,
+      "gen_tok_s": 5.333932538469341,
+      "prompt_ms": 70098.809,
+      "predicted_ms": 112299.883,
+      "wall_clock_s": 182.5,
+      "response_full": "# Farm state\nfarm_name: Ibrahim's Farm\nregion: Kaduna\narea_hectares: 2.0\nfield_name: Main Field\nsoil_type: sandy loam\ncrop: maize\nvariety: SAMMAZ 15\nplanting_date: 2026-07-10\ncurrent_stage: vegetative\ndays_since_planting: 43\nrecent_observations:\n  - {date: 2026-08-18, type: rainfall, value: 20 mm light shower}\nlatest_weather:\n  snapshot_date: 2026-08-21\n  rainfall_mm: 5\n  humidity_pct: 65\n  temp_min_c: 22\n  temp_max_c: 30\n\n# Rule-based risk flags\nNo rule-based risks fired for the current farm state.\n\n# Retrieved agricultural knowledge\n[K1] (IITA) An integrated view of maize management\nThe strongest maize outcomes in smallholder Nigerian systems come from integrated approaches that address multiple factors together rather than optimizing any single input. Variety choice sets the ceiling on what is possible; matching a variety to local growing season length, disease pressures, and soil conditions is a high-leverage annual decision. Planting timing aligned with reliable rainfall establishes a healthy crop stand. Nutrient management through split fertilizer applications matches nutrient supply to plant demand. Weed control during the vegetative stage protects the plant's access to those nutrients and moisture. Regular scouting for pests and diseases enables early intervention when problems are still manageable. Harvest and post-harvest handling protect the value of what has been grown. No single intervention compensates for weakness in another; the whole system contributes to the final outcome.\n\n[K2] (NAERLS) Maize planting calendar in Northern Nigeria\nIn Northern Nigeria, including Kaduna State, the main maize growing season aligns with the rainy season, which typically runs from May through October. Planting is usually done between late May and mid-June, once the rains have established consistently. Planting too early risks germination failure if a dry spell follows; planting too late risks the crop reaching maturity after rains stop, which can affect grain filling. For a June 12 planting date typical of the middle-belt maize regions, the vegetative stage runs approximately from early July through mid-August, flowering occurs in late August, and harvest typically falls in September or October depending on variety maturity duration. This calendar aligns most naturally with medium-duration varieties suited to the region's rainfall pattern.\n\n[K3] (NAERLS) Nitrogen top-dressing at vegetative stage\nNitrogen is the nutrient most limiting to maize yield in Nigerian smallholder systems. A split application is standard: a basal application at or shortly after planting, followed by a top-dressing during the vegetative stage. The top-dressing is typically applied 4 to 6",
+      "response_narrative_preview": "# Farm state\nfarm_name: Ibrahim's Farm\nregion: Kaduna\narea_hectares: 2.0\nfield_name: Main Field\nsoil_type: sandy loam\ncrop: maize\nvariety: SAMMAZ 15\nplanting_date: 2026-07-10\ncurrent_stage: vegetative\ndays_since_planting: 43\nrecent_observations:\n  - {date: 2026-08-18, type: rainfall, value: 20 mm light shower}\nlatest_weather:\n  snapshot_date: 2026-08-21\n  rainfall_mm: 5\n  humidity_pct: 65\n  temp_min_c: 22\n  temp_max_c: 30\n\n# Rule-based risk flags\nNo rule-based risks fired for the current farm st",
+      "recommendations_parsed": [],
+      "cited_chunks": [
+        "[K1]",
+        "[K2]",
+        "[K3]"
+      ],
+      "json_parseable": false,
+      "grade": {
+        "farm_grounding": 4,
+        "retrieval_grounding": 5,
+        "agronomic_factuality": 5,
+        "actionability": 2,
+        "structure": 0
+      }
+    },
+    {
+      "id": "g07",
+      "question": "How urgent is the disease risk given my crop's current stage?",
+      "farm_fixture_id": "Adamu's Farm",
+      "computed_stage": "vegetative",
+      "days_since_planting": 48,
+      "risk_flags_fired": [
+        "heavy_rainfall_fungal_risk",
+        "high_humidity_foliar_pressure",
+        "combined_rain_humidity_outbreak_risk"
+      ],
+      "retrieved_chunk_ids": [
+        10,
+        15,
+        9,
+        11,
+        17,
+        16
+      ],
+      "prompt_chars": 9793,
+      "prompt_tokens": 801,
+      "gen_tokens": 312,
+      "prompt_eval_tok_s": 17.580907897837672,
+      "gen_tok_s": 5.168392887733001,
+      "prompt_ms": 45560.787,
+      "predicted_ms": 60173.444,
+      "wall_clock_s": 105.87,
+      "response_full": "Heavy rainfall and sustained humidity over the past 48 hours have created ideal conditions for foliar fungal diseases in Adamu's maize crop [K1, K4, K5]. The latest weather snapshot shows 65 mm of rainfall and 85% humidity, which aligns with the high-risk pattern described in the knowledge chunks. Given the current vegetative stage, the disease risk is high and requires immediate attention to prevent a potential outbreak.\n\n```json\n{\n  \"recommendations\": [\n    {\"what\": \"Scout every row today for leaf lesions or wilting\", \"why\": \"Early detection lets you contain a fungal outbreak before it spreads across the field\", \"when_urgency\": \"immediate\", \"risk_if_ignored\": \"A single missed hot-spot can seed a field-wide outbreak within a week\", \"priority\": \"high\"},\n    {\"what\": \"Prepare a protective fungicide application for the next dry window\", \"why\": \"Extension guidance recommends protective spraying under these humidity + rainfall conditions\", \"when_urgency\": \"this_week\", \"risk_if_ignored\": \"Without protection, an outbreak can cost a large share of the yield\", \"priority\": \"medium\"},\n    {\"what\": \"Review crop rotation and weed control practices\", \"why\": \"Preventative cultural practices reduce the conditions favoring disease\", \"when_urgency\": \"this_week\", \"risk_if_ignored\": \"Continuing poor practices can lead to disease buildup\", \"priority\": \"medium\"}\n  ]\n}\n```",
+      "response_narrative_preview": "Heavy rainfall and sustained humidity over the past 48 hours have created ideal conditions for foliar fungal diseases in Adamu's maize crop [K1, K4, K5]. The latest weather snapshot shows 65 mm of rainfall and 85% humidity, which aligns with the high-risk pattern described in the knowledge chunks. Given the current vegetative stage, the disease risk is high and requires immediate attention to prevent a potential outbreak.\n\n```json\n{\n  \"recommendations\": [\n    {\"what\": \"Scout every row today for ",
+      "recommendations_parsed": [
+        {
+          "what": "Scout every row today for leaf lesions or wilting",
+          "why": "Early detection lets you contain a fungal outbreak before it spreads across the field",
+          "when_urgency": "immediate",
+          "risk_if_ignored": "A single missed hot-spot can seed a field-wide outbreak within a week",
+          "priority": "high"
+        },
+        {
+          "what": "Prepare a protective fungicide application for the next dry window",
+          "why": "Extension guidance recommends protective spraying under these humidity + rainfall conditions",
+          "when_urgency": "this_week",
+          "risk_if_ignored": "Without protection, an outbreak can cost a large share of the yield",
+          "priority": "medium"
+        },
+        {
+          "what": "Review crop rotation and weed control practices",
+          "why": "Preventative cultural practices reduce the conditions favoring disease",
+          "when_urgency": "this_week",
+          "risk_if_ignored": "Continuing poor practices can lead to disease buildup",
+          "priority": "medium"
+        }
+      ],
+      "cited_chunks": [],
+      "json_parseable": true,
+      "grade": {
+        "farm_grounding": 5,
+        "retrieval_grounding": 5,
+        "agronomic_factuality": 5,
+        "actionability": 4,
+        "structure": 5
+      }
+    },
+    {
+      "id": "g08",
+      "question": "What is the biggest concern for my crop today?",
+      "farm_fixture_id": "Bello's Field",
+      "computed_stage": "flowering",
+      "days_since_planting": 68,
+      "risk_flags_fired": [
+        "heat_stress_at_flowering"
+      ],
+      "retrieved_chunk_ids": [
+        36,
+        3,
+        8,
+        4,
+        25,
+        1
+      ],
+      "prompt_chars": 8772,
+      "prompt_tokens": 1375,
+      "gen_tokens": 340,
+      "prompt_eval_tok_s": 18.443766491829148,
+      "gen_tok_s": 5.400914848061272,
+      "prompt_ms": 74550.933,
+      "predicted_ms": 62767.144,
+      "wall_clock_s": 137.38,
+      "response_full": "The recent rainfall and sustained humidity, combined with the current high temperature of 36\u00b0C, indicate that your maize crop is at risk of heat stress during the flowering stage [K1]. Heat stress can impair pollination and reduce kernel set, potentially leading to significant yield losses if not managed. Extension guidelines recommend immediate scouting for early signs of stress, such as wilting or leaf rolling, and improving drainage to reduce waterlogging [K2]. If conditions worsen, a protective fungicide application could be necessary to guard against fungal infections [K1].\n\n```json\n{\n  \"recommendations\": [\n    {\"what\": \"Scout every row today for leaf lesions or wilting\", \"why\": \"Early detection lets you contain a fungal outbreak before it spreads across the field\", \"when_urgency\": \"immediate\", \"risk_if_ignored\": \"A single missed hot-spot can seed a field-wide outbreak within a week\", \"priority\": \"high\"},\n    {\"what\": \"Clear standing water and improve drainage between rows\", \"why\": \"Waterlogged soil under vegetative maize compounds fungal pressure and stresses roots\", \"when_urgency\": \"this_week\", \"risk_if_ignored\": \"Prolonged waterlogging weakens plants and creates persistent disease conditions\", \"priority\": \"high\"},\n    {\"what\": \"Prepare a protective fungicide application for the next dry window\", \"why\": \"Extension guidance recommends protective spraying under these humidity + rainfall conditions\", \"when_urgency\": \"this_week\", \"risk_if_ignored\": \"Without protection, an outbreak can cost a large share of the yield\", \"priority\": \"medium\"}\n  ]\n}\n```",
+      "response_narrative_preview": "The recent rainfall and sustained humidity, combined with the current high temperature of 36\u00b0C, indicate that your maize crop is at risk of heat stress during the flowering stage [K1]. Heat stress can impair pollination and reduce kernel set, potentially leading to significant yield losses if not managed. Extension guidelines recommend immediate scouting for early signs of stress, such as wilting or leaf rolling, and improving drainage to reduce waterlogging [K2]. If conditions worsen, a protect",
+      "recommendations_parsed": [
+        {
+          "what": "Scout every row today for leaf lesions or wilting",
+          "why": "Early detection lets you contain a fungal outbreak before it spreads across the field",
+          "when_urgency": "immediate",
+          "risk_if_ignored": "A single missed hot-spot can seed a field-wide outbreak within a week",
+          "priority": "high"
+        },
+        {
+          "what": "Clear standing water and improve drainage between rows",
+          "why": "Waterlogged soil under vegetative maize compounds fungal pressure and stresses roots",
+          "when_urgency": "this_week",
+          "risk_if_ignored": "Prolonged waterlogging weakens plants and creates persistent disease conditions",
+          "priority": "high"
+        },
+        {
+          "what": "Prepare a protective fungicide application for the next dry window",
+          "why": "Extension guidance recommends protective spraying under these humidity + rainfall conditions",
+          "when_urgency": "this_week",
+          "risk_if_ignored": "Without protection, an outbreak can cost a large share of the yield",
+          "priority": "medium"
+        }
+      ],
+      "cited_chunks": [
+        "[K1]",
+        "[K2]"
+      ],
+      "json_parseable": true,
+      "grade": {
+        "farm_grounding": 5,
+        "retrieval_grounding": 5,
+        "agronomic_factuality": 5,
+        "actionability": 5,
+        "structure": 5
+      }
+    },
+    {
+      "id": "g09",
+      "question": "What is the current stock price of maize on international commodity markets today?",
+      "farm_fixture_id": "Adamu's Farm",
+      "computed_stage": "vegetative",
+      "days_since_planting": 48,
+      "risk_flags_fired": [
+        "moisture_stress_dry_period"
+      ],
+      "retrieved_chunk_ids": [
+        4,
+        25,
+        27,
+        39,
+        38,
+        1
+      ],
+      "prompt_chars": 8710,
+      "prompt_tokens": 1016,
+      "gen_tokens": 600,
+      "prompt_eval_tok_s": 18.824389457052362,
+      "gen_tok_s": 5.527699171352675,
+      "prompt_ms": 53972.534,
+      "predicted_ms": 108363.35,
+      "wall_clock_s": 162.46,
+      "response_full": "# Farm state\nfarm_name: Adamu's Farm\nregion: Kaduna\narea_hectares: 2.5\nfield_name: Main Field\nsoil_type: sandy loam\ncrop: maize\nvariety: SAMMAZ 15\nplanting_date: 2026-07-05\ncurrent_stage: vegetative\ndays_since_planting: 48\nrecent_observations: []\nlatest_weather: None\n\n# Rule-based risk flags\n- [MEDIUM / this_week] moisture_stress_dry_period: No significant rainfall recorded in the last 10 days during a moisture-sensitive stage; yield loss risk if the dry period continues.\n    \u2022 No rainfall observations \u226510mm in last 10 days as of 2026-08-22\n\n# Retrieved agricultural knowledge\n[K1] (NAERLS) Maize planting calendar in Northern Nigeria\nIn Northern Nigeria, including Kaduna State, the main maize growing season aligns with the rainy season, which typically runs from May through October. Planting is usually done between late May and mid-June, once the rains have established consistently. Planting too early risks germination failure if a dry spell follows; planting too late risks the crop reaching maturity after rains stop, which can affect grain filling. For a June 12 planting date typical of the middle-belt maize regions, the vegetative stage runs approximately from early July through mid-August, flowering occurs in late August, and harvest typically falls in September or October depending on variety maturity duration. This calendar aligns most naturally with medium-duration varieties suited to the region's rainfall pattern.\n\n[K2] (NAERLS) Kaduna State agroecological profile\nKaduna State lies in the Northern Guinea Savannah agroecological zone of Nigeria. The climate is characterized by a distinct wet season (typically May through October) and a dry season (November through April), with total annual rainfall generally in the range of 900 to 1400 mm, most of it falling during the wet season. Temperatures during the growing season typically range from 22 to 32 \u00b0C. The zone supports rain-fed cultivation of a range of staple crops including maize, sorghum, millet, cowpea, and groundnut, with maize particularly important in the southern parts of the state where rainfall is higher. Soils are predominantly sandy loams to loams of moderate fertility, with organic matter content often depleted in areas of long continuous cultivation. Kaduna hosts Ahmadu Bello University, a major agricultural research institution for the region.\n\n[K3] (IITA) SAMMAZ maize varieties overview\nThe SAMMAZ series (Samaru Maize) is a family of maize varieties released by the Institute for Agricultural Research (IAR) at Ahmadu Bello University in collaboration with IITA, targeting Nigerian",
+      "response_narrative_preview": "# Farm state\nfarm_name: Adamu's Farm\nregion: Kaduna\narea_hectares: 2.5\nfield_name: Main Field\nsoil_type: sandy loam\ncrop: maize\nvariety: SAMMAZ 15\nplanting_date: 2026-07-05\ncurrent_stage: vegetative\ndays_since_planting: 48\nrecent_observations: []\nlatest_weather: None\n\n# Rule-based risk flags\n- [MEDIUM / this_week] moisture_stress_dry_period: No significant rainfall recorded in the last 10 days during a moisture-sensitive stage; yield loss risk if the dry period continues.\n    \u2022 No rainfall obser",
+      "recommendations_parsed": [],
+      "cited_chunks": [
+        "[K1]",
+        "[K2]",
+        "[K3]"
+      ],
+      "json_parseable": false,
+      "grade": {
+        "farm_grounding": 5,
+        "retrieval_grounding": 5,
+        "agronomic_factuality": 4,
+        "actionability": 1,
+        "structure": 0
+      }
+    },
+    {
+      "id": "g10",
+      "question": "When will my maize crop start flowering?",
+      "farm_fixture_id": "Fatima's Farm",
+      "computed_stage": "vegetative",
+      "days_since_planting": 43,
+      "risk_flags_fired": [
+        "moisture_stress_dry_period"
+      ],
+      "retrieved_chunk_ids": [
+        4,
+        8,
+        1,
+        3,
+        36,
+        26
+      ],
+      "prompt_chars": 8704,
+      "prompt_tokens": 1278,
+      "gen_tokens": 383,
+      "prompt_eval_tok_s": 19.158233109015608,
+      "gen_tok_s": 5.707370447397183,
+      "prompt_ms": 66707.613,
+      "predicted_ms": 66930.998,
+      "wall_clock_s": 133.75,
+      "response_full": "Based on the maize growth stages overview [K3], the vegetative stage typically lasts from about week 3 to week 8 or 9 after planting. Given that Fatima's Farm planted on June 12, the current planting date, the vegetative stage is currently running from early July through mid-August. The transition from vegetative to reproductive growth, marked by tasseling, typically occurs 55 to 65 days after planting in medium-duration varieties [K3]. Therefore, tasseling is expected to begin around late August or early September.\n\n```json\n{\n  \"recommendations\": [\n    {\"what\": \"Monitor for early signs of tasseling, such as the emergence of the male flower at the top of the plant\", \"why\": \"Timing tasseling allows for timely management of pollen viability and kernel set\", \"when_urgency\": \"this_week\", \"risk_if_ignored\": \"Delayed flowering can lead to reduced kernel set and yield\", \"priority\": \"high\"},\n    {\"what\": \"Prepare a protective fungicide application if tasseling is delayed due to moisture stress\", \"why\": \"Extension guidance recommends protective spraying to mitigate potential losses from moisture stress during tasseling\", \"when_urgency\": \"this_week\", \"risk_if_ignored\": \"Moisture stress during tasseling can reduce kernel set by 10 to 30 percent\", \"priority\": \"medium\"},\n    {\"what\": \"Maintain good soil moisture and avoid further water stress during the reproductive growth stage\", \"why\": \"Water stress during tasseling can reduce kernel set and yield, so maintaining moisture is crucial\", \"when_urgency\": \"this_week\", \"risk_if_ignored\": \"Moisture stress can set the stage for reduced kernel set and yield\", \"priority\": \"high\"}\n  ]\n}\n```",
+      "response_narrative_preview": "Based on the maize growth stages overview [K3], the vegetative stage typically lasts from about week 3 to week 8 or 9 after planting. Given that Fatima's Farm planted on June 12, the current planting date, the vegetative stage is currently running from early July through mid-August. The transition from vegetative to reproductive growth, marked by tasseling, typically occurs 55 to 65 days after planting in medium-duration varieties [K3]. Therefore, tasseling is expected to begin around late Augus",
+      "recommendations_parsed": [
+        {
+          "what": "Monitor for early signs of tasseling, such as the emergence of the male flower at the top of the plant",
+          "why": "Timing tasseling allows for timely management of pollen viability and kernel set",
+          "when_urgency": "this_week",
+          "risk_if_ignored": "Delayed flowering can lead to reduced kernel set and yield",
+          "priority": "high"
+        },
+        {
+          "what": "Prepare a protective fungicide application if tasseling is delayed due to moisture stress",
+          "why": "Extension guidance recommends protective spraying to mitigate potential losses from moisture stress during tasseling",
+          "when_urgency": "this_week",
+          "risk_if_ignored": "Moisture stress during tasseling can reduce kernel set by 10 to 30 percent",
+          "priority": "medium"
+        },
+        {
+          "what": "Maintain good soil moisture and avoid further water stress during the reproductive growth stage",
+          "why": "Water stress during tasseling can reduce kernel set and yield, so maintaining moisture is crucial",
+          "when_urgency": "this_week",
+          "risk_if_ignored": "Moisture stress can set the stage for reduced kernel set and yield",
+          "priority": "high"
+        }
+      ],
+      "cited_chunks": [
+        "[K3]"
+      ],
+      "json_parseable": true,
+      "grade": {
+        "farm_grounding": 5,
+        "retrieval_grounding": 5,
+        "agronomic_factuality": 5,
+        "actionability": 5,
+        "structure": 5
+      }
+    }
+  ]
+}

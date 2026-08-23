@@ -8,9 +8,7 @@ FarmTwin is an offline, on-device agricultural assistant for Nigerian smallholde
 
 ## Demo
 
-**Demo video:** *[YouTube link to be added after upload]*
-
-**Screenshot:** *[GIF or PNG of the dashboard + Ask panel — to be added]*
+**Demo video: https://youtu.be/j7z2c7UC6_I?si=ppMDkmQKY6wa8GFK
 
 The two-minute demo walks through: landing page → farm setup (Adamu's Farm, Kaduna, SAMMAZ 15 maize, vegetative stage) → dashboard with computed growth stage and days-since-planting → log heavy rainfall + high humidity → a rule-based fungal-risk card fires → open the Ask panel → *"What should I do this week?"* → response streams with `[K1] [K3]` citation chips and a structured WHAT/WHY/WHEN/RISK recommendation card → wifi toggled off → follow-up question runs identically.
 

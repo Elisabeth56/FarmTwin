@@ -1,4 +1,67 @@
+# FarmTwin — Africa Deep Tech Challenge 2026 Submission
 
+**An offline AI digital twin for smallholder farms.**
+
+**Tagline:** Know your farm. Predict what's next. Protect your harvest.
+
+**Submission date:** August 24, 2026
+**Target hardware:** ADTC Standard Laptop (8 GB RAM, integrated graphics, CPU inference, Ubuntu 22.04 x86-64)
+**Development hardware:** Intel MacBook Pro 2014, 8 GB RAM (deliberately weaker than target — see Limitations)
+
+---
+
+## 1. Problem
+
+Nigerian smallholder farmers face compounding losses from weather shocks, pests, disease, and gaps in agricultural extension coverage. World Bank analysis reports that partial crop losses in Nigeria rose from approximately 6% of plots in 2018/19 to more than 20% of plots in 2023/24, with weather and environmental shocks accounting for nearly two-thirds of those losses. Northeast Nigeria saw partial losses exceeding 40% of plots in the same season. Nigeria's National Agricultural Extension and Research Liaison Services (NAERLS) has reported an extension-agent-to-farmer ratio of approximately 1:6,000 as of 2021 — meaning a farmer with a specific question about their specific field this specific week has almost no realistic path to expert advice in time to act.
+
+The deeper problem is not that agricultural knowledge is missing. Weather forecasts exist. Crop guides exist. Disease identification resources exist. Extension bulletins exist. **The problem is that agricultural knowledge is fragmented and generalized, while farm decisions are local, specific, and time-sensitive.** A farmer needs to know what all of this means for *their* farm, *right now*.
+
+That decision gap is what FarmTwin addresses.
+
+## 2. Product
+
+FarmTwin creates a digital representation of an individual farm — its location, fields, crop, growth stage, observation history, weather context, active risks — and uses a local language model combined with locally-stored agricultural knowledge to produce farm-specific reasoning and actionable recommendations.
+
+The core distinction is not "AI + agriculture." It is: **a generic agricultural assistant knows about maize; FarmTwin knows about *this farmer's* maize.**
+
+Concretely, given a question like *"what should I do this week?"*, FarmTwin:
+
+1. Computes the crop's current growth stage from planting date (deterministic — not the LLM's job)
+2. Evaluates rule-based risk flags from recent observations and weather (deterministic)
+3. Retrieves 6 relevant chunks from a curated 45-chunk agricultural knowledge corpus using local embeddings and vector search
+4. Assembles a structured prompt containing farm facts + retrieved knowledge + question
+5. Runs a local 3B-parameter language model that produces a grounded narrative citing specific knowledge chunks and 2-3 prioritized recommendations in a structured schema
+
+Every step of this loop runs on the target laptop. No internet is used for inference, embedding, retrieval, or reasoning.
+
+## 3. Architecture
+
+```
+                       BROWSER (React + TypeScript)
+                              │
+                              ▼
+              FastAPI backend (Python 3.11 + SQLite)
+                              │
+     ┌────────────────────────┼────────────────────────┐
+     │                        │                        │
+     ▼                        ▼                        ▼
+  Deterministic          RAG pipeline           Local LLM
+  engines                                       (llama.cpp)
+     │                        │                        │
+     │                        ▼                        ▼
+     │            SentenceTransformer +      llama-server on
+     │            sqlite-vec (KNN)           127.0.0.1:8080
+     │                                       Qwen2.5-3B Q4_K_M
+     │
+     ▼
+  crop_calendar,
+  risk_rules,
+  context_assembler
+
+  Voice input (optional):
+  MediaRecorder → /api/transcribe → HuggingFace Whisper-small
+                                    (Nigerian-accented English)
+```
 **Component summary:**
 
 - **Frontend:** Vite + React + TypeScript. Three routes (landing, farm setup, dashboard) plus source drawer overlay. Tailwind for styling.
@@ -211,4 +274,4 @@ Starts llama-server, the FastAPI backend, and the Vite frontend. Open `http://12
 
 ---
 
-*FarmTwin was built by Elisabeth as a submission for the Africa Deep Tech Challenge 2026 — Laptop LLM Challenge.*
+*FarmTwin was built by Elisabeth Nnamani as a submission for the Africa Deep Tech Challenge 2026 — Laptop LLM Challenge.*

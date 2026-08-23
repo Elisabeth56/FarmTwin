@@ -1,7 +1,7 @@
-cat > .gitignore << 'EOF'
 # Python
 __pycache__/
 *.py[cod]
+*.pyc
 .venv/
 venv/
 *.egg-info/
@@ -9,6 +9,7 @@ venv/
 # Node
 node_modules/
 dist/
+build/
 .vite/
 
 # Models — never commit these
@@ -20,6 +21,7 @@ model/downloaded/
 *.db
 *.sqlite
 *.sqlite3
+farmtwin.db
 
 # OS
 .DS_Store
@@ -28,12 +30,12 @@ Thumbs.db
 # IDE
 .vscode/
 .idea/
+.claude/
 
 # Env
 .env
 .env.local
 
-# Build artifacts
-build/
+# Logs and backups
 *.log
-EOF
+*.bak

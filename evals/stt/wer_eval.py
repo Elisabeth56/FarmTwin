@@ -24,7 +24,6 @@ REFERENCE_FILE = CLIPS_DIR / "reference.txt"
 
 # Add backend to path so we can import whisper_client
 sys.path.insert(0, str(REPO_ROOT / "apps" / "api"))
-os.chdir(REPO_ROOT / "apps" / "api")
 
 from app.stt.whisper_client import transcribe
 

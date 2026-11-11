@@ -4,7 +4,7 @@
   "packageManager": "pnpm@10.18.0",
   "scripts": {
     "dev": "concurrently -k -n web,api -c yellow,green \"pnpm --filter @farmtwin/web dev\" \"pnpm dev:api\"",
-    "dev:api": "cd apps/api && python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload",
+    "dev:api": "cd apps/api && uv run uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload",
     "build": "pnpm --filter @farmtwin/web build",
     "lint": "pnpm --filter @farmtwin/web lint"
   },

@@ -8,10 +8,7 @@ chunks from the end if the assembled prompt would exceed ~10 000 chars.
 
 from __future__ import annotations
 
-from typing import Any
-
 from app.engines.risk_rules import format_risk_summary
-
 
 MAX_PROMPT_CHARS = 10_000
 

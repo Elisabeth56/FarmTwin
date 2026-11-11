@@ -18,7 +18,7 @@ import logging
 import re
 import time
 from datetime import date, datetime, timedelta
-from typing import Any, Optional
+from typing import Any
 
 import httpx
 from fastapi import APIRouter, Depends, HTTPException
@@ -28,10 +28,9 @@ from sqlalchemy.orm import Session
 
 from app.db import models
 from app.db.session import get_db
-from app.engines import crop_calendar, risk_rules, context_assembler
+from app.engines import context_assembler, crop_calendar, risk_rules
 from app.llm import client as llm_client
 from app.rag import retriever
-
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +56,7 @@ class AskResponse(BaseModel):
     saved_recommendation_ids: list[int]
 
 
-def _as_date(v: Any) -> Optional[date]:
+def _as_date(v: Any) -> date | None:
     if isinstance(v, datetime):
         return v.date()
     if isinstance(v, date):
@@ -114,9 +113,7 @@ def ask(payload: AskRequest, db: Session = Depends(get_db)) -> AskResponse:
         }
     else:
         try:
-            stage_result = crop_calendar.compute_growth_stage(
-                crop.crop_type, crop.planting_date, today
-            )
+            stage_result = crop_calendar.compute_growth_stage(crop.crop_type, crop.planting_date, today)
         except ValueError:
             stage_result = {
                 "stage": "unknown",
@@ -196,7 +193,9 @@ def ask(payload: AskRequest, db: Session = Depends(get_db)) -> AskResponse:
                 "humidity_pct": latest_weather["humidity_pct"] if latest_weather else None,
                 "temp_min_c": latest_weather["temp_min_c"] if latest_weather else None,
                 "temp_max_c": latest_weather["temp_max_c"] if latest_weather else None,
-            } if latest_weather else None
+            }
+            if latest_weather
+            else None
         ),
         "recent_observations": [
             {
@@ -236,7 +235,7 @@ def ask(payload: AskRequest, db: Session = Depends(get_db)) -> AskResponse:
         raise HTTPException(
             status_code=503,
             detail="Local model not available. Start llama-server first.",
-        )
+        ) from e
     t_llm_end = time.time()
 
     content = llm_client.extract_content(response)
@@ -256,18 +255,20 @@ def ask(payload: AskRequest, db: Session = Depends(get_db)) -> AskResponse:
         if 1 <= idx <= len(chunks):
             ch = chunks[idx - 1]
             cited_chunk_ids.append(ch["chunk_id"])
-            cited_chunks_meta.append({
-                "citation": f"K{idx}",
-                "chunk_id": ch["chunk_id"],
-                "source_org": ch.get("source_org"),
-                "source_title": ch.get("source_title"),
-                "chunk_title": ch.get("chunk_title"),
-                "content": ch.get("content"),
-                "region": ch.get("region"),
-                "crop": ch.get("crop"),
-                "topics": ch.get("topics"),
-                "distance": ch.get("distance"),
-            })
+            cited_chunks_meta.append(
+                {
+                    "citation": f"K{idx}",
+                    "chunk_id": ch["chunk_id"],
+                    "source_org": ch.get("source_org"),
+                    "source_title": ch.get("source_title"),
+                    "chunk_title": ch.get("chunk_title"),
+                    "content": ch.get("content"),
+                    "region": ch.get("region"),
+                    "crop": ch.get("crop"),
+                    "topics": ch.get("topics"),
+                    "distance": ch.get("distance"),
+                }
+            )
 
     # Persist recommendations.
     saved_ids: list[int] = []
@@ -309,7 +310,7 @@ def ask(payload: AskRequest, db: Session = Depends(get_db)) -> AskResponse:
     )
 
 
-def _prepare_ask_context(payload: "AskRequest", db: Session) -> dict:
+def _prepare_ask_context(payload: AskRequest, db: Session) -> dict:
     """Shared setup for /api/ask and /api/ask/stream.
 
     Returns dict with keys: farm, field, chunks, prompt, early_response.
@@ -358,9 +359,7 @@ def _prepare_ask_context(payload: "AskRequest", db: Session) -> dict:
         }
     else:
         try:
-            stage_result = crop_calendar.compute_growth_stage(
-                crop.crop_type, crop.planting_date, today
-            )
+            stage_result = crop_calendar.compute_growth_stage(crop.crop_type, crop.planting_date, today)
         except ValueError:
             stage_result = {
                 "stage": "unknown",
@@ -436,7 +435,9 @@ def _prepare_ask_context(payload: "AskRequest", db: Session) -> dict:
                 "humidity_pct": latest_weather["humidity_pct"] if latest_weather else None,
                 "temp_min_c": latest_weather["temp_min_c"] if latest_weather else None,
                 "temp_max_c": latest_weather["temp_max_c"] if latest_weather else None,
-            } if latest_weather else None
+            }
+            if latest_weather
+            else None
         ),
         "recent_observations": [
             {
@@ -482,8 +483,30 @@ def _build_cited_chunks_meta(content: str, chunks: list[dict]) -> tuple[list[int
         if 1 <= idx <= len(chunks):
             ch = chunks[idx - 1]
             cited_chunk_ids.append(ch["chunk_id"])
-            cited_chunks_meta.append({
-                "citation": f"K{idx}",
+            cited_chunks_meta.append(
+                {
+                    "citation": f"K{idx}",
+                    "chunk_id": ch["chunk_id"],
+                    "source_org": ch.get("source_org"),
+                    "source_title": ch.get("source_title"),
+                    "chunk_title": ch.get("chunk_title"),
+                    "content": ch.get("content"),
+                    "region": ch.get("region"),
+                    "crop": ch.get("crop"),
+                    "topics": ch.get("topics"),
+                    "distance": ch.get("distance"),
+                }
+            )
+    return cited_chunk_ids, cited_chunks_meta
+
+
+def _all_chunks_meta(chunks: list[dict]) -> list[dict]:
+    """Return meta for every retrieved chunk (pre-citation), used in `ready` SSE event."""
+    out: list[dict] = []
+    for i, ch in enumerate(chunks, 1):
+        out.append(
+            {
+                "citation": f"K{i}",
                 "chunk_id": ch["chunk_id"],
                 "source_org": ch.get("source_org"),
                 "source_title": ch.get("source_title"),
@@ -493,26 +516,8 @@ def _build_cited_chunks_meta(content: str, chunks: list[dict]) -> tuple[list[int
                 "crop": ch.get("crop"),
                 "topics": ch.get("topics"),
                 "distance": ch.get("distance"),
-            })
-    return cited_chunk_ids, cited_chunks_meta
-
-
-def _all_chunks_meta(chunks: list[dict]) -> list[dict]:
-    """Return meta for every retrieved chunk (pre-citation), used in `ready` SSE event."""
-    out: list[dict] = []
-    for i, ch in enumerate(chunks, 1):
-        out.append({
-            "citation": f"K{i}",
-            "chunk_id": ch["chunk_id"],
-            "source_org": ch.get("source_org"),
-            "source_title": ch.get("source_title"),
-            "chunk_title": ch.get("chunk_title"),
-            "content": ch.get("content"),
-            "region": ch.get("region"),
-            "crop": ch.get("crop"),
-            "topics": ch.get("topics"),
-            "distance": ch.get("distance"),
-        })
+            }
+        )
     return out
 
 
@@ -536,18 +541,20 @@ async def ask_stream(payload: AskRequest, db: Session = Depends(get_db)):
         # Short-circuit: no active crop.
         if early is not None:
             yield _sse({"type": "ready", "cited_chunks": []})
-            yield _sse({
-                "type": "recommendation_ready",
-                "narrative": early,
-                "recommendations": [],
-                "saved_recommendation_ids": [],
-                "model_name": MODEL_NAME,
-                "timing_ms": {
-                    "prompt_ms": 0,
-                    "generation_ms": 0,
-                    "total_ms": int((time.time() - t_total_start) * 1000),
-                },
-            })
+            yield _sse(
+                {
+                    "type": "recommendation_ready",
+                    "narrative": early,
+                    "recommendations": [],
+                    "saved_recommendation_ids": [],
+                    "model_name": MODEL_NAME,
+                    "timing_ms": {
+                        "prompt_ms": 0,
+                        "generation_ms": 0,
+                        "total_ms": int((time.time() - t_total_start) * 1000),
+                    },
+                }
+            )
             return
 
         # Emit ready with all retrieved chunks so the frontend can pre-populate
@@ -560,9 +567,7 @@ async def ask_stream(payload: AskRequest, db: Session = Depends(get_db)):
         t_llm_start = time.time()
 
         try:
-            async for event in llm_client.stream_generate(
-                prompt, n_predict=600, temperature=0.3
-            ):
+            async for event in llm_client.stream_generate(prompt, n_predict=600, temperature=0.3):
                 etype = event.get("type")
                 if etype == "token":
                     piece = event.get("content", "")
@@ -574,10 +579,12 @@ async def ask_stream(payload: AskRequest, db: Session = Depends(get_db)):
                     break
                 elif etype == "error":
                     stream_errored = True
-                    yield _sse({
-                        "type": "error",
-                        "message": event.get("message", "Unknown stream error"),
-                    })
+                    yield _sse(
+                        {
+                            "type": "error",
+                            "message": event.get("message", "Unknown stream error"),
+                        }
+                    )
                     return
         except Exception as e:  # noqa: BLE001
             logger.exception("ask_stream: generator crashed")
@@ -632,15 +639,17 @@ async def ask_stream(payload: AskRequest, db: Session = Depends(get_db)):
             "total_ms": int((time.time() - t_total_start) * 1000),
         }
 
-        yield _sse({
-            "type": "recommendation_ready",
-            "narrative": content,
-            "recommendations": recommendations,
-            "cited_chunks": cited_chunks_meta,
-            "saved_recommendation_ids": saved_ids,
-            "model_name": MODEL_NAME,
-            "timing_ms": timing_ms,
-        })
+        yield _sse(
+            {
+                "type": "recommendation_ready",
+                "narrative": content,
+                "recommendations": recommendations,
+                "cited_chunks": cited_chunks_meta,
+                "saved_recommendation_ids": saved_ids,
+                "model_name": MODEL_NAME,
+                "timing_ms": timing_ms,
+            }
+        )
 
     return StreamingResponse(
         generator(),

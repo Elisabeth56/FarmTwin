@@ -1,15 +1,9 @@
-from sqlalchemy import (
-    Column,
-    Integer,
-    String,
-    Text,
-    Float,
-    Date,
-    DateTime,
-    ForeignKey,
-    func,
-)
-from sqlalchemy.orm import relationship
+"""Database models. Typed SQLAlchemy 2.0 mappings; the table shapes match v1 exactly."""
+
+from datetime import date, datetime
+
+from sqlalchemy import Date, DateTime, Float, ForeignKey, Integer, String, Text, func
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.session import Base
 
@@ -17,117 +11,117 @@ from app.db.session import Base
 class Farm(Base):
     __tablename__ = "farms"
 
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, nullable=False)
-    region = Column(String, nullable=True)
-    latitude = Column(Float, nullable=True)
-    longitude = Column(Float, nullable=True)
-    area_hectares = Column(Float, nullable=True)
-    created_at = Column(DateTime, server_default=func.now(), nullable=False)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    name: Mapped[str] = mapped_column(String)
+    region: Mapped[str | None] = mapped_column(String)
+    latitude: Mapped[float | None] = mapped_column(Float)
+    longitude: Mapped[float | None] = mapped_column(Float)
+    area_hectares: Mapped[float | None] = mapped_column(Float)
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
-    fields = relationship("Field", back_populates="farm", cascade="all, delete-orphan")
-    weather_snapshots = relationship(
-        "WeatherSnapshot", back_populates="farm", cascade="all, delete-orphan"
+    fields: Mapped[list["Field"]] = relationship(back_populates="farm", cascade="all, delete-orphan")
+    weather_snapshots: Mapped[list["WeatherSnapshot"]] = relationship(
+        back_populates="farm", cascade="all, delete-orphan"
     )
-    recommendations = relationship(
-        "Recommendation", back_populates="farm", cascade="all, delete-orphan"
+    recommendations: Mapped[list["Recommendation"]] = relationship(
+        back_populates="farm", cascade="all, delete-orphan"
     )
 
 
 class Field(Base):
     __tablename__ = "fields"
 
-    id = Column(Integer, primary_key=True, index=True)
-    farm_id = Column(Integer, ForeignKey("farms.id"), nullable=False, index=True)
-    name = Column(String, nullable=False)
-    area_hectares = Column(Float, nullable=True)
-    soil_type = Column(String, nullable=True)
-    soil_ph_estimate = Column(Float, nullable=True)
-    notes = Column(Text, nullable=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    farm_id: Mapped[int] = mapped_column(ForeignKey("farms.id"), index=True)
+    name: Mapped[str] = mapped_column(String)
+    area_hectares: Mapped[float | None] = mapped_column(Float)
+    soil_type: Mapped[str | None] = mapped_column(String)
+    soil_ph_estimate: Mapped[float | None] = mapped_column(Float)
+    notes: Mapped[str | None] = mapped_column(Text)
 
-    farm = relationship("Farm", back_populates="fields")
-    crops = relationship("Crop", back_populates="field", cascade="all, delete-orphan")
-    observations = relationship(
-        "Observation", back_populates="field", cascade="all, delete-orphan"
+    farm: Mapped["Farm"] = relationship(back_populates="fields")
+    crops: Mapped[list["Crop"]] = relationship(back_populates="field", cascade="all, delete-orphan")
+    observations: Mapped[list["Observation"]] = relationship(
+        back_populates="field", cascade="all, delete-orphan"
     )
-    recommendations = relationship("Recommendation", back_populates="field")
+    recommendations: Mapped[list["Recommendation"]] = relationship(back_populates="field")
 
 
 class Crop(Base):
     __tablename__ = "crops"
 
-    id = Column(Integer, primary_key=True, index=True)
-    field_id = Column(Integer, ForeignKey("fields.id"), nullable=False, index=True)
-    crop_type = Column(String, nullable=False)
-    variety = Column(String, nullable=True)
-    planting_date = Column(Date, nullable=True)
-    status = Column(String, nullable=True)
-    created_at = Column(DateTime, server_default=func.now(), nullable=False)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    field_id: Mapped[int] = mapped_column(ForeignKey("fields.id"), index=True)
+    crop_type: Mapped[str] = mapped_column(String)
+    variety: Mapped[str | None] = mapped_column(String)
+    planting_date: Mapped[date | None] = mapped_column(Date)
+    status: Mapped[str | None] = mapped_column(String)
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
-    field = relationship("Field", back_populates="crops")
+    field: Mapped["Field"] = relationship(back_populates="crops")
 
 
 class Observation(Base):
     __tablename__ = "observations"
 
-    id = Column(Integer, primary_key=True, index=True)
-    field_id = Column(Integer, ForeignKey("fields.id"), nullable=False, index=True)
-    obs_type = Column(String, nullable=False)
-    value_numeric = Column(Float, nullable=True)
-    value_text = Column(Text, nullable=True)
-    unit = Column(String, nullable=True)
-    observed_at = Column(DateTime, nullable=False)
-    created_at = Column(DateTime, server_default=func.now(), nullable=False)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    field_id: Mapped[int] = mapped_column(ForeignKey("fields.id"), index=True)
+    obs_type: Mapped[str] = mapped_column(String)
+    value_numeric: Mapped[float | None] = mapped_column(Float)
+    value_text: Mapped[str | None] = mapped_column(Text)
+    unit: Mapped[str | None] = mapped_column(String)
+    observed_at: Mapped[datetime] = mapped_column(DateTime)
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
-    field = relationship("Field", back_populates="observations")
+    field: Mapped["Field"] = relationship(back_populates="observations")
 
 
 class WeatherSnapshot(Base):
     __tablename__ = "weather_snapshots"
 
-    id = Column(Integer, primary_key=True, index=True)
-    farm_id = Column(Integer, ForeignKey("farms.id"), nullable=False, index=True)
-    snapshot_date = Column(Date, nullable=False)
-    rainfall_mm = Column(Float, nullable=True)
-    temp_min_c = Column(Float, nullable=True)
-    temp_max_c = Column(Float, nullable=True)
-    humidity_pct = Column(Float, nullable=True)
-    notes = Column(Text, nullable=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    farm_id: Mapped[int] = mapped_column(ForeignKey("farms.id"), index=True)
+    snapshot_date: Mapped[date] = mapped_column(Date)
+    rainfall_mm: Mapped[float | None] = mapped_column(Float)
+    temp_min_c: Mapped[float | None] = mapped_column(Float)
+    temp_max_c: Mapped[float | None] = mapped_column(Float)
+    humidity_pct: Mapped[float | None] = mapped_column(Float)
+    notes: Mapped[str | None] = mapped_column(Text)
 
-    farm = relationship("Farm", back_populates="weather_snapshots")
+    farm: Mapped["Farm"] = relationship(back_populates="weather_snapshots")
 
 
 class Recommendation(Base):
     __tablename__ = "recommendations"
 
-    id = Column(Integer, primary_key=True, index=True)
-    farm_id = Column(Integer, ForeignKey("farms.id"), nullable=False, index=True)
-    field_id = Column(Integer, ForeignKey("fields.id"), nullable=True, index=True)
-    what = Column(Text, nullable=False)
-    why = Column(Text, nullable=True)
-    when_urgency = Column(String, nullable=True)
-    risk_if_ignored = Column(Text, nullable=True)
-    priority = Column(Integer, nullable=True)
-    cited_chunk_ids = Column(Text, nullable=True)  # JSON string
-    model_name = Column(String, nullable=True)
-    created_at = Column(DateTime, server_default=func.now(), nullable=False)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    farm_id: Mapped[int] = mapped_column(ForeignKey("farms.id"), index=True)
+    field_id: Mapped[int | None] = mapped_column(ForeignKey("fields.id"), index=True)
+    what: Mapped[str] = mapped_column(Text)
+    why: Mapped[str | None] = mapped_column(Text)
+    when_urgency: Mapped[str | None] = mapped_column(String)
+    risk_if_ignored: Mapped[str | None] = mapped_column(Text)
+    priority: Mapped[int | None] = mapped_column(Integer)
+    cited_chunk_ids: Mapped[str | None] = mapped_column(Text)  # JSON list of chunk ids
+    model_name: Mapped[str | None] = mapped_column(String)
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
-    farm = relationship("Farm", back_populates="recommendations")
-    field = relationship("Field", back_populates="recommendations")
+    farm: Mapped["Farm"] = relationship(back_populates="recommendations")
+    field: Mapped["Field | None"] = relationship(back_populates="recommendations")
 
 
 class DocumentChunk(Base):
     __tablename__ = "document_chunks"
 
-    id = Column(Integer, primary_key=True, index=True)
-    source_id = Column(String, nullable=True, index=True)
-    source_title = Column(String, nullable=True)
-    source_org = Column(String, nullable=True, index=True)
-    source_url = Column(String, nullable=True)
-    source_note = Column(Text, nullable=True)
-    region = Column(String, nullable=True, index=True)
-    crop = Column(String, nullable=True, index=True)
-    topics = Column(Text, nullable=True)  # JSON string
-    chunk_title = Column(String, nullable=True)
-    token_count = Column(Integer, nullable=True)
-    content = Column(Text, nullable=False)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    source_id: Mapped[str | None] = mapped_column(String, index=True)
+    source_title: Mapped[str | None] = mapped_column(String)
+    source_org: Mapped[str | None] = mapped_column(String, index=True)
+    source_url: Mapped[str | None] = mapped_column(String)
+    source_note: Mapped[str | None] = mapped_column(Text)
+    region: Mapped[str | None] = mapped_column(String, index=True)
+    crop: Mapped[str | None] = mapped_column(String, index=True)
+    topics: Mapped[str | None] = mapped_column(Text)  # JSON list
+    chunk_title: Mapped[str | None] = mapped_column(String)
+    token_count: Mapped[int | None] = mapped_column(Integer)
+    content: Mapped[str] = mapped_column(Text)

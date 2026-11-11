@@ -8,8 +8,6 @@ no I/O and no LLM.
 from __future__ import annotations
 
 from datetime import date, timedelta
-from typing import Optional
-
 
 MAIZE_LIFECYCLE: dict[str, tuple[str, int, int, str]] = {
     "germination": ("germination", 0, 7, "Seed absorbs water and emerges."),
@@ -46,7 +44,7 @@ LIFECYCLES: dict[str, dict[str, tuple[str, int, int, str]]] = {
 def compute_growth_stage(
     crop_type: str,
     planting_date: date,
-    today: Optional[date] = None,
+    today: date | None = None,
 ) -> dict:
     """Return current growth stage info for a crop.
 

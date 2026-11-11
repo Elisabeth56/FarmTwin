@@ -12,7 +12,6 @@ Run from repo root:
 from __future__ import annotations
 
 import json
-import os
 import struct
 import sys
 from collections import Counter
@@ -22,9 +21,6 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 BACKEND_DIR = REPO_ROOT / "apps" / "api"
 CORPUS_DIR = REPO_ROOT / "knowledge" / "corpus"
 
-# The backend's SQLAlchemy URL is `sqlite:///./farmtwin.db` (relative to CWD).
-# chdir before importing so we hit backend/farmtwin.db, matching uvicorn's CWD.
-os.chdir(BACKEND_DIR)
 sys.path.insert(0, str(BACKEND_DIR))
 
 import yaml  # noqa: E402
@@ -56,9 +52,7 @@ def parse_corpus_file(path: Path) -> list[dict]:
         if "source_id" in block or "source_title" in block:
             try:
                 candidate = yaml.safe_load(block)
-                if isinstance(candidate, dict) and (
-                    "source_id" in candidate or "source_title" in candidate
-                ):
+                if isinstance(candidate, dict) and ("source_id" in candidate or "source_title" in candidate):
                     fm = candidate
             except yaml.YAMLError:
                 fm = None

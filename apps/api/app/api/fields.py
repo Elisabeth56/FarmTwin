@@ -1,5 +1,3 @@
-from typing import Optional
-
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import Session
@@ -13,10 +11,10 @@ router = APIRouter(prefix="/api/fields", tags=["fields"])
 class FieldCreate(BaseModel):
     farm_id: int
     name: str
-    area_hectares: Optional[float] = None
-    soil_type: Optional[str] = None
-    soil_ph_estimate: Optional[float] = None
-    notes: Optional[str] = None
+    area_hectares: float | None = None
+    soil_type: str | None = None
+    soil_ph_estimate: float | None = None
+    notes: str | None = None
 
 
 class FieldRead(BaseModel):
@@ -25,16 +23,14 @@ class FieldRead(BaseModel):
     id: int
     farm_id: int
     name: str
-    area_hectares: Optional[float] = None
-    soil_type: Optional[str] = None
-    soil_ph_estimate: Optional[float] = None
-    notes: Optional[str] = None
+    area_hectares: float | None = None
+    soil_type: str | None = None
+    soil_ph_estimate: float | None = None
+    notes: str | None = None
 
 
 @router.get("", response_model=list[FieldRead])
-def list_fields(
-    farm_id: Optional[int] = Query(None), db: Session = Depends(get_db)
-):
+def list_fields(farm_id: int | None = Query(None), db: Session = Depends(get_db)):
     query = db.query(models.Field)
     if farm_id is not None:
         query = query.filter(models.Field.farm_id == farm_id)

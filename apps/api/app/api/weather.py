@@ -1,5 +1,4 @@
 from datetime import date
-from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, ConfigDict
@@ -14,11 +13,11 @@ router = APIRouter(prefix="/api/weather", tags=["weather"])
 class WeatherSnapshotCreate(BaseModel):
     farm_id: int
     snapshot_date: date
-    rainfall_mm: Optional[float] = None
-    temp_min_c: Optional[float] = None
-    temp_max_c: Optional[float] = None
-    humidity_pct: Optional[float] = None
-    notes: Optional[str] = None
+    rainfall_mm: float | None = None
+    temp_min_c: float | None = None
+    temp_max_c: float | None = None
+    humidity_pct: float | None = None
+    notes: str | None = None
 
 
 class WeatherSnapshotRead(BaseModel):
@@ -27,17 +26,15 @@ class WeatherSnapshotRead(BaseModel):
     id: int
     farm_id: int
     snapshot_date: date
-    rainfall_mm: Optional[float] = None
-    temp_min_c: Optional[float] = None
-    temp_max_c: Optional[float] = None
-    humidity_pct: Optional[float] = None
-    notes: Optional[str] = None
+    rainfall_mm: float | None = None
+    temp_min_c: float | None = None
+    temp_max_c: float | None = None
+    humidity_pct: float | None = None
+    notes: str | None = None
 
 
 @router.get("", response_model=list[WeatherSnapshotRead])
-def list_weather(
-    farm_id: Optional[int] = Query(None), db: Session = Depends(get_db)
-):
+def list_weather(farm_id: int | None = Query(None), db: Session = Depends(get_db)):
     query = db.query(models.WeatherSnapshot)
     if farm_id is not None:
         query = query.filter(models.WeatherSnapshot.farm_id == farm_id)
@@ -46,11 +43,7 @@ def list_weather(
 
 @router.get("/{snapshot_id}", response_model=WeatherSnapshotRead)
 def get_weather(snapshot_id: int, db: Session = Depends(get_db)):
-    snap = (
-        db.query(models.WeatherSnapshot)
-        .filter(models.WeatherSnapshot.id == snapshot_id)
-        .first()
-    )
+    snap = db.query(models.WeatherSnapshot).filter(models.WeatherSnapshot.id == snapshot_id).first()
     if not snap:
         raise HTTPException(404, "not found")
     return snap

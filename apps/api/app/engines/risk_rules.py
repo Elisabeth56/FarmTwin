@@ -8,9 +8,8 @@ and cite the specific values that triggered them.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import date, datetime, timedelta
-from typing import Any, Literal, Optional
-
+from datetime import date, datetime
+from typing import Literal
 
 Severity = Literal["low", "medium", "high"]
 TimeSensitivity = Literal["immediate", "this_week", "monitor"]
@@ -25,7 +24,7 @@ class RiskFlag:
     supporting_facts: list[str] = field(default_factory=list)
 
 
-def _obs_date(obs: dict) -> Optional[date]:
+def _obs_date(obs: dict) -> date | None:
     v = obs.get("observed_at")
     if isinstance(v, datetime):
         return v.date()
@@ -48,8 +47,8 @@ def evaluate_risks(
     crop_type: str,
     growth_stage: str,
     recent_observations: list[dict],
-    latest_weather: Optional[dict],
-    today: Optional[date] = None,
+    latest_weather: dict | None,
+    today: date | None = None,
 ) -> list[RiskFlag]:
     """Run all rules and return the flags that fired.
 
@@ -81,12 +80,8 @@ def evaluate_risks(
     weather_humidity = float(weather.get("humidity_pct") or 0)
     weather_date = weather.get("snapshot_date")
 
-    rule1_fires = crop == "maize" and stage == "vegetative" and (
-        heavy_rain_obs or weather_rain >= 50
-    )
-    rule2_fires = crop == "maize" and stage in {"vegetative", "flowering"} and (
-        weather_humidity >= 80
-    )
+    rule1_fires = crop == "maize" and stage == "vegetative" and (heavy_rain_obs or weather_rain >= 50)
+    rule2_fires = crop == "maize" and stage in {"vegetative", "flowering"} and (weather_humidity >= 80)
 
     # Rule 1: heavy recent rainfall on vegetative maize.
     if rule1_fires:
@@ -98,9 +93,7 @@ def evaluate_risks(
                 f"{o.get('value_numeric')}{o.get('unit') or 'mm'}"
             )
         if weather_rain >= 50:
-            facts.append(
-                f"Latest weather ({weather_date}): {weather_rain}mm rainfall"
-            )
+            facts.append(f"Latest weather ({weather_date}): {weather_rain}mm rainfall")
         flags.append(
             RiskFlag(
                 name="heavy_rainfall_fungal_risk",
@@ -116,9 +109,7 @@ def evaluate_risks(
 
     # Rule 2: sustained high humidity on vegetative/flowering maize.
     if rule2_fires:
-        facts = [
-            f"Latest weather ({weather_date}): humidity {weather_humidity}%"
-        ]
+        facts = [f"Latest weather ({weather_date}): humidity {weather_humidity}%"]
         flags.append(
             RiskFlag(
                 name="high_humidity_foliar_pressure",
@@ -142,12 +133,8 @@ def evaluate_risks(
                 f"{o.get('value_numeric')}{o.get('unit') or 'mm'}"
             )
         if weather_rain >= 50:
-            combined_facts.append(
-                f"Latest weather rainfall: {weather_rain}mm on {weather_date}"
-            )
-        combined_facts.append(
-            f"Latest weather humidity: {weather_humidity}% on {weather_date}"
-        )
+            combined_facts.append(f"Latest weather rainfall: {weather_rain}mm on {weather_date}")
+        combined_facts.append(f"Latest weather humidity: {weather_humidity}% on {weather_date}")
         flags.append(
             RiskFlag(
                 name="combined_rain_humidity_outbreak_risk",
@@ -201,18 +188,13 @@ def evaluate_risks(
             )
 
     # Rule 5: pest observation in last 7 days.
-    pest_obs = [
-        o for o in obs_list
-        if o.get("obs_type") == "pest" and _within_days(o, 7, today)
-    ]
+    pest_obs = [o for o in obs_list if o.get("obs_type") == "pest" and _within_days(o, 7, today)]
     if pest_obs:
         facts = []
         for o in pest_obs:
             d = _obs_date(o)
             note = o.get("value_text") or ""
-            facts.append(
-                f"Pest report on {d.isoformat() if d else '?'}: {note}".strip()
-            )
+            facts.append(f"Pest report on {d.isoformat() if d else '?'}: {note}".strip())
         flags.append(
             RiskFlag(
                 name="active_pest_pressure",
@@ -224,18 +206,13 @@ def evaluate_risks(
         )
 
     # Rule 6: disease observation in last 7 days.
-    disease_obs = [
-        o for o in obs_list
-        if o.get("obs_type") == "disease" and _within_days(o, 7, today)
-    ]
+    disease_obs = [o for o in obs_list if o.get("obs_type") == "disease" and _within_days(o, 7, today)]
     if disease_obs:
         facts = []
         for o in disease_obs:
             d = _obs_date(o)
             note = o.get("value_text") or ""
-            facts.append(
-                f"Disease report on {d.isoformat() if d else '?'}: {note}".strip()
-            )
+            facts.append(f"Disease report on {d.isoformat() if d else '?'}: {note}".strip())
         flags.append(
             RiskFlag(
                 name="active_disease_pressure",
@@ -259,9 +236,7 @@ def evaluate_risks(
                         "pollination and reduce grain set."
                     ),
                     time_sensitivity="this_week",
-                    supporting_facts=[
-                        f"Latest weather ({weather_date}): max temp {t_max}°C"
-                    ],
+                    supporting_facts=[f"Latest weather ({weather_date}): max temp {t_max}°C"],
                 )
             )
 
@@ -274,9 +249,7 @@ def format_risk_summary(flags: list[RiskFlag]) -> str:
         return "No rule-based risks fired for the current farm state."
     lines: list[str] = []
     for f in flags:
-        lines.append(
-            f"- [{f.severity.upper()} / {f.time_sensitivity}] {f.name}: {f.reason}"
-        )
+        lines.append(f"- [{f.severity.upper()} / {f.time_sensitivity}] {f.name}: {f.reason}")
         for fact in f.supporting_facts:
             lines.append(f"    • {fact}")
     return "\n".join(lines)

@@ -1,10 +1,7 @@
 """HuggingFace Whisper client — Nigerian-accented English fine-tune.
 
-Replaces the previous whisper.cpp subprocess wrapper (preserved as
-`whisper_cli_client.py`). Loads `rishabbahal/whisper-small-nigerian-accent`
-once at import time and reuses it for every request.
-
-Signature matches the old client so `app/api/transcribe.py` needs no changes.
+Loads the configured Whisper model once, on first import, and reuses it for every request.
+Imported lazily by the transcribe endpoint so the API starts without the voice extras.
 """
 
 from __future__ import annotations
@@ -18,18 +15,20 @@ import soundfile as sf
 import torch
 from transformers import WhisperForConditionalGeneration, WhisperProcessor
 
+from app.config import get_settings
 
 logger = logging.getLogger(__name__)
 
-MODEL_ID = "rishabbahal/whisper-small-nigerian-accent"
+
+MODEL_ID = get_settings().whisper_model
 SAMPLE_RATE = 16000
 
-print("[whisper_hf] Loading model...", flush=True)
+logger.info("loading whisper model %s", MODEL_ID)
 _processor = WhisperProcessor.from_pretrained(MODEL_ID)
 _model = WhisperForConditionalGeneration.from_pretrained(MODEL_ID)
 _model.eval()
 _param_count_m = sum(p.numel() for p in _model.parameters()) / 1_000_000
-print(f"[whisper_hf] Ready ({_param_count_m:.1f}M params)", flush=True)
+logger.info("whisper ready (%.1fM params)", _param_count_m)
 
 
 def transcribe(audio_path: str, language: str = "en") -> dict:
@@ -39,9 +38,7 @@ def transcribe(audio_path: str, language: str = "en") -> dict:
     Raises RuntimeError on any failure.
     """
     if language != "en":
-        logger.warning(
-            "whisper_hf: language=%r ignored; this model is English-only", language
-        )
+        logger.warning("whisper_hf: language=%r ignored; this model is English-only", language)
 
     if not Path(audio_path).exists():
         raise RuntimeError(f"audio file not found: {audio_path}")
@@ -55,10 +52,7 @@ def transcribe(audio_path: str, language: str = "en") -> dict:
         raise RuntimeError(f"failed to read audio {audio_path}: {e}") from e
 
     if sr != SAMPLE_RATE:
-        raise RuntimeError(
-            f"expected {SAMPLE_RATE}Hz audio, got {sr}Hz "
-            "(upstream ffmpeg should resample)"
-        )
+        raise RuntimeError(f"expected {SAMPLE_RATE}Hz audio, got {sr}Hz " "(upstream ffmpeg should resample)")
 
     if audio.ndim > 1:
         audio = audio.mean(axis=1)

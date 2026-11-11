@@ -1,15 +1,15 @@
 from sqlalchemy import create_engine, event
-from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 try:
     import sqlite_vec
 except ImportError:
     sqlite_vec = None
 
-SQLALCHEMY_DATABASE_URL = "sqlite:///./farmtwin.db"
+from app.config import get_settings
 
 engine = create_engine(
-    SQLALCHEMY_DATABASE_URL,
+    get_settings().database_url,
     connect_args={"check_same_thread": False},
 )
 
@@ -28,7 +28,10 @@ def _load_sqlite_vec(dbapi_connection, connection_record):
 
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-Base = declarative_base()
+
+
+class Base(DeclarativeBase):
+    pass
 
 
 def get_db():

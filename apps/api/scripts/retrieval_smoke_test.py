@@ -9,7 +9,6 @@ their metadata. Run from repo root:
 
 from __future__ import annotations
 
-import os
 import struct
 import sys
 from pathlib import Path
@@ -17,7 +16,6 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[3]
 BACKEND_DIR = REPO_ROOT / "apps" / "api"
 
-os.chdir(BACKEND_DIR)
 sys.path.insert(0, str(BACKEND_DIR))
 
 from sentence_transformers import SentenceTransformer  # noqa: E402
@@ -35,7 +33,7 @@ def vec_to_blob(vec) -> bytes:
 
 def main(argv: list[str]) -> int:
     if len(argv) < 2:
-        print("Usage: python3.11 scripts/retrieval_smoke_test.py \"your query\"", file=sys.stderr)
+        print('Usage: python3.11 scripts/retrieval_smoke_test.py "your query"', file=sys.stderr)
         return 2
     query = " ".join(argv[1:])
 
@@ -69,10 +67,7 @@ def main(argv: list[str]) -> int:
                 print(f"{rank}. [chunk_id={chunk_id} MISSING] distance={distance:.4f}")
                 continue
             snippet = (row.content or "").replace("\n", " ").strip()[:150]
-            print(
-                f"{rank}. distance={distance:.4f} | org={row.source_org} | "
-                f"title={row.chunk_title}"
-            )
+            print(f"{rank}. distance={distance:.4f} | org={row.source_org} | " f"title={row.chunk_title}")
             print(f"     {snippet}")
     finally:
         session.close()

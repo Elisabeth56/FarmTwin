@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Literal, Optional
+from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, ConfigDict
@@ -16,9 +16,9 @@ ObsType = Literal["rainfall", "humidity", "temperature", "pest", "disease", "not
 class ObservationCreate(BaseModel):
     field_id: int
     obs_type: ObsType
-    value_numeric: Optional[float] = None
-    value_text: Optional[str] = None
-    unit: Optional[str] = None
+    value_numeric: float | None = None
+    value_text: str | None = None
+    unit: str | None = None
     observed_at: datetime
 
 
@@ -28,17 +28,15 @@ class ObservationRead(BaseModel):
     id: int
     field_id: int
     obs_type: str
-    value_numeric: Optional[float] = None
-    value_text: Optional[str] = None
-    unit: Optional[str] = None
+    value_numeric: float | None = None
+    value_text: str | None = None
+    unit: str | None = None
     observed_at: datetime
     created_at: datetime
 
 
 @router.get("", response_model=list[ObservationRead])
-def list_observations(
-    farm_id: Optional[int] = Query(None), db: Session = Depends(get_db)
-):
+def list_observations(farm_id: int | None = Query(None), db: Session = Depends(get_db)):
     query = db.query(models.Observation)
     if farm_id is not None:
         query = query.join(models.Field).filter(models.Field.farm_id == farm_id)
@@ -47,11 +45,7 @@ def list_observations(
 
 @router.get("/{observation_id}", response_model=ObservationRead)
 def get_observation(observation_id: int, db: Session = Depends(get_db)):
-    obs = (
-        db.query(models.Observation)
-        .filter(models.Observation.id == observation_id)
-        .first()
-    )
+    obs = db.query(models.Observation).filter(models.Observation.id == observation_id).first()
     if not obs:
         raise HTTPException(404, "not found")
     return obs

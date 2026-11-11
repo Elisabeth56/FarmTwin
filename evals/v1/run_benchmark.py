@@ -33,10 +33,8 @@ from typing import Any, Optional
 REPO_ROOT = Path(__file__).resolve().parents[2]
 BACKEND_DIR = REPO_ROOT / "apps" / "api"
 
-# Import backend engines from the backend/ package root. The retriever expects
-# to open farmtwin.db by its relative path, so we also chdir there.
+# Import the api package; the database path comes from app.config.
 sys.path.insert(0, str(BACKEND_DIR))
-os.chdir(BACKEND_DIR)
 
 from app.engines.context_assembler import assemble_prompt  # noqa: E402
 from app.engines.crop_calendar import compute_growth_stage  # noqa: E402

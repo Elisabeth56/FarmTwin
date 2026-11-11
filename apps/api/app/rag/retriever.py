@@ -8,20 +8,30 @@
 from __future__ import annotations
 
 import json
+import logging
 import struct
-from typing import Any, Iterable, Optional
+from collections.abc import Iterable
 
-from sentence_transformers import SentenceTransformer
 from sqlalchemy.orm import Session
 
+from app.config import get_settings
 from app.db.session import SessionLocal
 
+logger = logging.getLogger(__name__)
 
-_EMBEDDER_MODEL_NAME = "all-MiniLM-L6-v2"
+_embedder = None
 
-print(f"[retriever] Loading embedder {_EMBEDDER_MODEL_NAME} (one-time)...")
-_EMBEDDER = SentenceTransformer(_EMBEDDER_MODEL_NAME)
-print(f"[retriever] Embedder ready, dim={_EMBEDDER.get_sentence_embedding_dimension()}")
+
+def get_embedder():
+    """Loads the embedder on first use so the API starts without the ml extras."""
+    global _embedder
+    if _embedder is None:
+        from sentence_transformers import SentenceTransformer  # pyright: ignore[reportMissingImports]
+
+        name = get_settings().embedder_model
+        logger.info("loading embedder %s", name)
+        _embedder = SentenceTransformer(name)
+    return _embedder
 
 
 def _vec_to_blob(vec: Iterable[float]) -> bytes:
@@ -45,13 +55,15 @@ def build_query(
     risk_str = " ".join(risk_names[:3])
 
     q = " ".join(
-        p for p in [
+        p
+        for p in [
             crop_type or "",
             growth_stage or "",
             region or "",
             risk_str,
             user_question or "",
-        ] if p
+        ]
+        if p
     )
     words = q.split()
     if len(words) > 40:
@@ -62,7 +74,7 @@ def build_query(
 def retrieve_chunks(
     query: str,
     top_k: int = 6,
-    db_session: Optional[Session] = None,
+    db_session: Session | None = None,
 ) -> list[dict]:
     """Embed the query and return top-k matching chunks with metadata.
 
@@ -76,7 +88,7 @@ def retrieve_chunks(
     owns_session = db_session is None
     session = db_session or SessionLocal()
     try:
-        qvec = _EMBEDDER.encode(query, normalize_embeddings=True).tolist()
+        qvec = get_embedder().encode(query, normalize_embeddings=True).tolist()
         blob = _vec_to_blob(qvec)
 
         dbapi_conn = session.connection().connection
@@ -107,17 +119,19 @@ def retrieve_chunks(
                 topics = json.loads(topics_raw) if topics_raw else []
             except (TypeError, ValueError):
                 topics = []
-            results.append({
-                "chunk_id": row[0],
-                "source_org": row[1],
-                "source_title": row[2],
-                "chunk_title": row[3],
-                "content": row[4],
-                "region": row[5],
-                "crop": row[6],
-                "topics": topics,
-                "distance": row[8],
-            })
+            results.append(
+                {
+                    "chunk_id": row[0],
+                    "source_org": row[1],
+                    "source_title": row[2],
+                    "chunk_title": row[3],
+                    "content": row[4],
+                    "region": row[5],
+                    "crop": row[6],
+                    "topics": topics,
+                    "distance": row[8],
+                }
+            )
         return results
     finally:
         if owns_session:

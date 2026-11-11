@@ -1,5 +1,4 @@
 from datetime import date, datetime
-from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, ConfigDict
@@ -14,9 +13,9 @@ router = APIRouter(prefix="/api/crops", tags=["crops"])
 class CropCreate(BaseModel):
     field_id: int
     crop_type: str
-    variety: Optional[str] = None
-    planting_date: Optional[date] = None
-    status: Optional[str] = None
+    variety: str | None = None
+    planting_date: date | None = None
+    status: str | None = None
 
 
 class CropRead(BaseModel):
@@ -25,16 +24,14 @@ class CropRead(BaseModel):
     id: int
     field_id: int
     crop_type: str
-    variety: Optional[str] = None
-    planting_date: Optional[date] = None
-    status: Optional[str] = None
+    variety: str | None = None
+    planting_date: date | None = None
+    status: str | None = None
     created_at: datetime
 
 
 @router.get("", response_model=list[CropRead])
-def list_crops(
-    farm_id: Optional[int] = Query(None), db: Session = Depends(get_db)
-):
+def list_crops(farm_id: int | None = Query(None), db: Session = Depends(get_db)):
     query = db.query(models.Crop)
     if farm_id is not None:
         query = query.join(models.Field).filter(models.Field.farm_id == farm_id)

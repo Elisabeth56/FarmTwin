@@ -15,7 +15,6 @@ import os
 import sys
 from pathlib import Path
 
-
 REPO_ROOT = Path(__file__).resolve().parents[3]
 SAMPLE_WAV = Path.home() / "dev/tools/whisper.cpp/samples/jfk.wav"
 BACKEND_URL = os.environ.get("FARMTWIN_BACKEND_URL", "http://127.0.0.1:8000")

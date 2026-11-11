@@ -19,13 +19,9 @@ import time
 
 import httpx
 
-
 BACKEND_URL = "http://127.0.0.1:8000/api/ask/stream"
 FARM_ID = 1
-QUESTION = (
-    "Heavy rainfall and high humidity in the last 48 hours. "
-    "What should this farmer do this week?"
-)
+QUESTION = "Heavy rainfall and high humidity in the last 48 hours. " "What should this farmer do this week?"
 
 
 def main() -> int:

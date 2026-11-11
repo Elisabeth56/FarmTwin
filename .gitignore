@@ -39,3 +39,7 @@ Thumbs.db
 # Logs and backups
 *.log
 *.bak
+
+# api local data
+apps/api/.data/
+.env

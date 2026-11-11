@@ -9,18 +9,19 @@ from __future__ import annotations
 
 import json
 import logging
-import os
 import re
-from typing import Any, AsyncGenerator, Optional
+from collections.abc import AsyncGenerator
+from typing import Any
 
 import httpx
 
+from app.config import get_settings
 
 logger = logging.getLogger(__name__)
 
 
-LLAMA_URL = os.environ.get("FARMTWIN_LLAMA_URL", "http://127.0.0.1:8080/completion")
-LLAMA_HEALTH_URL = LLAMA_URL.rsplit("/", 1)[0] + "/health"
+LLAMA_URL = get_settings().llama_url.rstrip("/") + "/completion"
+LLAMA_HEALTH_URL = get_settings().llama_url.rstrip("/") + "/health"
 
 _JSON_FENCE_RE = re.compile(r"```json\s*(.*?)```", re.DOTALL | re.IGNORECASE)
 
@@ -29,7 +30,7 @@ def generate(
     prompt: str,
     n_predict: int = 600,
     temperature: float = 0.3,
-    stop: Optional[list[str]] = None,
+    stop: list[str] | None = None,
 ) -> dict:
     """POST to llama-server /completion; return the full JSON response dict.
 
@@ -51,7 +52,7 @@ def extract_content(response: dict) -> str:
     return response.get("content", "") or ""
 
 
-def extract_json_block(content: str) -> Optional[dict]:
+def extract_json_block(content: str) -> dict | None:
     """Return the LAST fenced ```json ... ``` block as a parsed dict.
 
     Returns None if no block is found or parsing fails.
@@ -75,7 +76,7 @@ async def stream_generate(
     prompt: str,
     n_predict: int = 600,
     temperature: float = 0.3,
-    stop: Optional[list[str]] = None,
+    stop: list[str] | None = None,
 ) -> AsyncGenerator[dict, None]:
     """Stream tokens from llama-server.
 
@@ -114,7 +115,7 @@ async def stream_generate(
                     line = raw_line.strip()
                     if not line.startswith("data:"):
                         continue
-                    data_str = line[len("data:"):].strip()
+                    data_str = line[len("data:") :].strip()
                     if not data_str:
                         continue
                     try:

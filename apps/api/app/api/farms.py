@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, ConfigDict
@@ -13,10 +12,10 @@ router = APIRouter(prefix="/api/farms", tags=["farms"])
 
 class FarmCreate(BaseModel):
     name: str
-    region: Optional[str] = None
-    latitude: Optional[float] = None
-    longitude: Optional[float] = None
-    area_hectares: Optional[float] = None
+    region: str | None = None
+    latitude: float | None = None
+    longitude: float | None = None
+    area_hectares: float | None = None
 
 
 class FarmRead(BaseModel):
@@ -24,10 +23,10 @@ class FarmRead(BaseModel):
 
     id: int
     name: str
-    region: Optional[str] = None
-    latitude: Optional[float] = None
-    longitude: Optional[float] = None
-    area_hectares: Optional[float] = None
+    region: str | None = None
+    latitude: float | None = None
+    longitude: float | None = None
+    area_hectares: float | None = None
     created_at: datetime
 
 

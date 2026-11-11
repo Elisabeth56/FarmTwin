@@ -4,14 +4,14 @@ Run from inside the `apps/api/` directory (or `pnpm dev` from the repo root):
 
     uvicorn app.main:app --reload --port 8000
 
-This creates `farmtwin.db` next to the process CWD and serves the API on
-http://127.0.0.1:8000. Health check: GET /api/health.
+The database lives in the FarmTwin data folder (see app/config.py). Health check: GET /api/health.
 """
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api import ask, crops, farms, fields, observations, transcribe, weather
+from app.config import get_settings
 from app.db import models  # noqa: F401  (ensure models are registered on Base)
 from app.db.session import Base, engine
 
@@ -19,7 +19,7 @@ app = FastAPI(title="FarmTwin API", version="0.1.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=get_settings().cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

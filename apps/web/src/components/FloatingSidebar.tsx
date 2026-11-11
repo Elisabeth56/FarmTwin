@@ -1,8 +1,9 @@
 import type { ReactNode } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import Logo from "./Logo";
 
-export type SidebarItem = { to: string; label: string; end?: boolean };
+/** `also` lists other path prefixes that belong to the item, e.g. a farm's pages under Farms */
+export type SidebarItem = { to: string; label: string; end?: boolean; also?: string[] };
 
 type FloatingSidebarProps = {
   items: SidebarItem[];
@@ -11,6 +12,7 @@ type FloatingSidebarProps = {
 
 /** The app's floating rail: logo, sections, and a footer slot (model status). Top bar on phones. */
 export default function FloatingSidebar({ items, footer }: FloatingSidebarProps) {
+  const { pathname } = useLocation();
   return (
     <nav
       aria-label="Main"
@@ -27,7 +29,7 @@ export default function FloatingSidebar({ items, footer }: FloatingSidebarProps)
               end={item.end}
               className={({ isActive }) =>
                 `flex min-h-11 items-center rounded-pill px-4 text-small whitespace-nowrap transition duration-150 ease-ui ${
-                  isActive ? "bg-brand-tint text-ink" : "text-ink-muted hover:bg-ink/5 hover:text-ink"
+                  isActive || item.also?.some((p) => pathname.startsWith(p)) ? "bg-brand-tint text-ink" : "text-ink-muted hover:bg-ink/5 hover:text-ink"
                 }`
               }
             >

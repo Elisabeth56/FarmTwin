@@ -10,8 +10,10 @@ from app.db import models
 from app.db.lookup import farm_or_404
 from app.db.session import get_db
 from app.engines.crop_calendar import compute_growth_stage
+from app.features.farms.dashboard import dashboard
 from app.features.farms.sample import create_sample_farm
 from app.features.farms.schemas import (
+    FarmDashboard,
     FarmIn,
     FarmOut,
     FarmOverview,
@@ -70,6 +72,12 @@ def delete_farm(farm_id: int, db: Session = Depends(get_db)):
     db.delete(farm_or_404(db, farm_id))
     db.commit()
     return Response(status_code=204)
+
+
+@router.get("/{farm_id}/dashboard", response_model=FarmDashboard)
+def farm_dashboard(farm_id: int, db: Session = Depends(get_db)):
+    """Fields with stage progress, 14 days of rainfall, current risks and the latest logs."""
+    return dashboard(db, farm_id)
 
 
 @router.get("/{farm_id}/overview", response_model=FarmOverview)

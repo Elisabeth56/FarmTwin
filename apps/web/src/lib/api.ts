@@ -438,3 +438,52 @@ export async function askQuestion(req: AskRequest): Promise<AskResponse> {
     throw new Error("Ask failed: unknown error");
   }
 }
+
+// ---------- Farm screen ----------
+
+export type PlantingProgress = {
+  id: number;
+  crop: string;
+  variety: string | null;
+  stage: string;
+  day: number | null;
+  cycle_days: number;
+  progress: number | null;
+  harvest_start: string | null;
+  harvest_end: string | null;
+};
+
+export type FieldState = {
+  id: number;
+  name: string;
+  area_hectares: number | null;
+  soil_type: string | null;
+  plantings: PlantingProgress[];
+};
+
+export type LogEntry = {
+  id: number;
+  field: string;
+  obs_type: ObsType;
+  value_numeric: number | null;
+  value_text: string | null;
+  unit: string | null;
+  observed_at: string;
+};
+
+export type FarmDashboardData = {
+  farm: Farm;
+  fields: FieldState[];
+  rainfall: { day: string; mm: number | null }[];
+  risks: Risk[];
+  recent_logs: LogEntry[];
+};
+
+export function getFarmDashboard(id: number): Promise<FarmDashboardData> {
+  return fetchAPI<FarmDashboardData>(`/farms/${id}/dashboard`);
+}
+
+export async function deleteObservation(id: number): Promise<void> {
+  const res = await fetch(`${BASE_URL}/observations/${id}`, { method: "DELETE" });
+  if (!res.ok) throw new Error(await errorMessage(res));
+}

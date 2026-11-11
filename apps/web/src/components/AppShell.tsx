@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import FloatingSidebar from "./FloatingSidebar";
 
-const ITEMS = [{ to: "/", label: "Farms", end: true }];
+const ITEMS = [{ to: "/", label: "Farms", end: true, also: ["/farm/", "/setup"] }];
 
 /** Floating sidebar plus the page. Every in-app screen sits inside this. */
 export default function AppShell({ children }: { children: ReactNode }) {

@@ -116,3 +116,25 @@ def test_plots_split_a_field_between_its_plantings(client):
     summary = next(f for f in client.get("/api/farms/summary").json() if f["id"] == farm["id"])
     assert [p["share"] for p in summary["plots"]] == [0.5, 0.5]
     assert summary["last_logged_at"] is None
+
+
+def test_dashboard_has_progress_rainfall_risks_and_logs(client):
+    farm_id = client.post("/api/farms/sample").json()["id"]
+    body = client.get(f"/api/farms/{farm_id}/dashboard").json()
+    maize = next(p for f in body["fields"] for p in f["plantings"] if p["crop"] == "maize")
+    assert maize["stage"] == "vegetative" and maize["day"] == 38
+    assert 0 < maize["progress"] < 1
+    assert len(body["rainfall"]) == 14
+    assert body["rainfall"][-3]["mm"] == 62  # logged two days ago
+    assert body["rainfall"][-2]["mm"] == 12  # yesterday's weather snapshot fills the gap
+    assert body["risks"][0]["severity"] == "high"
+    assert body["recent_logs"][0]["obs_type"] == "pest"
+
+
+def test_undoing_a_log_clears_the_risk_it_raised(client):
+    farm_id = client.post("/api/farms/sample").json()["id"]
+    body = client.get(f"/api/farms/{farm_id}/dashboard").json()
+    pest_log = next(log for log in body["recent_logs"] if log["obs_type"] == "pest")
+    assert client.delete(f"/api/observations/{pest_log['id']}").status_code == 204
+    titles = {r["title"] for r in client.get(f"/api/farms/{farm_id}/dashboard").json()["risks"]}
+    assert "Pests at flowering or podding" not in titles

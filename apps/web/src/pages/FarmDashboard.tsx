@@ -1,552 +1,159 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import AppShell from "../components/AppShell";
 import AskPanel from "../components/AskPanel";
 import Button from "../components/Button";
-import Card from "../components/Card";
-import LogObservationModal from "../components/LogObservationModal";
-import LogWeatherModal from "../components/LogWeatherModal";
+import FieldCard from "../components/FieldCard";
+import LogSheet from "../components/LogSheet";
+import RainChart from "../components/RainChart";
 import RecommendationsPanel from "../components/RecommendationsPanel";
-import RisksPanel from "../components/RisksPanel";
+import RiskList from "../components/RiskList";
 import SourceDrawer from "../components/SourceDrawer";
 import {
-  getCrops,
-  getFarm,
-  getFields,
-  getObservations,
-  getWeather,
+  deleteObservation,
+  getFarmDashboard,
   type CitedChunk,
-  type Crop,
-  type Farm,
-  type Field,
+  type FarmDashboardData,
   type Observation,
   type Recommendation,
-  type WeatherSnapshot,
 } from "../lib/api";
 
-type LoadState =
-  | { kind: "loading" }
-  | { kind: "error"; message: string }
-  | {
-      kind: "ready";
-      farm: Farm;
-      fields: Field[];
-      crops: Crop[];
-      observations: Observation[];
-      weather: WeatherSnapshot[];
-    };
+type Load = { state: "loading" } | { state: "error"; message: string } | { state: "ready"; data: FarmDashboardData };
+type Undo = { obs: Observation; label: string };
 
-const STAGES = [
-  "germination",
-  "seedling",
-  "vegetative",
-  "flowering",
-  "grain_filling",
-  "maturity",
-] as const;
-type Stage = (typeof STAGES)[number];
-
-const STAGE_LABELS: Record<Stage, string> = {
-  germination: "Germination",
-  seedling: "Seedling",
-  vegetative: "Vegetative",
-  flowering: "Flowering",
-  grain_filling: "Grain fill",
-  maturity: "Maturity",
-};
-
-function estimateStage(cropType: string, daysSincePlanting: number): Stage {
-  const t = cropType.toLowerCase();
-  if (t === "maize") {
-    if (daysSincePlanting < 7) return "germination";
-    if (daysSincePlanting < 21) return "seedling";
-    if (daysSincePlanting < 60) return "vegetative";
-    if (daysSincePlanting < 75) return "flowering";
-    if (daysSincePlanting < 105) return "grain_filling";
-    return "maturity";
-  }
-  if (t === "rice") {
-    if (daysSincePlanting < 10) return "germination";
-    if (daysSincePlanting < 30) return "seedling";
-    if (daysSincePlanting < 65) return "vegetative";
-    if (daysSincePlanting < 85) return "flowering";
-    if (daysSincePlanting < 110) return "grain_filling";
-    return "maturity";
-  }
-  if (daysSincePlanting < 14) return "germination";
-  if (daysSincePlanting < 45) return "seedling";
-  if (daysSincePlanting < 120) return "vegetative";
-  if (daysSincePlanting < 180) return "flowering";
-  if (daysSincePlanting < 240) return "grain_filling";
-  return "maturity";
-}
-
-function daysBetween(fromISO: string, to: Date = new Date()): number {
-  const from = new Date(fromISO);
-  const ms = to.getTime() - from.getTime();
-  return Math.max(0, Math.floor(ms / (1000 * 60 * 60 * 24)));
-}
-
-function shortDate(iso: string): string {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleDateString(undefined, {
-    month: "short",
-    day: "numeric",
-  });
-}
-
-function obsPillClasses(obsType: string): string {
-  switch (obsType) {
-    case "pest":
-    case "disease":
-      return "bg-risk-high/10 text-risk-high";
-    case "note":
-      return "bg-brand-tint text-ink";
-    default:
-      // weather readings stay neutral; colour is reserved for crops and risk
-      return "bg-ink/5 text-ink-muted";
-  }
-}
-
-function obsValue(o: Observation): string {
-  if (o.value_numeric !== null && o.value_numeric !== undefined) {
-    return `${o.value_numeric}${o.unit ? ` ${o.unit}` : ""}`;
-  }
-  return o.value_text ?? "—";
-}
+/** Rain at or above this in the last three days switches the twin to its wet look. */
+const WET_MM = 20;
 
 export default function FarmDashboard() {
-  const { id } = useParams<{ id: string }>();
-  const farmId = Number(id);
-  const [state, setState] = useState<LoadState>({ kind: "loading" });
+  const farmId = Number(useParams<{ id: string }>().id);
+  const [load, setLoad] = useState<Load>({ state: "loading" });
+  const [logOpen, setLogOpen] = useState(false);
+  const [undo, setUndo] = useState<Undo | null>(null);
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
-  const [activeChunk, setActiveChunk] = useState<CitedChunk | null>(null);
-  const [logObservationOpen, setLogObservationOpen] = useState(false);
-  const [logWeatherOpen, setLogWeatherOpen] = useState(false);
+  const [chunk, setChunk] = useState<CitedChunk | null>(null);
 
-  const loadAll = useCallback(() => {
-    if (!Number.isFinite(farmId)) {
-      setState({ kind: "error", message: "Invalid farm id" });
-      return Promise.resolve();
-    }
-    return Promise.all([
-      getFarm(farmId),
-      getFields(farmId),
-      getCrops(farmId),
-      getObservations(farmId),
-      getWeather(farmId),
-    ])
-      .then(([farm, fields, crops, observations, weather]) => {
-        setState({
-          kind: "ready",
-          farm,
-          fields,
-          crops,
-          observations,
-          weather,
-        });
-      })
-      .catch((err) => {
-        setState({
-          kind: "error",
-          message: err instanceof Error ? err.message : "Failed to load farm.",
-        });
-      });
-  }, [farmId]);
+  const refresh = useCallback(
+    () =>
+      getFarmDashboard(farmId)
+        .then((data) => setLoad({ state: "ready", data }))
+        .catch((e: Error) => setLoad({ state: "error", message: e.message })),
+    [farmId],
+  );
 
   useEffect(() => {
-    let cancelled = false;
-    if (!Number.isFinite(farmId)) {
-      setState({ kind: "error", message: "Invalid farm id" });
-      return;
-    }
-    Promise.all([
-      getFarm(farmId),
-      getFields(farmId),
-      getCrops(farmId),
-      getObservations(farmId),
-      getWeather(farmId),
-    ])
-      .then(([farm, fields, crops, observations, weather]) => {
-        if (cancelled) return;
-        setState({
-          kind: "ready",
-          farm,
-          fields,
-          crops,
-          observations,
-          weather,
-        });
-      })
-      .catch((err) => {
-        if (cancelled) return;
-        setState({
-          kind: "error",
-          message: err instanceof Error ? err.message : "Failed to load farm.",
-        });
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [farmId]);
+    void refresh();
+  }, [refresh]);
 
-  const activeCrop = useMemo<Crop | undefined>(() => {
-    if (state.kind !== "ready") return undefined;
-    const active = state.crops.find((c) => c.status === "active");
-    return active ?? state.crops[0];
-  }, [state]);
+  // the undo offer stays for 8 seconds after a log
+  useEffect(() => {
+    if (!undo) return;
+    const timer = setTimeout(() => setUndo(null), 8000);
+    return () => clearTimeout(timer);
+  }, [undo]);
 
-  const latestWeather = useMemo<WeatherSnapshot | undefined>(() => {
-    if (state.kind !== "ready") return undefined;
-    return [...state.weather].sort((a, b) =>
-      a.snapshot_date < b.snapshot_date ? 1 : -1,
-    )[0];
-  }, [state]);
+  const undoLast = async () => {
+    if (!undo) return;
+    setUndo(null);
+    await deleteObservation(undo.obs.id);
+    await refresh();
+  };
 
-  const recentObservations = useMemo<Observation[]>(() => {
-    if (state.kind !== "ready") return [];
-    return [...state.observations]
-      .sort((a, b) => (a.observed_at < b.observed_at ? 1 : -1))
-      .slice(0, 10);
-  }, [state]);
+  if (load.state !== "ready") {
+    return (
+      <AppShell>
+        {load.state === "loading" ? (
+          <div aria-busy="true" aria-label="Loading farm" className="flex flex-col gap-6">
+            <div className="h-14 w-72 rounded-md bg-ink/5" />
+            <div className="aspect-[16/7] rounded-xl bg-ink/5" />
+          </div>
+        ) : (
+          <p className="text-body text-risk-high">{load.message}</p>
+        )}
+      </AppShell>
+    );
+  }
 
-  const allObservations = useMemo<Observation[]>(() => {
-    if (state.kind !== "ready") return [];
-    return state.observations;
-  }, [state]);
-
-  const primaryFieldId = useMemo<number | undefined>(() => {
-    if (state.kind !== "ready") return undefined;
-    if (activeCrop) return activeCrop.field_id;
-    return state.fields[0]?.id;
-  }, [state, activeCrop]);
-
-  const handleNewRecommendations = useCallback((recs: Recommendation[]) => {
-    setRecommendations((prev) => [...recs, ...prev]);
-  }, []);
+  const { farm, fields, rainfall, risks } = load.data;
+  const wet = rainfall.slice(-3).some((d) => (d.mm ?? 0) >= WET_MM);
+  const meta = [farm.region, farm.area_hectares && `${farm.area_hectares} ha`, `${fields.length} ${fields.length === 1 ? "field" : "fields"}`]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Header
-        farmName={state.kind === "ready" ? state.farm.name : undefined}
-        region={
-          state.kind === "ready" ? (state.farm.region ?? undefined) : undefined
-        }
-      />
-
-      <main className="flex-1 w-full max-w-[1400px] mx-auto px-6 py-8">
-        {state.kind === "loading" && (
-          <div className="text-ink-muted">Loading farm…</div>
-        )}
-
-        {state.kind === "error" && (
-          <Card>
-            <div className="text-risk-high font-medium">
-              Couldn't load this farm
-            </div>
-            <div className="text-small text-ink-muted mt-2">{state.message}</div>
-            <div className="mt-4">
-              <Link to="/" className="text-brand hover:underline text-small">
-                ← Back to landing
-              </Link>
-            </div>
-          </Card>
-        )}
-
-        {state.kind === "ready" && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 flex flex-col gap-4">
-              <CropCard crop={activeCrop} />
-              <WeatherCard
-                snapshot={latestWeather}
-                onLog={() => setLogWeatherOpen(true)}
-              />
-              <ObservationsCard
-                observations={recentObservations}
-                canLog={primaryFieldId !== undefined}
-                onLog={() => setLogObservationOpen(true)}
-              />
-            </div>
-            <div className="flex flex-col gap-4">
-              <RisksPanel observations={allObservations} />
-              <RecommendationsPanel recommendations={recommendations} />
-              <AskPanel
-                farmId={farmId}
-                onCitationClick={setActiveChunk}
-                onNewRecommendations={handleNewRecommendations}
-              />
-            </div>
+    <AppShell>
+      <div className="flex flex-col gap-6">
+        <header className="flex animate-rise flex-wrap items-end justify-between gap-4">
+          <div className="flex flex-col gap-1">
+            <Link to="/" className="text-small text-ink-muted hover:text-ink">
+              Farms /
+            </Link>
+            <h1 className="text-h2">{farm.name}</h1>
+            <span className="text-small text-ink-muted">{meta}</span>
           </div>
-        )}
-      </main>
+          <Button onClick={() => setLogOpen(true)} disabled={fields.length === 0}>
+            Log observation
+          </Button>
+        </header>
 
-      {primaryFieldId !== undefined && (
-        <LogObservationModal
-          isOpen={logObservationOpen}
-          fieldId={primaryFieldId}
-          onClose={() => setLogObservationOpen(false)}
-          onSuccess={() => {
-            void loadAll();
-          }}
-        />
-      )}
-      <LogWeatherModal
-        isOpen={logWeatherOpen}
-        farmId={farmId}
-        onClose={() => setLogWeatherOpen(false)}
-        onSuccess={() => {
-          void loadAll();
+        <section className="relative animate-rise overflow-hidden rounded-xl bg-raised [animation-delay:80ms]">
+          <picture>
+            <source srcSet={`/twin/farm-${wet ? "rain" : "dry"}.webp`} type="image/webp" />
+            <img
+              src={`/twin/farm-${wet ? "rain" : "dry"}.jpg`}
+              alt={wet ? "Example farm twin in rain, shown because this farm logged heavy rain recently" : "Example farm twin in dry weather"}
+              className="aspect-[16/7] w-full object-cover"
+            />
+          </picture>
+          <span className="absolute top-4 left-4 rounded-pill bg-raised/90 px-3 py-1 text-caption text-ink-muted">
+            {/* a shared example scene until the twin draws this farm's own fields (#24) */}
+            Example twin{wet ? " · wet after recent rain" : ""}
+          </span>
+        </section>
+
+        {fields.length === 0 ? (
+          <div className="rounded-lg bg-raised p-6 text-body text-ink-muted">
+            This farm has no fields yet. <Link to="/setup" className="text-brand underline">Add a field and what's planted</Link> to see stages and risks.
+          </div>
+        ) : (
+          <section className="grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(300px,1fr))]">
+            {fields.map((f) => (
+              <FieldCard key={f.id} field={f} />
+            ))}
+          </section>
+        )}
+
+        <section className="grid items-start gap-4 lg:grid-cols-[1.2fr_1fr]">
+          <RainChart days={rainfall} />
+          <RiskList risks={risks} />
+        </section>
+
+        <section className="grid items-start gap-4 lg:grid-cols-[1.2fr_1fr]">
+          <AskPanel farmId={farmId} onCitationClick={setChunk} onNewRecommendations={setRecommendations} />
+          <RecommendationsPanel recommendations={recommendations} />
+        </section>
+      </div>
+
+      <LogSheet
+        open={logOpen}
+        fields={fields}
+        onClose={() => setLogOpen(false)}
+        onSaved={(obs, label) => {
+          setLogOpen(false);
+          setUndo({ obs, label });
+          void refresh();
         }}
       />
-      <SourceDrawer
-        chunk={activeChunk}
-        onClose={() => setActiveChunk(null)}
-      />
-    </div>
-  );
-}
 
-function Header({
-  farmName,
-  region,
-}: {
-  farmName?: string;
-  region?: string;
-}) {
-  return (
-    <header className="h-16 border-b border-hairline bg-surface">
-      <div className="h-full max-w-[1400px] mx-auto px-6 flex items-center justify-between">
-        <Link to="/" className="text-lead font-semibold text-brand">
-          🌱 FarmTwin
-        </Link>
-        {farmName && (
-          <div className="flex items-center gap-3">
-            <span className="font-medium text-ink">{farmName}</span>
-            {region && (
-              <span className="rounded-pill bg-brand-tint text-brand px-3 py-1 text-small">
-                {region}
-              </span>
-            )}
-          </div>
-        )}
-      </div>
-    </header>
-  );
-}
-
-function CropCard({ crop }: { crop?: Crop }) {
-  if (!crop) {
-    return (
-      <Card>
-        <div className="text-caption uppercase tracking-wide text-ink-faint">
-          Current crop
-        </div>
-        <div className="mt-3 text-ink-muted">No crops recorded yet.</div>
-      </Card>
-    );
-  }
-
-  const days = crop.planting_date ? daysBetween(crop.planting_date) : 0;
-  const stage = estimateStage(crop.crop_type, days);
-
-  return (
-    <Card>
-      <div className="text-caption uppercase tracking-wide text-ink-faint">
-        Current crop
-      </div>
-      <div className="mt-3 flex items-start justify-between gap-4 flex-wrap">
-        <div>
-          <div className="text-h2 font-semibold capitalize">
-            {crop.crop_type}
-          </div>
-          {crop.variety && (
-            <div className="text-ink-muted mt-1">{crop.variety}</div>
-          )}
-          <div className="text-small text-ink-muted mt-3 tabular">
-            {crop.planting_date
-              ? `Planted ${shortDate(crop.planting_date)} · ${days} days ago`
-              : "No planting date"}
-          </div>
-        </div>
-        <span className="rounded-pill bg-brand-tint text-brand px-3 py-1 text-small">
-          {STAGE_LABELS[stage]}
-        </span>
-      </div>
-
-      <div className="mt-6">
-        <div className="text-caption uppercase tracking-wide text-ink-faint mb-3">
-          Timeline
-        </div>
-        <StageStrip currentStage={stage} />
-      </div>
-    </Card>
-  );
-}
-
-function StageStrip({ currentStage }: { currentStage: Stage }) {
-  const currentIndex = STAGES.indexOf(currentStage);
-  return (
-    <div className="flex gap-1.5">
-      {STAGES.map((stage, i) => {
-        const isCurrent = i === currentIndex;
-        const isPast = i < currentIndex;
-        const bar = isCurrent
-          ? "bg-brand"
-          : isPast
-            ? "bg-brand/40"
-            : "bg-hairline";
-        const label = isCurrent
-          ? "text-ink font-medium"
-          : isPast
-            ? "text-ink-muted"
-            : "text-ink-faint";
-        return (
-          <div key={stage} className="flex-1">
-            <div className={`h-1.5 rounded-pill ${bar}`} />
-            <div className={`text-[11px] mt-2 ${label}`}>
-              {STAGE_LABELS[stage]}
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-function WeatherCard({
-  snapshot,
-  onLog,
-}: {
-  snapshot?: WeatherSnapshot;
-  onLog: () => void;
-}) {
-  if (!snapshot) {
-    return (
-      <Card>
-        <div className="flex items-center justify-between">
-          <div className="text-caption uppercase tracking-wide text-ink-faint">
-            Weather
-          </div>
-        </div>
-        <div className="mt-4 text-ink-muted">No weather snapshots yet</div>
-        <div className="mt-4">
-          <Button variant="secondary" onClick={onLog}>
-            Log weather
-          </Button>
-        </div>
-      </Card>
-    );
-  }
-
-  const hasTempRange =
-    snapshot.temp_min_c !== null && snapshot.temp_max_c !== null;
-
-  return (
-    <Card>
-      <div className="flex items-center justify-between">
-        <div className="text-caption uppercase tracking-wide text-ink-faint">
-          Weather
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="text-caption text-ink-faint tabular">
-            {shortDate(snapshot.snapshot_date)}
-          </div>
-          <button
-            type="button"
-            onClick={onLog}
-            className="text-small text-brand hover:underline"
-            aria-label="Log another weather snapshot"
-          >
-            + Add
+      {undo && (
+        <div role="status" className="fixed inset-x-4 bottom-6 z-50 mx-auto flex max-w-md animate-rise items-center justify-between gap-4 rounded-pill bg-ink py-2 pr-2 pl-5 text-small text-on-ink shadow-float">
+          <span>{undo.label} logged. Stages and risks are updated.</span>
+          <button type="button" onClick={() => void undoLast()} className="min-h-11 rounded-pill bg-on-ink/15 px-4 hover:bg-on-ink/25">
+            Undo
           </button>
         </div>
-      </div>
-      <div className="mt-3 flex items-baseline gap-6 flex-wrap">
-        {hasTempRange && (
-          <div>
-            <div className="text-h2 font-semibold tabular">
-              {snapshot.temp_min_c}–{snapshot.temp_max_c}
-              <span className="text-lead text-ink-muted">°C</span>
-            </div>
-            <div className="text-caption text-ink-faint mt-1">temperature</div>
-          </div>
-        )}
-        {snapshot.humidity_pct !== null && (
-          <div>
-            <div className="text-h3 font-semibold tabular">
-              {snapshot.humidity_pct}
-              <span className="text-body text-ink-muted">%</span>
-            </div>
-            <div className="text-caption text-ink-faint mt-1">humidity</div>
-          </div>
-        )}
-        {snapshot.rainfall_mm !== null && (
-          <div>
-            <div className="text-h3 font-semibold tabular">
-              {snapshot.rainfall_mm}
-              <span className="text-body text-ink-muted"> mm</span>
-            </div>
-            <div className="text-caption text-ink-faint mt-1">rainfall</div>
-          </div>
-        )}
-      </div>
-      {snapshot.notes && (
-        <div className="text-small text-ink-muted mt-4">{snapshot.notes}</div>
       )}
-    </Card>
-  );
-}
 
-function ObservationsCard({
-  observations,
-  canLog,
-  onLog,
-}: {
-  observations: Observation[];
-  canLog: boolean;
-  onLog: () => void;
-}) {
-  return (
-    <Card>
-      <div className="flex items-center justify-between">
-        <div className="text-caption uppercase tracking-wide text-ink-faint">
-          Recent observations
-        </div>
-        <Button
-          variant="secondary"
-          onClick={onLog}
-          disabled={!canLog}
-          className="!px-4 !py-2 text-small"
-        >
-          + Log observation
-        </Button>
-      </div>
-
-      {observations.length === 0 ? (
-        <div className="mt-6 text-ink-muted text-small">
-          No observations yet. Log what you see on the farm — rainfall, pests,
-          humidity — to give FarmTwin better context.
-        </div>
-      ) : (
-        <ul className="mt-4 divide-y divide-hairline">
-          {observations.map((o) => (
-            <li
-              key={o.id}
-              className="py-3 flex items-center gap-4 flex-wrap"
-            >
-              <span className="text-small text-ink-muted tabular w-16 shrink-0">
-                {shortDate(o.observed_at)}
-              </span>
-              <span
-                className={`text-caption rounded-pill px-2.5 py-1 ${obsPillClasses(o.obs_type)}`}
-              >
-                {o.obs_type}
-              </span>
-              <span className="text-small text-ink tabular">{obsValue(o)}</span>
-            </li>
-          ))}
-        </ul>
-      )}
-    </Card>
+      <SourceDrawer chunk={chunk} onClose={() => setChunk(null)} />
+    </AppShell>
   );
 }

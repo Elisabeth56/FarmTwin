@@ -82,3 +82,47 @@ class FarmSummary(BaseModel):
     plots: list[Plot]
     risks: list[RiskOut]
     last_logged_at: datetime | None
+
+
+class PlantingProgress(BaseModel):
+    id: int
+    crop: str
+    variety: str | None
+    stage: str
+    day: int | None
+    cycle_days: int
+    # 0..1 through the crop's calendar, for the stage bar
+    progress: float | None
+    harvest_start: date | None
+    harvest_end: date | None
+
+
+class FieldState(BaseModel):
+    id: int
+    name: str
+    area_hectares: float | None
+    soil_type: str | None
+    plantings: list[PlantingProgress]
+
+
+class RainDay(BaseModel):
+    day: date
+    mm: float | None
+
+
+class LogOut(BaseModel):
+    id: int
+    field: str
+    obs_type: str
+    value_numeric: float | None
+    value_text: str | None
+    unit: str | None
+    observed_at: datetime
+
+
+class FarmDashboard(BaseModel):
+    farm: FarmOut
+    fields: list[FieldState]
+    rainfall: list[RainDay]
+    risks: list[RiskOut]
+    recent_logs: list[LogOut]

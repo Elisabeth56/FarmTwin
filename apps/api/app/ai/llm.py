@@ -50,6 +50,7 @@ def generate(messages: list[dict], max_tokens: int = 600, temperature: float = 0
             _url("/v1/chat/completions"),
             json=_body(messages, max_tokens, temperature, stream=False),
             timeout=TIMEOUT,
+            trust_env=False,  # llama-server is local; a system proxy must not intercept it
         )
         resp.raise_for_status()
     except httpx.TimeoutException as exc:
@@ -72,7 +73,7 @@ async def stream(
     timings: dict = {}
     try:
         async with (
-            httpx.AsyncClient(timeout=TIMEOUT) as client,
+            httpx.AsyncClient(timeout=TIMEOUT, trust_env=False) as client,
             client.stream(
                 "POST",
                 _url("/v1/chat/completions"),
@@ -117,6 +118,6 @@ async def stream(
 
 def health() -> bool:
     try:
-        return httpx.get(_url("/health"), timeout=2.0).status_code == 200
+        return httpx.get(_url("/health"), timeout=2.0, trust_env=False).status_code == 200
     except httpx.HTTPError:
         return False

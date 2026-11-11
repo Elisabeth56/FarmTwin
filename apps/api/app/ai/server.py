@@ -124,7 +124,8 @@ def _free_port() -> int:
 
 def _healthy(url: str) -> bool:
     try:
-        return httpx.get(f"{url}/health", timeout=2.0).status_code == 200
+        # llama-server is always local: ignore any system proxy settings
+        return httpx.get(f"{url}/health", timeout=2.0, trust_env=False).status_code == 200
     except httpx.HTTPError:
         return False
 

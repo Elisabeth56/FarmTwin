@@ -49,6 +49,7 @@ jobs:
           uv run python scripts/ingest.py | grep "Added 0, removed 0"
           uv run python scripts/retrieval_smoke_test.py "when should I spray cowpea against Maruca"
           uv run python ../../evals/run.py
+          echo "::group::eval json" && cat ../../evals/results/*-retrieval.json && echo "::endgroup::"
       - uses: actions/upload-artifact@v4
         with:
           name: eval-retrieval

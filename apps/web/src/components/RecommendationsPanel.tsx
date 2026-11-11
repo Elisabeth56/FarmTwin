@@ -29,11 +29,11 @@ export default function RecommendationsPanel({ recommendations }: Props) {
 
   return (
     <Card>
-      <div className="text-xs uppercase tracking-wide text-ink-faint">
+      <div className="text-caption uppercase tracking-wide text-ink-faint">
         Recommendations
       </div>
       {sorted.length === 0 ? (
-        <div className="mt-3 text-sm text-ink-muted">
+        <div className="mt-3 text-small text-ink-muted">
           Ask FarmTwin a question to see recommendations.
         </div>
       ) : (
@@ -45,7 +45,7 @@ export default function RecommendationsPanel({ recommendations }: Props) {
             <button
               type="button"
               onClick={() => setShowAll(true)}
-              className="text-sm text-primary hover:underline self-start"
+              className="text-small text-brand hover:underline self-start"
             >
               Show older ({hiddenCount})
             </button>

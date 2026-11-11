@@ -98,19 +98,19 @@ export default function LogWeatherModal({
       onClick={onClose}
     >
       <div
-        className="bg-card max-w-md w-full mx-4 rounded-2xl p-6 shadow-xl border border-border relative"
+        className="bg-surface max-w-md w-full mx-4 rounded-lg p-6 shadow-float border border-hairline relative"
         onClick={(e) => e.stopPropagation()}
       >
         <button
           type="button"
           onClick={onClose}
-          className="absolute top-4 right-4 text-ink-faint hover:text-ink text-lg leading-none"
+          className="absolute top-4 right-4 text-ink-faint hover:text-ink text-lead leading-none"
           aria-label="Close"
         >
           ×
         </button>
-        <h2 className="text-xl font-semibold text-ink">Log a weather snapshot</h2>
-        <p className="text-sm text-ink-muted mt-1">
+        <h2 className="text-h3 font-semibold text-ink">Log a weather snapshot</h2>
+        <p className="text-small text-ink-muted mt-1">
           Record what the sky and thermometer showed today.
         </p>
 
@@ -173,7 +173,7 @@ export default function LogWeatherModal({
           <div>
             <FieldLabel>Notes</FieldLabel>
             <textarea
-              className="w-full rounded-xl border border-border bg-white px-4 py-2.5 text-ink placeholder:text-ink-faint focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors min-h-[70px]"
+              className="w-full rounded-md border border-hairline bg-raised px-4 py-2.5 text-ink placeholder:text-ink-faint focus:border-brand focus:ring-1 focus:ring-brand outline-none transition-colors min-h-[70px]"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Anything unusual (optional)"
@@ -181,7 +181,7 @@ export default function LogWeatherModal({
           </div>
 
           {error && (
-            <div className="text-sm text-risk-high bg-risk-high/10 rounded-lg px-3 py-2">
+            <div className="text-small text-risk-high bg-risk-high/10 rounded-sm px-3 py-2">
               {error}
             </div>
           )}

@@ -247,16 +247,16 @@ export default function MicButton({
   const buttonDisabled = disabled || !supported || isBusy;
 
   const baseClasses =
-    "flex items-center justify-center w-10 h-10 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2";
+    "flex items-center justify-center w-10 h-10 rounded-pill transition-colors focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2";
   const stateClasses = !supported
-    ? "bg-bg text-ink-faint cursor-not-allowed"
+    ? "bg-ground text-ink-faint cursor-not-allowed"
     : buttonDisabled && !isBusy
-      ? "bg-bg text-ink-faint cursor-not-allowed"
+      ? "bg-ground text-ink-faint cursor-not-allowed"
       : isRecording
-        ? "bg-risk-high text-white animate-pulse"
+        ? "bg-risk-high text-on-ink animate-pulse"
         : isBusy
-          ? "bg-primary-tint text-primary cursor-wait"
-          : "bg-primary text-white hover:bg-primary/90";
+          ? "bg-brand-tint text-brand cursor-wait"
+          : "bg-brand text-on-ink hover:bg-brand/90";
 
   let title = "Voice input (Nigerian English)";
   if (!supported) title = "Voice input not supported in this browser";
@@ -287,7 +287,7 @@ export default function MicButton({
       </button>
       {isRecording && (
         <div className="text-[11px] text-ink-muted flex items-center gap-1">
-          <span className="inline-block w-1.5 h-1.5 rounded-full bg-risk-high animate-pulse" />
+          <span className="inline-block w-1.5 h-1.5 rounded-pill bg-risk-high animate-pulse" />
           <span>Listening… {formatTimer(elapsed)}</span>
         </div>
       )}

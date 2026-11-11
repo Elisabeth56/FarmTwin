@@ -141,19 +141,19 @@ export default function LogObservationModal({
       onClick={onClose}
     >
       <div
-        className="bg-card max-w-md w-full mx-4 rounded-2xl p-6 shadow-xl border border-border relative"
+        className="bg-surface max-w-md w-full mx-4 rounded-lg p-6 shadow-float border border-hairline relative"
         onClick={(e) => e.stopPropagation()}
       >
         <button
           type="button"
           onClick={onClose}
-          className="absolute top-4 right-4 text-ink-faint hover:text-ink text-lg leading-none"
+          className="absolute top-4 right-4 text-ink-faint hover:text-ink text-lead leading-none"
           aria-label="Close"
         >
           ×
         </button>
-        <h2 className="text-xl font-semibold text-ink">Log an observation</h2>
-        <p className="text-sm text-ink-muted mt-1">
+        <h2 className="text-h3 font-semibold text-ink">Log an observation</h2>
+        <p className="text-small text-ink-muted mt-1">
           Tell FarmTwin what you're seeing on the farm.
         </p>
 
@@ -204,7 +204,7 @@ export default function LogObservationModal({
           </div>
 
           {error && (
-            <div className="text-sm text-risk-high bg-risk-high/10 rounded-lg px-3 py-2">
+            <div className="text-small text-risk-high bg-risk-high/10 rounded-sm px-3 py-2">
               {error}
             </div>
           )}

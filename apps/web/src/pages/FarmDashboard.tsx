@@ -97,17 +97,14 @@ function shortDate(iso: string): string {
 
 function obsPillClasses(obsType: string): string {
   switch (obsType) {
-    case "rainfall":
-      return "bg-blue-50 text-blue-700";
-    case "humidity":
-      return "bg-cyan-50 text-cyan-700";
     case "pest":
     case "disease":
       return "bg-risk-high/10 text-risk-high";
-    case "temperature":
-      return "bg-amber-50 text-amber-700";
+    case "note":
+      return "bg-brand-tint text-ink";
     default:
-      return "bg-primary-tint text-primary";
+      // weather readings stay neutral; colour is reserved for crops and risk
+      return "bg-ink/5 text-ink-muted";
   }
 }
 
@@ -247,9 +244,9 @@ export default function FarmDashboard() {
             <div className="text-risk-high font-medium">
               Couldn't load this farm
             </div>
-            <div className="text-sm text-ink-muted mt-2">{state.message}</div>
+            <div className="text-small text-ink-muted mt-2">{state.message}</div>
             <div className="mt-4">
-              <Link to="/" className="text-primary hover:underline text-sm">
+              <Link to="/" className="text-brand hover:underline text-small">
                 ← Back to landing
               </Link>
             </div>
@@ -317,16 +314,16 @@ function Header({
   region?: string;
 }) {
   return (
-    <header className="h-16 border-b border-border bg-card">
+    <header className="h-16 border-b border-hairline bg-surface">
       <div className="h-full max-w-[1400px] mx-auto px-6 flex items-center justify-between">
-        <Link to="/" className="text-lg font-semibold text-primary">
+        <Link to="/" className="text-lead font-semibold text-brand">
           🌱 FarmTwin
         </Link>
         {farmName && (
           <div className="flex items-center gap-3">
             <span className="font-medium text-ink">{farmName}</span>
             {region && (
-              <span className="rounded-full bg-primary-tint text-primary px-3 py-1 text-sm">
+              <span className="rounded-pill bg-brand-tint text-brand px-3 py-1 text-small">
                 {region}
               </span>
             )}
@@ -341,7 +338,7 @@ function CropCard({ crop }: { crop?: Crop }) {
   if (!crop) {
     return (
       <Card>
-        <div className="text-xs uppercase tracking-wide text-ink-faint">
+        <div className="text-caption uppercase tracking-wide text-ink-faint">
           Current crop
         </div>
         <div className="mt-3 text-ink-muted">No crops recorded yet.</div>
@@ -354,30 +351,30 @@ function CropCard({ crop }: { crop?: Crop }) {
 
   return (
     <Card>
-      <div className="text-xs uppercase tracking-wide text-ink-faint">
+      <div className="text-caption uppercase tracking-wide text-ink-faint">
         Current crop
       </div>
       <div className="mt-3 flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <div className="text-3xl font-semibold capitalize">
+          <div className="text-h2 font-semibold capitalize">
             {crop.crop_type}
           </div>
           {crop.variety && (
             <div className="text-ink-muted mt-1">{crop.variety}</div>
           )}
-          <div className="text-sm text-ink-muted mt-3 tabular">
+          <div className="text-small text-ink-muted mt-3 tabular">
             {crop.planting_date
               ? `Planted ${shortDate(crop.planting_date)} · ${days} days ago`
               : "No planting date"}
           </div>
         </div>
-        <span className="rounded-full bg-primary-tint text-primary px-3 py-1 text-sm">
+        <span className="rounded-pill bg-brand-tint text-brand px-3 py-1 text-small">
           {STAGE_LABELS[stage]}
         </span>
       </div>
 
       <div className="mt-6">
-        <div className="text-xs uppercase tracking-wide text-ink-faint mb-3">
+        <div className="text-caption uppercase tracking-wide text-ink-faint mb-3">
           Timeline
         </div>
         <StageStrip currentStage={stage} />
@@ -394,10 +391,10 @@ function StageStrip({ currentStage }: { currentStage: Stage }) {
         const isCurrent = i === currentIndex;
         const isPast = i < currentIndex;
         const bar = isCurrent
-          ? "bg-primary"
+          ? "bg-brand"
           : isPast
-            ? "bg-primary/40"
-            : "bg-border";
+            ? "bg-brand/40"
+            : "bg-hairline";
         const label = isCurrent
           ? "text-ink font-medium"
           : isPast
@@ -405,7 +402,7 @@ function StageStrip({ currentStage }: { currentStage: Stage }) {
             : "text-ink-faint";
         return (
           <div key={stage} className="flex-1">
-            <div className={`h-1.5 rounded-full ${bar}`} />
+            <div className={`h-1.5 rounded-pill ${bar}`} />
             <div className={`text-[11px] mt-2 ${label}`}>
               {STAGE_LABELS[stage]}
             </div>
@@ -427,7 +424,7 @@ function WeatherCard({
     return (
       <Card>
         <div className="flex items-center justify-between">
-          <div className="text-xs uppercase tracking-wide text-ink-faint">
+          <div className="text-caption uppercase tracking-wide text-ink-faint">
             Weather
           </div>
         </div>
@@ -447,17 +444,17 @@ function WeatherCard({
   return (
     <Card>
       <div className="flex items-center justify-between">
-        <div className="text-xs uppercase tracking-wide text-ink-faint">
+        <div className="text-caption uppercase tracking-wide text-ink-faint">
           Weather
         </div>
         <div className="flex items-center gap-3">
-          <div className="text-xs text-ink-faint tabular">
+          <div className="text-caption text-ink-faint tabular">
             {shortDate(snapshot.snapshot_date)}
           </div>
           <button
             type="button"
             onClick={onLog}
-            className="text-sm text-primary hover:underline"
+            className="text-small text-brand hover:underline"
             aria-label="Log another weather snapshot"
           >
             + Add
@@ -467,34 +464,34 @@ function WeatherCard({
       <div className="mt-3 flex items-baseline gap-6 flex-wrap">
         {hasTempRange && (
           <div>
-            <div className="text-3xl font-semibold tabular">
+            <div className="text-h2 font-semibold tabular">
               {snapshot.temp_min_c}–{snapshot.temp_max_c}
-              <span className="text-lg text-ink-muted">°C</span>
+              <span className="text-lead text-ink-muted">°C</span>
             </div>
-            <div className="text-xs text-ink-faint mt-1">temperature</div>
+            <div className="text-caption text-ink-faint mt-1">temperature</div>
           </div>
         )}
         {snapshot.humidity_pct !== null && (
           <div>
-            <div className="text-2xl font-semibold tabular">
+            <div className="text-h3 font-semibold tabular">
               {snapshot.humidity_pct}
-              <span className="text-base text-ink-muted">%</span>
+              <span className="text-body text-ink-muted">%</span>
             </div>
-            <div className="text-xs text-ink-faint mt-1">humidity</div>
+            <div className="text-caption text-ink-faint mt-1">humidity</div>
           </div>
         )}
         {snapshot.rainfall_mm !== null && (
           <div>
-            <div className="text-2xl font-semibold tabular">
+            <div className="text-h3 font-semibold tabular">
               {snapshot.rainfall_mm}
-              <span className="text-base text-ink-muted"> mm</span>
+              <span className="text-body text-ink-muted"> mm</span>
             </div>
-            <div className="text-xs text-ink-faint mt-1">rainfall</div>
+            <div className="text-caption text-ink-faint mt-1">rainfall</div>
           </div>
         )}
       </div>
       {snapshot.notes && (
-        <div className="text-sm text-ink-muted mt-4">{snapshot.notes}</div>
+        <div className="text-small text-ink-muted mt-4">{snapshot.notes}</div>
       )}
     </Card>
   );
@@ -512,40 +509,40 @@ function ObservationsCard({
   return (
     <Card>
       <div className="flex items-center justify-between">
-        <div className="text-xs uppercase tracking-wide text-ink-faint">
+        <div className="text-caption uppercase tracking-wide text-ink-faint">
           Recent observations
         </div>
         <Button
           variant="secondary"
           onClick={onLog}
           disabled={!canLog}
-          className="!px-4 !py-2 text-sm"
+          className="!px-4 !py-2 text-small"
         >
           + Log observation
         </Button>
       </div>
 
       {observations.length === 0 ? (
-        <div className="mt-6 text-ink-muted text-sm">
+        <div className="mt-6 text-ink-muted text-small">
           No observations yet. Log what you see on the farm — rainfall, pests,
           humidity — to give FarmTwin better context.
         </div>
       ) : (
-        <ul className="mt-4 divide-y divide-border">
+        <ul className="mt-4 divide-y divide-hairline">
           {observations.map((o) => (
             <li
               key={o.id}
               className="py-3 flex items-center gap-4 flex-wrap"
             >
-              <span className="text-sm text-ink-muted tabular w-16 shrink-0">
+              <span className="text-small text-ink-muted tabular w-16 shrink-0">
                 {shortDate(o.observed_at)}
               </span>
               <span
-                className={`text-xs rounded-full px-2.5 py-1 ${obsPillClasses(o.obs_type)}`}
+                className={`text-caption rounded-pill px-2.5 py-1 ${obsPillClasses(o.obs_type)}`}
               >
                 {o.obs_type}
               </span>
-              <span className="text-sm text-ink tabular">{obsValue(o)}</span>
+              <span className="text-small text-ink tabular">{obsValue(o)}</span>
             </li>
           ))}
         </ul>

@@ -1,32 +1,23 @@
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 
-type Variant = "primary" | "secondary";
+// primary is ink (one per view), secondary is the brand tint, quiet is a light ink wash
+type Variant = "primary" | "secondary" | "quiet";
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: Variant;
   children: ReactNode;
 };
 
-export default function Button({
-  variant = "primary",
-  className = "",
-  disabled,
-  children,
-  ...rest
-}: ButtonProps) {
-  const base =
-    "rounded-xl px-5 py-2.5 font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-primary/40";
-  const primary = "bg-primary text-white hover:bg-primary-hover";
-  const secondary =
-    "bg-white border border-border text-ink hover:bg-primary-tint";
-  const disabledCls =
-    "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-primary";
-  const disabledSecondaryCls =
-    "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white";
+const VARIANTS: Record<Variant, string> = {
+  primary: "bg-ink text-on-ink hover:bg-ink/90",
+  secondary: "bg-brand-tint text-ink hover:brightness-95",
+  quiet: "bg-ink/5 text-ink hover:bg-ink/10",
+};
+
+export default function Button({ variant = "primary", className = "", children, ...rest }: ButtonProps) {
   return (
     <button
-      className={`${base} ${variant === "primary" ? `${primary} ${disabledCls}` : `${secondary} ${disabledSecondaryCls}`} ${className}`}
-      disabled={disabled}
+      className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-pill px-5 text-small transition duration-150 ease-ui active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100 ${VARIANTS[variant]} ${className}`}
       {...rest}
     >
       {children}

@@ -110,7 +110,7 @@ function renderNarrativeWithCitations(
         key={i}
         type="button"
         onClick={() => onCitationClick(chunk)}
-        className="inline-flex items-center rounded bg-primary-tint text-primary text-[11px] font-medium px-1.5 py-0.5 mx-0.5 hover:bg-primary hover:text-white transition-colors align-baseline"
+        className="inline-flex items-center rounded bg-brand-tint text-brand text-[11px] font-medium px-1.5 py-0.5 mx-0.5 hover:bg-brand hover:text-on-ink transition-colors align-baseline"
         title={chunk.chunk_title}
       >
         {part.citation}
@@ -289,10 +289,10 @@ export default function AskPanel({
 
   return (
     <Card>
-      <div className="text-xs uppercase tracking-wide text-ink-faint">
+      <div className="text-caption uppercase tracking-wide text-ink-faint">
         Ask FarmTwin
       </div>
-      <div className="text-sm text-ink-muted mt-1">
+      <div className="text-small text-ink-muted mt-1">
         Get advice grounded in your farm's state and local agricultural
         knowledge.
       </div>
@@ -302,7 +302,7 @@ export default function AskPanel({
         className="mt-4 max-h-[500px] overflow-y-auto flex flex-col gap-4 pr-1"
       >
         {turns.length === 0 && (
-          <div className="text-sm text-ink-muted bg-bg rounded-xl p-4">
+          <div className="text-small text-ink-muted bg-ground rounded-md p-4">
             Try asking: <em>"What should I do this week?"</em> or{" "}
             <em>"Is my crop at risk from recent weather?"</em>
           </div>
@@ -310,7 +310,7 @@ export default function AskPanel({
 
         {turns.map((turn) => (
           <div key={turn.id} className="flex flex-col gap-3">
-            <div className="self-end max-w-[85%] bg-primary-tint text-ink rounded-2xl rounded-br-sm px-3 py-2 text-sm">
+            <div className="self-end max-w-[85%] bg-brand-tint text-ink rounded-lg rounded-br-sm px-3 py-2 text-small">
               {turn.question}
             </div>
 
@@ -327,7 +327,7 @@ export default function AskPanel({
                   jsonStarted &&
                   turn.response.recommendations.length === 0;
                 return (
-                  <div className="text-sm text-ink leading-relaxed">
+                  <div className="text-small text-ink leading-relaxed">
                     {isStreaming && !turn.response.gotFirstToken ? (
                       <div className="animate-pulse text-ink-muted">
                         Preparing context…
@@ -341,7 +341,7 @@ export default function AskPanel({
                         )}
                         {showCursor && (
                           <span
-                            className="inline-block w-[7px] h-[14px] ml-0.5 bg-primary align-[-2px] animate-pulse"
+                            className="inline-block w-[7px] h-[14px] ml-0.5 bg-brand align-[-2px] animate-pulse"
                             aria-hidden="true"
                           />
                         )}
@@ -349,7 +349,7 @@ export default function AskPanel({
                     )}
 
                     {showPrepRecs && (
-                      <div className="text-sm text-ink-faint animate-pulse mt-3">
+                      <div className="text-small text-ink-faint animate-pulse mt-3">
                         Preparing recommendations…
                       </div>
                     )}
@@ -377,9 +377,9 @@ export default function AskPanel({
         ))}
       </div>
 
-      <div className="mt-4 flex flex-col gap-2 border-t border-border pt-4">
+      <div className="mt-4 flex flex-col gap-2 border-t border-hairline pt-4">
         <textarea
-          className="w-full rounded-xl border border-border bg-white px-4 py-2.5 text-ink placeholder:text-ink-faint focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors min-h-[60px] resize-none"
+          className="w-full rounded-md border border-hairline bg-raised px-4 py-2.5 text-ink placeholder:text-ink-faint focus:border-brand focus:ring-1 focus:ring-brand outline-none transition-colors min-h-[60px] resize-none"
           placeholder="Ask a question about your farm…"
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -424,7 +424,7 @@ export default function AskPanel({
         {micError && (
           <div
             role="alert"
-            className="text-[11px] text-risk-high bg-risk-high/5 border border-risk-high/30 rounded-lg px-2 py-1.5"
+            className="text-[11px] text-risk-high bg-risk-high/5 border border-risk-high/30 rounded-sm px-2 py-1.5"
           >
             {micError}
           </div>
@@ -445,15 +445,15 @@ function ErrorMessage({
   const isTimeout = /took too long/i.test(message);
 
   return (
-    <div className="rounded-xl border border-risk-high/30 bg-risk-high/5 p-3">
-      <div className="text-sm font-medium text-risk-high">
+    <div className="rounded-md border border-risk-high/30 bg-risk-high/5 p-3">
+      <div className="text-small font-medium text-risk-high">
         {isServerDown
           ? "Local model not available"
           : isTimeout
             ? "Model took too long"
             : "Something went wrong"}
       </div>
-      <div className="text-sm text-ink-muted mt-1">
+      <div className="text-small text-ink-muted mt-1">
         {isServerDown
           ? "Start llama-server first."
           : isTimeout
@@ -461,7 +461,7 @@ function ErrorMessage({
             : message}
       </div>
       {isServerDown && (
-        <pre className="mt-2 text-[11px] bg-white border border-border rounded-lg p-2 overflow-x-auto whitespace-pre-wrap font-mono text-ink">
+        <pre className="mt-2 text-[11px] bg-raised border border-hairline rounded-sm p-2 overflow-x-auto whitespace-pre-wrap font-mono text-ink">
           cd ~/dev/tools/llama.cpp && ./build/bin/llama-server \
             --model ~/farmtwin-models/qwen2.5-3b-instruct-q4_k_m.gguf \
             --host 127.0.0.1 --port 8080 --ctx-size 4096 \
@@ -471,7 +471,7 @@ function ErrorMessage({
       <button
         type="button"
         onClick={onRetry}
-        className="mt-3 text-sm text-primary hover:underline"
+        className="mt-3 text-small text-brand hover:underline"
       >
         Retry
       </button>

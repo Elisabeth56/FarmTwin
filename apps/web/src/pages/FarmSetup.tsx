@@ -95,12 +95,12 @@ export default function FarmSetup() {
   return (
     <div className="min-h-screen">
       <header className="px-6 py-5 max-w-6xl mx-auto w-full flex items-center gap-6">
-        <Link to="/" className="text-lg font-semibold text-primary">
+        <Link to="/" className="text-lead font-semibold text-brand">
           🌱 FarmTwin
         </Link>
         <Link
           to="/"
-          className="text-sm text-ink-muted hover:text-ink transition-colors"
+          className="text-small text-ink-muted hover:text-ink transition-colors"
         >
           ← Back
         </Link>
@@ -108,7 +108,7 @@ export default function FarmSetup() {
 
       <main className="px-6 pb-16">
         <div className="max-w-[560px] mx-auto pt-6">
-          <h1 className="text-3xl font-semibold tracking-tight">
+          <h1 className="text-h2 font-semibold tracking-tight">
             Create your farm
           </h1>
           <p className="text-ink-muted mt-2">
@@ -119,7 +119,7 @@ export default function FarmSetup() {
             <Card>
               {/* Farm section */}
               <div>
-                <div className="text-xs uppercase tracking-wide text-ink-faint">
+                <div className="text-caption uppercase tracking-wide text-ink-faint">
                   Farm
                 </div>
                 <div className="mt-4 space-y-4">
@@ -190,7 +190,7 @@ export default function FarmSetup() {
 
               {/* Field section */}
               <div className="mt-8">
-                <div className="text-xs uppercase tracking-wide text-ink-faint">
+                <div className="text-caption uppercase tracking-wide text-ink-faint">
                   Field
                 </div>
                 <div className="mt-4 space-y-4">
@@ -241,7 +241,7 @@ export default function FarmSetup() {
 
               {/* Crop section */}
               <div className="mt-8">
-                <div className="text-xs uppercase tracking-wide text-ink-faint">
+                <div className="text-caption uppercase tracking-wide text-ink-faint">
                   Crop
                 </div>
                 <div className="mt-4 space-y-4">
@@ -287,7 +287,7 @@ export default function FarmSetup() {
               </div>
 
               {error && (
-                <div className="mt-6 rounded-xl border border-risk-high/40 bg-risk-high/5 text-risk-high text-sm px-4 py-3">
+                <div className="mt-6 rounded-md border border-risk-high/40 bg-risk-high/5 text-risk-high text-small px-4 py-3">
                   {error}
                 </div>
               )}

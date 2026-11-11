@@ -4,12 +4,10 @@ type CardProps = HTMLAttributes<HTMLDivElement> & {
   children: ReactNode;
 };
 
+/** Surface panel on the ground colour. Separated by tone, not shadow. */
 export default function Card({ children, className = "", ...rest }: CardProps) {
   return (
-    <div
-      className={`bg-card rounded-2xl p-6 shadow-sm border border-border ${className}`}
-      {...rest}
-    >
+    <div className={`rounded-lg bg-surface p-6 ${className}`} {...rest}>
       {children}
     </div>
   );

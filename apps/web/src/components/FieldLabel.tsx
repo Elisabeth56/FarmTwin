@@ -13,7 +13,7 @@ export default function FieldLabel({
 }: Props) {
   return (
     <label
-      className={`block text-sm font-medium text-ink-muted mb-1.5 ${className}`}
+      className={`block text-small font-medium text-ink-muted mb-1.5 ${className}`}
       {...rest}
     >
       {children}

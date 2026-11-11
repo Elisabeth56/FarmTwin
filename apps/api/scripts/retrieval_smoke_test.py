@@ -14,8 +14,8 @@ import struct
 import sys
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-BACKEND_DIR = REPO_ROOT / "backend"
+REPO_ROOT = Path(__file__).resolve().parents[3]
+BACKEND_DIR = REPO_ROOT / "apps" / "api"
 
 os.chdir(BACKEND_DIR)
 sys.path.insert(0, str(BACKEND_DIR))

@@ -10,15 +10,15 @@ import subprocess
 import tempfile
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).parent.parent
-CLIPS_DIR = REPO_ROOT / "evaluation" / "stt_clips"
-RESULTS_DIR = REPO_ROOT / "evaluation" / "stt_results"
+REPO_ROOT = Path(__file__).resolve().parents[2]
+CLIPS_DIR = REPO_ROOT / "evals" / "stt" / "clips"
+RESULTS_DIR = REPO_ROOT / "evals" / "stt" / "results"
 RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 REFERENCE_FILE = CLIPS_DIR / "reference.txt"
 
 MODEL_ID = "rishabbahal/whisper-small-nigerian-accent"
 
-sys.path.insert(0, str(REPO_ROOT / "backend"))
+sys.path.insert(0, str(REPO_ROOT / "apps" / "api"))
 
 import soundfile as sf
 import numpy as np

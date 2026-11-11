@@ -1,6 +1,6 @@
 """FarmTwin backend entrypoint.
 
-Run from inside the `backend/` directory:
+Run from inside the `apps/api/` directory (or `pnpm dev` from the repo root):
 
     uvicorn app.main:app --reload --port 8000
 

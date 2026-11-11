@@ -6,7 +6,7 @@ Runs the existing whisper_client.transcribe() function on each clip,
 uses English decoder for all (per Amendment #1: Whisper has no Pidgin,
 English decoder handles Pidgin-adjacent speech reasonably).
 
-Output: written to evaluation/stt_results/day5_5_wer.md
+Output: written to evals/stt/results/day5_5_wer.md
 """
 
 import os
@@ -16,15 +16,15 @@ import re
 import subprocess
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).parent.parent
-CLIPS_DIR = REPO_ROOT / "evaluation" / "stt_clips"
-RESULTS_DIR = REPO_ROOT / "evaluation" / "stt_results"
+REPO_ROOT = Path(__file__).resolve().parents[2]
+CLIPS_DIR = REPO_ROOT / "evals" / "stt" / "clips"
+RESULTS_DIR = REPO_ROOT / "evals" / "stt" / "results"
 RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 REFERENCE_FILE = CLIPS_DIR / "reference.txt"
 
 # Add backend to path so we can import whisper_client
-sys.path.insert(0, str(REPO_ROOT / "backend"))
-os.chdir(REPO_ROOT / "backend")
+sys.path.insert(0, str(REPO_ROOT / "apps" / "api"))
+os.chdir(REPO_ROOT / "apps" / "api")
 
 from app.stt.whisper_client import transcribe
 

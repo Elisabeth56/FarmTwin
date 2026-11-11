@@ -10,8 +10,8 @@ Preconditions:
   - backend/farmtwin.db is populated (ingest.py already run) so the
     retriever can pull chunks.
   - Run from the repo root:
-      python scripts/run_benchmark.py --model-name qwen \
-          --output evaluation/bench_results/qwen.json
+      python evals/v1/run_benchmark.py --model-name qwen \
+          --output evals/v1/bench_results/qwen.json
 
 The --model-name is a label for the output only. Which GGUF is actually
 evaluated is controlled by how the user launched llama-server.
@@ -30,8 +30,8 @@ from datetime import date, datetime
 from pathlib import Path
 from typing import Any, Optional
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-BACKEND_DIR = REPO_ROOT / "backend"
+REPO_ROOT = Path(__file__).resolve().parents[2]
+BACKEND_DIR = REPO_ROOT / "apps" / "api"
 
 # Import backend engines from the backend/ package root. The retriever expects
 # to open farmtwin.db by its relative path, so we also chdir there.
@@ -45,7 +45,7 @@ from app.llm import client as llm_client  # noqa: E402
 from app.rag.retriever import build_query, retrieve_chunks  # noqa: E402
 
 
-GOLD_PATH = REPO_ROOT / "evaluation" / "gold_prompts.json"
+GOLD_PATH = REPO_ROOT / "evals" / "v1" / "gold_prompts.json"
 LLAMA_CPP_DIR = Path.home() / "dev" / "tools" / "llama.cpp"
 
 _LEADING_NUMBER_RE = re.compile(r"[-+]?\d*\.?\d+")
@@ -286,7 +286,7 @@ def main() -> int:
         out_path = REPO_ROOT / out_path
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
-    with open(REPO_ROOT / "evaluation" / "gold_prompts.json") as f:
+    with open(REPO_ROOT / "evals" / "v1" / "gold_prompts.json") as f:
         gold = json.load(f)
 
     if not llm_client.health_check():

@@ -18,8 +18,8 @@ import sys
 from collections import Counter
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-BACKEND_DIR = REPO_ROOT / "backend"
+REPO_ROOT = Path(__file__).resolve().parents[3]
+BACKEND_DIR = REPO_ROOT / "apps" / "api"
 CORPUS_DIR = REPO_ROOT / "knowledge" / "corpus"
 
 # The backend's SQLAlchemy URL is `sqlite:///./farmtwin.db` (relative to CWD).

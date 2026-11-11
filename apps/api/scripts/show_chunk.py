@@ -6,7 +6,7 @@ if len(sys.argv) < 2:
     print("Usage: python scripts/show_chunk.py <chunk_id> [<chunk_id> ...]")
     sys.exit(1)
 
-conn = sqlite3.connect("backend/farmtwin.db")
+conn = sqlite3.connect("apps/api/farmtwin.db")
 for arg in sys.argv[1:]:
     try:
         cid = int(arg)

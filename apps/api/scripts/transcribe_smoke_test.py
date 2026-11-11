@@ -16,13 +16,13 @@ import sys
 from pathlib import Path
 
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
+REPO_ROOT = Path(__file__).resolve().parents[3]
 SAMPLE_WAV = Path.home() / "dev/tools/whisper.cpp/samples/jfk.wav"
 BACKEND_URL = os.environ.get("FARMTWIN_BACKEND_URL", "http://127.0.0.1:8000")
 
 
 def _add_backend_to_path() -> None:
-    sys.path.insert(0, str(REPO_ROOT / "backend"))
+    sys.path.insert(0, str(REPO_ROOT / "apps" / "api"))
 
 
 def test_direct() -> bool:

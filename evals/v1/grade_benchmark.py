@@ -14,8 +14,8 @@ Scores are written back into the same JSON under per_prompt[i].grade.
 State is saved after every prompt so --resume picks up where you left off.
 
 Usage:
-  python scripts/grade_benchmark.py --file evaluation/bench_results/qwen.json
-  python scripts/grade_benchmark.py --file evaluation/bench_results/qwen.json --resume
+  python evals/v1/grade_benchmark.py --file evals/v1/bench_results/qwen.json
+  python evals/v1/grade_benchmark.py --file evals/v1/bench_results/qwen.json --resume
 """
 
 from __future__ import annotations
@@ -25,7 +25,7 @@ import json
 import sys
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
+REPO_ROOT = Path(__file__).resolve().parents[2]
 
 DIMENSIONS = [
     ("farm_grounding", "1) Farm-context grounding — did it use the farm facts?"),
@@ -37,7 +37,7 @@ DIMENSIONS = [
 
 
 def _load_gold() -> dict[str, dict]:
-    with open(REPO_ROOT / "evaluation" / "gold_prompts.json") as f:
+    with open(REPO_ROOT / "evals" / "v1" / "gold_prompts.json") as f:
         return {item["id"]: item for item in json.load(f)}
 
 

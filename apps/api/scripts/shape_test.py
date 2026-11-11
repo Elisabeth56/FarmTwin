@@ -17,7 +17,7 @@ import time
 import sqlite3
 import struct
 
-os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "backend"))
+os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 
 from sentence_transformers import SentenceTransformer
 import httpx

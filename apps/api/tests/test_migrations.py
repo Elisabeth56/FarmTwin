@@ -48,7 +48,8 @@ def test_fresh_database_gets_every_table(fresh_data_dir):
     run_migrations()
     db = fresh_data_dir / "farmtwin.db"
     tables = set(inspect(create_engine(f"sqlite:///{db}")).get_table_names())
-    assert {"farms", "fields", "crops", "observations", "alembic_version"} <= tables
+    assert {"farms", "fields", "plantings", "observations", "alembic_version"} <= tables
+    assert "crops" not in tables
 
 
 def test_v1_database_keeps_its_rows(fresh_data_dir):
@@ -62,7 +63,7 @@ def test_v1_database_keeps_its_rows(fresh_data_dir):
 
     with sqlite3.connect(db) as conn:
         assert conn.execute("SELECT name FROM farms").fetchall() == [("Adamu's farm",)]
-        assert conn.execute("SELECT crop_type FROM crops").fetchall() == [("maize",)]
+        assert conn.execute("SELECT crop_type FROM plantings").fetchall() == [("maize",)]
         assert conn.execute("SELECT version_num FROM alembic_version").fetchone() is not None
     assert (fresh_data_dir / "farmtwin.db.bak").exists()
 

@@ -1,4 +1,4 @@
-"""Database models. Typed SQLAlchemy 2.0 mappings; the table shapes match v1 exactly."""
+"""Database models (typed SQLAlchemy 2.0). Schema changes go through migrations/versions."""
 
 from datetime import date, datetime
 
@@ -40,15 +40,16 @@ class Field(Base):
     notes: Mapped[str | None] = mapped_column(Text)
 
     farm: Mapped["Farm"] = relationship(back_populates="fields")
-    crops: Mapped[list["Crop"]] = relationship(back_populates="field", cascade="all, delete-orphan")
+    # many active plantings per field: intercropping is normal (ADR-019)
+    plantings: Mapped[list["Planting"]] = relationship(back_populates="field", cascade="all, delete-orphan")
     observations: Mapped[list["Observation"]] = relationship(
         back_populates="field", cascade="all, delete-orphan"
     )
     recommendations: Mapped[list["Recommendation"]] = relationship(back_populates="field")
 
 
-class Crop(Base):
-    __tablename__ = "crops"
+class Planting(Base):
+    __tablename__ = "plantings"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     field_id: Mapped[int] = mapped_column(ForeignKey("fields.id"), index=True)
@@ -58,7 +59,7 @@ class Crop(Base):
     status: Mapped[str | None] = mapped_column(String)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
-    field: Mapped["Field"] = relationship(back_populates="crops")
+    field: Mapped["Field"] = relationship(back_populates="plantings")
 
 
 class Observation(Base):

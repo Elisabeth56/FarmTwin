@@ -167,7 +167,7 @@ export function getFields(farm_id?: number): Promise<Field[]> {
 // ---------- Crops ----------
 
 export function createCrop(data: CropCreate): Promise<Crop> {
-  return fetchAPI<Crop>("/crops", {
+  return fetchAPI<Crop>("/plantings", {
     method: "POST",
     body: JSON.stringify(data),
   });
@@ -175,7 +175,7 @@ export function createCrop(data: CropCreate): Promise<Crop> {
 
 export function getCrops(farm_id?: number): Promise<Crop[]> {
   const q = farm_id !== undefined ? `?farm_id=${farm_id}` : "";
-  return fetchAPI<Crop[]>(`/crops${q}`);
+  return fetchAPI<Crop[]>(`/plantings${q}`);
 }
 
 // ---------- Observations ----------

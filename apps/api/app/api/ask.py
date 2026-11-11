@@ -79,10 +79,10 @@ def ask(payload: AskRequest, db: Session = Depends(get_db)) -> AskResponse:
     active_crops = []
     if field_ids:
         active_crops = (
-            db.query(models.Crop)
-            .filter(models.Crop.field_id.in_(field_ids))
-            .filter(models.Crop.status == "active")
-            .order_by(models.Crop.id.desc())
+            db.query(models.Planting)
+            .filter(models.Planting.field_id.in_(field_ids))
+            .filter(models.Planting.status == "active")
+            .order_by(models.Planting.id.desc())
             .all()
         )
 
@@ -324,10 +324,10 @@ def _prepare_ask_context(payload: AskRequest, db: Session) -> dict:
     active_crops = []
     if field_ids:
         active_crops = (
-            db.query(models.Crop)
-            .filter(models.Crop.field_id.in_(field_ids))
-            .filter(models.Crop.status == "active")
-            .order_by(models.Crop.id.desc())
+            db.query(models.Planting)
+            .filter(models.Planting.field_id.in_(field_ids))
+            .filter(models.Planting.status == "active")
+            .order_by(models.Planting.id.desc())
             .all()
         )
 

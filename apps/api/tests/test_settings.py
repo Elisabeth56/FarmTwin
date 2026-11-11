@@ -21,7 +21,7 @@ def test_health(client):
 
 
 def test_create_and_list_farm(client):
-    created = client.post("/api/farms/", json={"name": "Adamu's farm", "region": "Zaria"})
-    assert created.status_code == 200
-    names = [f["name"] for f in client.get("/api/farms/").json()]
+    created = client.post("/api/farms", json={"name": "Adamu's farm", "region": "Zaria"})
+    assert created.status_code == 201
+    names = [f["name"] for f in client.get("/api/farms").json()]
     assert "Adamu's farm" in names

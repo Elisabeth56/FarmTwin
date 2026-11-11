@@ -17,7 +17,7 @@ def test_missing_farm_uses_the_shared_shape(client):
 
 
 def test_validation_errors_name_the_field(client):
-    error = assert_error(client.post("/api/farms/", json={}), 422, "invalid_input")
+    error = assert_error(client.post("/api/farms", json={}), 422, "invalid_input")
     assert "name" in error["details"]["fields"]
 
 
@@ -26,10 +26,10 @@ def test_unknown_route_uses_the_shared_shape(client):
 
 
 def test_model_down_is_reported_plainly(client, monkeypatch):
-    farm = client.post("/api/farms/", json={"name": "Test farm"}).json()
-    field = client.post("/api/fields/", json={"farm_id": farm["id"], "name": "Main field"}).json()
+    farm = client.post("/api/farms", json={"name": "Test farm"}).json()
+    field = client.post("/api/fields", json={"farm_id": farm["id"], "name": "Main field"}).json()
     client.post(
-        "/api/crops/",
+        "/api/plantings",
         json={
             "field_id": field["id"],
             "crop_type": "maize",

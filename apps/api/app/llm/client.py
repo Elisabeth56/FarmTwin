@@ -16,6 +16,7 @@ from typing import Any
 import httpx
 
 from app.config import get_settings
+from app.errors import MODEL_TIMEOUT, MODEL_UNAVAILABLE
 
 logger = logging.getLogger(__name__)
 
@@ -100,13 +101,12 @@ async def stream_generate(
             async with client.stream("POST", LLAMA_URL, json=payload) as resp:
                 if resp.status_code >= 400:
                     body = await resp.aread()
-                    yield {
-                        "type": "error",
-                        "message": (
-                            f"llama-server returned {resp.status_code}: "
-                            f"{body.decode('utf-8', errors='replace')[:300]}"
-                        ),
-                    }
+                    logger.warning(
+                        "stream_generate: llama-server returned %s: %s",
+                        resp.status_code,
+                        body.decode("utf-8", errors="replace")[:300],
+                    )
+                    yield {"type": "error", "code": "model_unavailable", "message": MODEL_UNAVAILABLE}
                     return
 
                 async for raw_line in resp.aiter_lines():
@@ -136,25 +136,16 @@ async def stream_generate(
                         return
     except (httpx.ConnectError, httpx.ConnectTimeout) as e:
         logger.warning("stream_generate: connect failed: %s", e)
-        yield {
-            "type": "error",
-            "message": "Local model not available. Start llama-server first.",
-        }
+        yield {"type": "error", "code": "model_unavailable", "message": MODEL_UNAVAILABLE}
     except httpx.ReadTimeout as e:
         logger.warning("stream_generate: read timeout: %s", e)
-        yield {
-            "type": "error",
-            "message": "Model took too long to respond.",
-        }
+        yield {"type": "error", "code": "model_timeout", "message": MODEL_TIMEOUT}
     except httpx.HTTPError as e:
         logger.warning("stream_generate: http error: %s", e)
-        yield {
-            "type": "error",
-            "message": f"llama-server HTTP error: {e}",
-        }
-    except Exception as e:  # noqa: BLE001
+        yield {"type": "error", "code": "model_unavailable", "message": MODEL_UNAVAILABLE}
+    except Exception:  # noqa: BLE001
         logger.exception("stream_generate: unexpected error")
-        yield {"type": "error", "message": f"Unexpected error: {e}"}
+        yield {"type": "error", "code": "internal_error", "message": "Something went wrong while answering."}
 
 
 def health_check() -> bool:

@@ -1,11 +1,12 @@
 from datetime import date
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import Session
 
 from app.db import models
 from app.db.session import get_db
+from app.errors import AppError
 
 router = APIRouter(prefix="/api/weather", tags=["weather"])
 
@@ -45,7 +46,7 @@ def list_weather(farm_id: int | None = Query(None), db: Session = Depends(get_db
 def get_weather(snapshot_id: int, db: Session = Depends(get_db)):
     snap = db.query(models.WeatherSnapshot).filter(models.WeatherSnapshot.id == snapshot_id).first()
     if not snap:
-        raise HTTPException(404, "not found")
+        raise AppError(404, "weather_not_found", "That weather record no longer exists.")
     return snap
 
 

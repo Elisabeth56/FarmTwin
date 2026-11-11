@@ -1,11 +1,12 @@
 from datetime import date, datetime
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import Session
 
 from app.db import models
 from app.db.session import get_db
+from app.errors import AppError
 
 router = APIRouter(prefix="/api/crops", tags=["crops"])
 
@@ -42,7 +43,7 @@ def list_crops(farm_id: int | None = Query(None), db: Session = Depends(get_db))
 def get_crop(crop_id: int, db: Session = Depends(get_db)):
     crop = db.query(models.Crop).filter(models.Crop.id == crop_id).first()
     if not crop:
-        raise HTTPException(404, "not found")
+        raise AppError(404, "crop_not_found", "That crop no longer exists.")
     return crop
 
 

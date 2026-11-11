@@ -1,11 +1,12 @@
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import Session
 
 from app.db import models
 from app.db.session import get_db
+from app.errors import AppError
 
 router = APIRouter(prefix="/api/farms", tags=["farms"])
 
@@ -39,7 +40,7 @@ def list_farms(db: Session = Depends(get_db)):
 def get_farm(farm_id: int, db: Session = Depends(get_db)):
     farm = db.query(models.Farm).filter(models.Farm.id == farm_id).first()
     if not farm:
-        raise HTTPException(404, "not found")
+        raise AppError(404, "farm_not_found", "That farm no longer exists.")
     return farm
 
 

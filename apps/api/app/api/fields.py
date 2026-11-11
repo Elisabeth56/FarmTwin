@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import Session
 
 from app.db import models
 from app.db.session import get_db
+from app.errors import AppError
 
 router = APIRouter(prefix="/api/fields", tags=["fields"])
 
@@ -41,7 +42,7 @@ def list_fields(farm_id: int | None = Query(None), db: Session = Depends(get_db)
 def get_field(field_id: int, db: Session = Depends(get_db)):
     field = db.query(models.Field).filter(models.Field.id == field_id).first()
     if not field:
-        raise HTTPException(404, "not found")
+        raise AppError(404, "field_not_found", "That field no longer exists.")
     return field
 
 

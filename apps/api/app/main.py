@@ -7,6 +7,8 @@ Run from inside the `apps/api/` directory (or `pnpm dev` from the repo root):
 The database lives in the FarmTwin data folder (see app/config.py). Health check: GET /api/health.
 """
 
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -14,8 +16,20 @@ from app.api import ask, crops, farms, fields, observations, transcribe, weather
 from app.config import get_settings
 from app.db import models  # noqa: F401  (ensure models are registered on Base)
 from app.db.session import Base, engine
+from app.errors import install_error_handlers
+from app.logs import install_request_logging, setup_logging
 
-app = FastAPI(title="FarmTwin API", version="0.1.0")
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    setup_logging()
+    Base.metadata.create_all(bind=engine)
+    yield
+
+
+app = FastAPI(title="FarmTwin API", version="0.2.0", lifespan=lifespan)
+install_error_handlers(app)
+install_request_logging(app)
 
 app.add_middleware(
     CORSMiddleware,
@@ -24,11 +38,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-@app.on_event("startup")
-def on_startup():
-    Base.metadata.create_all(bind=engine)
 
 
 @app.get("/api/health")

@@ -10,7 +10,9 @@ import os
 import subprocess
 import tempfile
 
-from fastapi import APIRouter, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, File, Form, UploadFile
+
+from app.errors import AppError
 
 logger = logging.getLogger(__name__)
 
@@ -31,26 +33,22 @@ async def transcribe_audio(
     Returns {text, language_requested, language_used, duration_ms}.
     """
     if language == "pidgin":
-        raise HTTPException(
-            status_code=400,
-            detail="Nigerian Pidgin STT is not currently supported. Use English.",
+        raise AppError(
+            400, "language_not_supported", "Voice works in Nigerian English for now. Pidgin is being tested."
         )
     if language not in VALID_LANGUAGES:
-        raise HTTPException(
-            status_code=400,
-            detail=f"language must be one of {sorted(VALID_LANGUAGES)}",
+        raise AppError(
+            400,
+            "language_not_supported",
+            "Voice works in Nigerian English for now.",
+            {"allowed": sorted(VALID_LANGUAGES)},
         )
 
     data = await audio.read()
     if len(data) > MAX_AUDIO_BYTES:
-        raise HTTPException(
-            status_code=413,
-            detail=(
-                f"audio too large ({len(data)} bytes); " f"limit is {MAX_AUDIO_BYTES} bytes (~30s recording)"
-            ),
-        )
+        raise AppError(413, "audio_too_long", "Recordings can be up to about 30 seconds.")
     if len(data) == 0:
-        raise HTTPException(status_code=400, detail="empty audio upload")
+        raise AppError(400, "empty_audio", "The recording was empty. Try again.")
 
     # Temp files for both raw upload and the 16kHz mono WAV.
     input_path: str | None = None
@@ -85,21 +83,16 @@ async def transcribe_audio(
                 timeout=30,
             )
         except subprocess.TimeoutExpired:
-            raise HTTPException(
-                status_code=500,
-                detail="ffmpeg timed out converting audio",
+            raise AppError(
+                500, "audio_conversion_failed", "The recording couldn't be processed. Try again."
             ) from None
         except FileNotFoundError:
-            raise HTTPException(
-                status_code=500,
-                detail="ffmpeg not installed on server",
+            raise AppError(
+                500, "audio_conversion_failed", "The recording couldn't be processed. Try again."
             ) from None
         if proc.returncode != 0:
             logger.warning("ffmpeg failed: %s", proc.stderr[-500:])
-            raise HTTPException(
-                status_code=500,
-                detail=("ffmpeg failed to decode audio: " f"{proc.stderr.strip()[-300:]}"),
-            )
+            raise AppError(500, "audio_conversion_failed", "The recording couldn't be processed. Try again.")
 
         try:
             from app.stt import whisper_client  # heavy; loaded on first use
@@ -107,9 +100,8 @@ async def transcribe_audio(
             result = whisper_client.transcribe(wav_path, language=language)
         except RuntimeError as e:
             logger.warning("whisper transcription failed: %s", e)
-            raise HTTPException(
-                status_code=500,
-                detail=f"transcription failed: {e}",
+            raise AppError(
+                500, "transcription_failed", "The recording couldn't be transcribed. Try again."
             ) from e
 
         return {

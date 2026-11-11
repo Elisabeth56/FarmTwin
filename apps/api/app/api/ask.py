@@ -21,7 +21,7 @@ from datetime import date, datetime, timedelta
 from typing import Any
 
 import httpx
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy.orm import Session
@@ -29,6 +29,7 @@ from sqlalchemy.orm import Session
 from app.db import models
 from app.db.session import get_db
 from app.engines import context_assembler, crop_calendar, risk_rules
+from app.errors import MODEL_UNAVAILABLE, AppError
 from app.llm import client as llm_client
 from app.rag import retriever
 
@@ -70,7 +71,7 @@ def ask(payload: AskRequest, db: Session = Depends(get_db)) -> AskResponse:
 
     farm = db.query(models.Farm).filter(models.Farm.id == payload.farm_id).first()
     if not farm:
-        raise HTTPException(404, "farm not found")
+        raise AppError(404, "farm_not_found", "That farm no longer exists.")
 
     fields = db.query(models.Field).filter(models.Field.farm_id == farm.id).all()
     field_ids = [f.id for f in fields]
@@ -232,10 +233,7 @@ def ask(payload: AskRequest, db: Session = Depends(get_db)) -> AskResponse:
         response = llm_client.generate(prompt, n_predict=600, temperature=0.3)
     except (httpx.ConnectError, httpx.ConnectTimeout, httpx.ReadTimeout, httpx.HTTPError) as e:
         logger.warning("llama-server unreachable: %s", e)
-        raise HTTPException(
-            status_code=503,
-            detail="Local model not available. Start llama-server first.",
-        ) from e
+        raise AppError(503, "model_unavailable", MODEL_UNAVAILABLE) from e
     t_llm_end = time.time()
 
     content = llm_client.extract_content(response)
@@ -318,7 +316,7 @@ def _prepare_ask_context(payload: AskRequest, db: Session) -> dict:
     """
     farm = db.query(models.Farm).filter(models.Farm.id == payload.farm_id).first()
     if not farm:
-        raise HTTPException(404, "farm not found")
+        raise AppError(404, "farm_not_found", "That farm no longer exists.")
 
     fields = db.query(models.Field).filter(models.Field.farm_id == farm.id).all()
     field_ids = [f.id for f in fields]
@@ -582,13 +580,20 @@ async def ask_stream(payload: AskRequest, db: Session = Depends(get_db)):
                     yield _sse(
                         {
                             "type": "error",
-                            "message": event.get("message", "Unknown stream error"),
+                            "code": event.get("code", "internal_error"),
+                            "message": event.get("message", "Something went wrong while answering."),
                         }
                     )
                     return
-        except Exception as e:  # noqa: BLE001
+        except Exception:  # noqa: BLE001
             logger.exception("ask_stream: generator crashed")
-            yield _sse({"type": "error", "message": f"Stream failed: {e}"})
+            yield _sse(
+                {
+                    "type": "error",
+                    "code": "internal_error",
+                    "message": "Something went wrong while answering.",
+                }
+            )
             return
 
         if stream_errored:
@@ -626,10 +631,16 @@ async def ask_stream(payload: AskRequest, db: Session = Depends(get_db)):
                 db.flush()
                 saved_ids.append(row.id)
             db.commit()
-        except Exception as e:  # noqa: BLE001
+        except Exception:  # noqa: BLE001
             logger.exception("ask_stream: DB persist failed")
             db.rollback()
-            yield _sse({"type": "error", "message": f"Failed to save recommendations: {e}"})
+            yield _sse(
+                {
+                    "type": "error",
+                    "code": "save_failed",
+                    "message": "The answer couldn't be saved. Try asking again.",
+                }
+            )
             return
 
         timing_ms = {

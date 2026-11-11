@@ -1,12 +1,13 @@
 from datetime import datetime
 from typing import Literal
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import Session
 
 from app.db import models
 from app.db.session import get_db
+from app.errors import AppError
 
 router = APIRouter(prefix="/api/observations", tags=["observations"])
 
@@ -47,7 +48,7 @@ def list_observations(farm_id: int | None = Query(None), db: Session = Depends(g
 def get_observation(observation_id: int, db: Session = Depends(get_db)):
     obs = db.query(models.Observation).filter(models.Observation.id == observation_id).first()
     if not obs:
-        raise HTTPException(404, "not found")
+        raise AppError(404, "observation_not_found", "That observation no longer exists.")
     return obs
 
 

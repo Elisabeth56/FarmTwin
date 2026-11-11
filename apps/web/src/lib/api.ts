@@ -1,5 +1,16 @@
 const BASE_URL = "/api";
 
+/** Reads the API's shared error shape and returns its plain message. */
+export async function errorMessage(res: Response): Promise<string> {
+  try {
+    const body = (await res.json()) as { error?: { message?: string } };
+    if (body.error?.message) return body.error.message;
+  } catch {
+    /* not json */
+  }
+  return "Something went wrong. Try again.";
+}
+
 export async function fetchAPI<T>(
   path: string,
   init?: RequestInit,
@@ -8,16 +19,7 @@ export async function fetchAPI<T>(
     headers: { "Content-Type": "application/json", ...(init?.headers ?? {}) },
     ...init,
   });
-  if (!res.ok) {
-    let detail = "";
-    try {
-      const body = await res.text();
-      detail = body ? ` — ${body}` : "";
-    } catch {
-      /* ignore */
-    }
-    throw new Error(`API ${path} failed: ${res.status} ${res.statusText}${detail}`);
-  }
+  if (!res.ok) throw new Error(await errorMessage(res));
   return res.json() as Promise<T>;
 }
 
@@ -293,23 +295,10 @@ export async function askQuestionStream(
 
   if (!res.ok) {
     if (res.status === 503) {
-      onEvent({
-        type: "error",
-        message: "Local model not available. Start llama-server first.",
-      });
+      onEvent({ type: "error", message: await errorMessage(res) });
       return;
     }
-    let detail = "";
-    try {
-      const body = await res.text();
-      detail = body ? ` — ${body}` : "";
-    } catch {
-      /* ignore */
-    }
-    onEvent({
-      type: "error",
-      message: `Ask failed: ${res.status} ${res.statusText}${detail}`,
-    });
+    onEvent({ type: "error", message: await errorMessage(res) });
     return;
   }
 
@@ -385,8 +374,7 @@ export async function transcribeAudio(
     signal: AbortSignal.timeout(90000),
   });
   if (!response.ok) {
-    const text = await response.text().catch(() => "Unknown error");
-    throw new Error(`Transcription failed (${response.status}): ${text}`);
+    throw new Error(await errorMessage(response));
   }
   return (await response.json()) as TranscribeResponse;
 }
@@ -400,21 +388,7 @@ export async function askQuestion(req: AskRequest): Promise<AskResponse> {
       signal: AbortSignal.timeout(300000),
     });
     if (!res.ok) {
-      if (res.status === 503) {
-        throw new Error(
-          "Local model not available. Start llama-server first.",
-        );
-      }
-      let detail = "";
-      try {
-        const body = await res.text();
-        detail = body ? ` — ${body}` : "";
-      } catch {
-        /* ignore */
-      }
-      throw new Error(
-        `Ask failed: ${res.status} ${res.statusText}${detail}`,
-      );
+      throw new Error(await errorMessage(res));
     }
     return (await res.json()) as AskResponse;
   } catch (err) {

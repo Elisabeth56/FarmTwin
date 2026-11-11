@@ -15,7 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api import ask, crops, farms, fields, observations, transcribe, weather
 from app.config import get_settings
 from app.db import models  # noqa: F401  (ensure models are registered on Base)
-from app.db.session import Base, engine
+from app.db.migrate import run_migrations
 from app.errors import install_error_handlers
 from app.logs import install_request_logging, setup_logging
 
@@ -23,7 +23,8 @@ from app.logs import install_request_logging, setup_logging
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     setup_logging()
-    Base.metadata.create_all(bind=engine)
+    # the app only starts serving (and /api/health only answers) once the schema is current
+    run_migrations()
     yield
 
 

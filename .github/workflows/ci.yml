@@ -23,8 +23,8 @@ jobs:
           enable-cache: true
           cache-dependency-glob: apps/api/uv.lock
       - run: uv sync --frozen
-      - run: uv run ruff check app scripts
-      - run: uv run ruff format --check app scripts
+      - run: uv run ruff check app scripts tests migrations
+      - run: uv run ruff format --check app scripts tests migrations
       - run: uv run pyright
       - run: uv run pytest -q
       - run: ./scripts/check_no_hardcoded_paths.sh

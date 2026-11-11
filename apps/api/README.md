@@ -18,8 +18,16 @@ Settings live in `app/config.py`; any of them can be set with a `FARMTWIN_*` env
 ## Checks
 
 ```bash
-uv run ruff check app scripts
+uv run ruff check app scripts tests migrations
 uv run pyright
 uv run pytest
 ./scripts/check_no_hardcoded_paths.sh
+```
+
+## Database changes
+
+Every schema change is a migration in `migrations/versions/`, named by intent. They run automatically when the API starts, after copying the database to `farmtwin.db.bak`. To create one:
+
+```bash
+uv run alembic revision -m "add plantings"
 ```

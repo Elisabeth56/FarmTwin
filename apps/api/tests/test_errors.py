@@ -30,7 +30,12 @@ def test_model_down_is_reported_plainly(client, monkeypatch):
     field = client.post("/api/fields/", json={"farm_id": farm["id"], "name": "Main field"}).json()
     client.post(
         "/api/crops/",
-        json={"field_id": field["id"], "crop_type": "maize", "planting_date": "2026-10-01", "status": "active"},
+        json={
+            "field_id": field["id"],
+            "crop_type": "maize",
+            "planting_date": "2026-10-01",
+            "status": "active",
+        },
     )
 
     def offline(*args, **kwargs):

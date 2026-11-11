@@ -1,15 +1,14 @@
 """FarmTwin corpus ingestion.
 
-Full-rebuild ingester: wipes `document_chunks` and its sqlite-vec sibling,
-then walks `knowledge/corpus/*.md`, parses YAML-frontmatter chunks, embeds
-each chunk with `all-MiniLM-L6-v2`, and stores rows + 384-d vectors.
+Syncs `knowledge/corpus/*.md` into `document_chunks` and its sqlite-vec sibling.
+Chunks are keyed by content hash: unchanged chunks are left alone, edited or new
+ones are embedded, and chunks no longer in the corpus are removed. Running it
+twice in a row embeds nothing the second time.
 
-Run from repo root:
+Run from apps/api (needs the `ml` extra for the embedder):
 
-    python3.11 scripts/ingest.py
+    uv run --extra ml python scripts/ingest.py
 """
-
-from __future__ import annotations
 
 import json
 import struct
@@ -17,180 +16,91 @@ import sys
 from collections import Counter
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[3]
-BACKEND_DIR = REPO_ROOT / "apps" / "api"
-CORPUS_DIR = REPO_ROOT / "knowledge" / "corpus"
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-sys.path.insert(0, str(BACKEND_DIR))
-
-import yaml  # noqa: E402
-from sentence_transformers import SentenceTransformer  # noqa: E402
-
-from app.db import models  # noqa: E402,F401
-from app.db.session import Base, SessionLocal, engine  # noqa: E402
+from app.config import get_settings
+from app.db import models
+from app.db.migrate import run_migrations
+from app.db.session import SessionLocal
+from app.rag.corpus import CorpusChunk, load_corpus, plan_sync
 
 MODEL_NAME = "all-MiniLM-L6-v2"
 EMBED_DIM = 384
-
-
-def parse_corpus_file(path: Path) -> list[dict]:
-    """Split a corpus file into (frontmatter, content) chunks.
-
-    Files are a sequence of `---`-separated blocks; a frontmatter block
-    (parseable as YAML with expected keys) is paired with the block that
-    follows it as the content.
-    """
-    text = path.read_text(encoding="utf-8")
-    raw_blocks = [b.strip() for b in text.split("---")]
-    blocks = [b for b in raw_blocks if b]
-
-    chunks: list[dict] = []
-    i = 0
-    while i < len(blocks):
-        block = blocks[i]
-        fm = None
-        if "source_id" in block or "source_title" in block:
-            try:
-                candidate = yaml.safe_load(block)
-                if isinstance(candidate, dict) and ("source_id" in candidate or "source_title" in candidate):
-                    fm = candidate
-            except yaml.YAMLError:
-                fm = None
-        if fm is not None and i + 1 < len(blocks):
-            content = blocks[i + 1].strip()
-            chunk_title = None
-            body_lines = content.splitlines()
-            if body_lines and body_lines[0].startswith("# Chunk:"):
-                chunk_title = body_lines[0].removeprefix("# Chunk:").strip()
-                content = "\n".join(body_lines[1:]).strip()
-            chunks.append({"frontmatter": fm, "chunk_title": chunk_title, "content": content})
-            i += 2
-        else:
-            i += 1
-    return chunks
 
 
 def vec_to_blob(vec) -> bytes:
     return struct.pack(f"{len(vec)}f", *vec)
 
 
+def chunk_row(chunk: CorpusChunk) -> models.DocumentChunk:
+    fm = chunk.frontmatter
+    topics = fm.get("topics") or []
+    if not isinstance(topics, list):
+        topics = [str(topics)]
+    return models.DocumentChunk(
+        source_id=fm.get("source_id"),
+        source_title=fm.get("source_title"),
+        source_org=fm.get("source_org"),
+        source_url=fm.get("source_url"),
+        source_note=fm.get("source_note"),
+        region=fm.get("region"),
+        crop=fm.get("crop"),
+        topics=json.dumps(topics),
+        chunk_title=chunk.title,
+        token_count=len(chunk.content.split()),
+        content=chunk.content,
+        content_hash=chunk.content_hash,
+    )
+
+
 def main() -> int:
-    if not CORPUS_DIR.exists():
-        print(f"ERROR: corpus dir not found at {CORPUS_DIR}", file=sys.stderr)
+    corpus_dir = get_settings().knowledge_dir / "corpus"
+    if not corpus_dir.exists():
+        print(f"ERROR: corpus dir not found at {corpus_dir}", file=sys.stderr)
         return 1
 
-    Base.metadata.create_all(bind=engine)
-
-    print(f"Loading sentence-transformers model: {MODEL_NAME} ...")
-    model = SentenceTransformer(MODEL_NAME)
-    dim = model.get_sentence_embedding_dimension()
-    if dim != EMBED_DIM:
-        print(f"ERROR: expected embedding dim {EMBED_DIM}, got {dim}", file=sys.stderr)
-        return 1
-    print(f"Model loaded, embedding dim = {dim}")
-
-    files = sorted(CORPUS_DIR.glob("*.md"))
-    print(f"Found {len(files)} corpus files")
+    run_migrations()
+    chunks = load_corpus(corpus_dir)
+    print(f"Read {len(chunks)} chunks from {corpus_dir}")
 
     session = SessionLocal()
-    # Share the session's underlying DBAPI connection with our raw vec-table
-    # writes; two separate sqlite connections on the same file would deadlock.
-    dbapi_conn = session.connection().connection
+    # raw vec-table writes share the session's connection; a second sqlite
+    # connection on the same file would deadlock
+    cur = session.connection().connection.cursor()
     try:
-        cur = dbapi_conn.cursor()
-        cur.execute("DROP TABLE IF EXISTS document_chunks_vec")
         cur.execute(
-            "CREATE VIRTUAL TABLE document_chunks_vec USING vec0("
-            "chunk_id INTEGER PRIMARY KEY, "
-            f"embedding FLOAT[{EMBED_DIM}])"
+            "CREATE VIRTUAL TABLE IF NOT EXISTS document_chunks_vec USING vec0("
+            f"chunk_id INTEGER PRIMARY KEY, embedding FLOAT[{EMBED_DIM}])"
         )
-        print("Recreated virtual table document_chunks_vec")
+        existing = dict(session.query(models.DocumentChunk.id, models.DocumentChunk.content_hash).all())
+        to_add, to_delete = plan_sync(existing, chunks)
 
-        session.query(models.DocumentChunk).delete()
-        session.commit()
-        print("Cleared document_chunks")
+        # remove stale rows first so their vectors never outlive them
+        for row_id in to_delete:
+            cur.execute("DELETE FROM document_chunks_vec WHERE chunk_id = ?", (row_id,))
+        if to_delete:
+            session.query(models.DocumentChunk).filter(models.DocumentChunk.id.in_(to_delete)).delete()
 
-        total_chunks = 0
-        files_ok = 0
-        file_errors: list[tuple[str, str]] = []
-        chunk_errors: list[tuple[str, int, str]] = []
-        org_counter: Counter = Counter()
-        crop_counter: Counter = Counter()
+        if to_add:
+            from sentence_transformers import SentenceTransformer
 
-        for fp in files:
-            try:
-                parsed = parse_corpus_file(fp)
-            except Exception as e:  # noqa: BLE001
-                file_errors.append((fp.name, str(e)))
-                print(f"  ERROR parsing {fp.name}: {e}")
-                continue
-
-            if not parsed:
-                print(f"  WARN {fp.name}: no chunks parsed")
-                continue
-
-            print(f"  {fp.name}: {len(parsed)} chunks")
-            files_ok += 1
-
-            for idx, ch in enumerate(parsed):
-                try:
-                    fm = ch["frontmatter"] or {}
-                    content = ch["content"]
-                    topics = fm.get("topics") or []
-                    if not isinstance(topics, list):
-                        topics = [str(topics)]
-
-                    row = models.DocumentChunk(
-                        source_id=fm.get("source_id"),
-                        source_title=fm.get("source_title"),
-                        source_org=fm.get("source_org"),
-                        source_url=fm.get("source_url"),
-                        source_note=fm.get("source_note"),
-                        region=fm.get("region"),
-                        crop=fm.get("crop"),
-                        topics=json.dumps(topics),
-                        chunk_title=ch.get("chunk_title"),
-                        token_count=len(content.split()),
-                        content=content,
-                    )
-                    session.add(row)
-                    session.flush()
-
-                    emb = model.encode(content, normalize_embeddings=True).tolist()
-                    cur.execute(
-                        "INSERT INTO document_chunks_vec(chunk_id, embedding) VALUES (?, ?)",
-                        (row.id, vec_to_blob(emb)),
-                    )
-                    total_chunks += 1
-                    org_counter[fm.get("source_org") or "(none)"] += 1
-                    crop_counter[fm.get("crop") or "(none)"] += 1
-                except Exception as e:  # noqa: BLE001
-                    chunk_errors.append((fp.name, idx, str(e)))
-                    print(f"    ERROR {fp.name} chunk {idx}: {e}")
-
+            model = SentenceTransformer(MODEL_NAME)
+            embeddings = model.encode([c.content for c in to_add], normalize_embeddings=True)
+            for chunk, emb in zip(to_add, embeddings, strict=True):
+                row = chunk_row(chunk)
+                session.add(row)
+                session.flush()
+                cur.execute(
+                    "INSERT INTO document_chunks_vec(chunk_id, embedding) VALUES (?, ?)",
+                    (row.id, vec_to_blob(emb.tolist())),
+                )
         session.commit()
     finally:
         session.close()
 
-    print("\n=== Ingestion summary ===")
-    print(f"Files processed OK : {files_ok}/{len(files)}")
-    print(f"Total chunks       : {total_chunks}")
-    print("\nBy source_org:")
-    for org, n in sorted(org_counter.items(), key=lambda x: (-x[1], x[0])):
-        print(f"  {n:>3}  {org}")
-    print("\nBy crop:")
-    for crop, n in sorted(crop_counter.items(), key=lambda x: (-x[1], x[0])):
-        print(f"  {n:>3}  {crop}")
-    if file_errors:
-        print("\nFile errors:")
-        for name, err in file_errors:
-            print(f"  {name}: {err}")
-    if chunk_errors:
-        print("\nChunk errors:")
-        for name, idx, err in chunk_errors:
-            print(f"  {name}[{idx}]: {err}")
-    if not file_errors and not chunk_errors:
-        print("\nNo errors.")
+    by_crop = Counter(c.frontmatter.get("crop") or "(none)" for c in chunks)
+    print(f"Added {len(to_add)}, removed {len(to_delete)}, unchanged {len(chunks) - len(to_add)}")
+    print("Chunks by crop: " + ", ".join(f"{crop} {n}" for crop, n in sorted(by_crop.items())))
     return 0
 
 

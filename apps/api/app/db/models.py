@@ -126,3 +126,4 @@ class DocumentChunk(Base):
     chunk_title: Mapped[str | None] = mapped_column(String)
     token_count: Mapped[int | None] = mapped_column(Integer)
     content: Mapped[str] = mapped_column(Text)
+    content_hash: Mapped[str | None] = mapped_column(String(64), index=True)

@@ -19,7 +19,11 @@ def test_golden_set_covers_what_adr_024_asks_for():
 
 
 def test_expected_sources_exist_in_the_corpus():
-    known = {c.frontmatter["source_id"] for c in load_corpus(get_settings().knowledge_dir / "corpus")}
+    corpus = load_corpus(get_settings().knowledge_dir / "corpus")
+    known = {c.frontmatter["source_id"] for c in corpus}
+    titles = {c.title for c in corpus}
     for case in CASES:
         assert set(case["expected_sources"]) <= known, case["id"]
+        assert set(case["expected_chunks"]) <= titles, case["id"]
+        assert bool(case["expected_chunks"]) == case["answerable"], case["id"]
         assert bool(case["expected_sources"]) == case["answerable"], case["id"]

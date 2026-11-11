@@ -40,8 +40,12 @@ def run_case(case: dict) -> dict:
     latency_ms = (time.perf_counter() - start) * 1000
 
     sources = [h["source_id"] for h in hits]
+    titles = [h["chunk_title"] for h in hits]
     expected = set(case["expected_sources"])
     first = next((i for i, s in enumerate(sources, 1) if s in expected), None)
+    # chunk-level match is the stricter signal: several crops have only one or two source documents
+    wanted = set(case["expected_chunks"])
+    first_chunk = next((i for i, t in enumerate(titles, 1) if t in wanted), None)
     return {
         "id": case["id"],
         "answerable": case["answerable"],
@@ -52,6 +56,8 @@ def run_case(case: dict) -> dict:
         "hit": first is not None,
         "recall": len(expected & set(sources)) / len(expected) if expected else None,
         "rr": 1 / first if first else 0.0,
+        "chunk_rank": first_chunk,
+        "chunk_rr": 1 / first_chunk if first_chunk else 0.0,
         "latency_ms": round(latency_ms, 1),
     }
 
@@ -74,6 +80,9 @@ def summarize(rows: list[dict]) -> dict:
         f"hit@{TOP_K}": mean([r["hit"] for r in answerable]),
         f"recall@{TOP_K}": mean([r["recall"] for r in answerable]),
         "mrr": mean([r["rr"] for r in answerable]),
+        "chunk_hit@1": mean([r["chunk_rank"] == 1 for r in answerable]),
+        f"chunk_hit@{TOP_K}": mean([r["chunk_rank"] is not None for r in answerable]),
+        "chunk_mrr": mean([r["chunk_rr"] for r in answerable]),
         # the relevance cutoff (#13) has to separate these two
         "best_distance_answerable": mean(
             [r["best_distance"] for r in answerable if r["best_distance"] is not None]
@@ -84,7 +93,11 @@ def summarize(rows: list[dict]) -> dict:
         "latency_p50_ms": statistics.median(latencies),
         "latency_p95_ms": latencies[max(0, round(len(latencies) * 0.95) - 1)],
         "by_group": {
-            k: {"n": len(v), "hit": mean([r["hit"] for r in v]), "mrr": mean([r["rr"] for r in v])}
+            k: {
+                "n": len(v),
+                "hit": mean([r["hit"] for r in v]),
+                "chunk_mrr": mean([r["chunk_rr"] for r in v]),
+            }
             for k, v in sorted(groups.items())
         },
     }
@@ -98,15 +111,14 @@ def print_report(summary: dict, rows: list[dict], baseline: dict | None) -> None
         before = (baseline or {}).get(key)
         print(f"{key:<30}{value!s:>10}{before!s:>10}")
 
-    print(f"\n{'group':<16}{'n':>4}{'hit':>8}{'mrr':>8}")
+    print(f"\n{'group':<16}{'n':>4}{'hit':>8}{'chunk_mrr':>11}")
     for name, g in summary["by_group"].items():
-        print(f"{name:<16}{g['n']:>4}{g['hit']:>8}{g['mrr']:>8}")
+        print(f"{name:<16}{g['n']:>4}{g['hit']:>8}{g['chunk_mrr']:>11}")
 
-    misses = [r for r in rows if r["answerable"] and not r["hit"]]
-    if misses:
-        print("\nmisses (no expected source in the top results):")
-        for r in misses:
-            print(f"  {r['id']}: got {', '.join(dict.fromkeys(r['retrieved']))}")
+    print("\nper case (best distance, rank of the expected chunk):")
+    for r in sorted(rows, key=lambda r: r["best_distance"] or 0):
+        rank = r["chunk_rank"] if r["answerable"] else "-"
+        print(f"  {r['best_distance']:.3f}  {rank!s:>4}  {r['id']}")
 
 
 def git_sha() -> str:

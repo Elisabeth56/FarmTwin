@@ -2,6 +2,7 @@
 in the OpenAI chat format, slowly enough to see the streaming and to try Stop.
 
     uv run python scripts/fake_llama.py      # listens on 127.0.0.1:8080
+    FARMTWIN_LLAMA_SERVER_BIN=scripts/fake_llama.sh FARMTWIN_LLM_MODEL_PATH=<any file> pnpm dev:api
 
 Not used by the app or the tests; never ship it.
 """
@@ -55,4 +56,10 @@ async def chat(request: Request):
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=8080)
+    import argparse
+
+    # accepts llama-server's flags so the API can supervise it like the real thing (ADR-027)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--port", type=int, default=8080)
+    args, _ = parser.parse_known_args()
+    uvicorn.run(app, host="127.0.0.1", port=args.port, log_level="warning")

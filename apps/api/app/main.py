@@ -12,6 +12,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.ai.server import supervisor
 from app.api import transcribe
 from app.config import get_settings
 from app.db import models  # noqa: F401  (ensure models are registered on Base)
@@ -21,6 +22,7 @@ from app.errors import install_error_handlers
 from app.features.ask import router as ask
 from app.features.farms import router as farms
 from app.features.fields import router as fields
+from app.features.model import router as model
 from app.features.observations import router as observations
 from app.features.plantings import router as plantings
 from app.features.weather import router as weather
@@ -35,7 +37,9 @@ async def lifespan(_: FastAPI):
     run_migrations()
     with SessionLocal() as session:
         check_index_embedder(session)
+    supervisor.start()
     yield
+    supervisor.stop()
 
 
 app = FastAPI(title="FarmTwin API", version="0.2.0", lifespan=lifespan)
@@ -61,5 +65,6 @@ app.include_router(fields.router)
 app.include_router(plantings.router)
 app.include_router(observations.router)
 app.include_router(weather.router)
+app.include_router(model.router)
 app.include_router(ask.router)
 app.include_router(transcribe.router)

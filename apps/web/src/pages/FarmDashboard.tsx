@@ -5,6 +5,7 @@ import AskPanel, { type AskContextChip } from "../components/AskPanel";
 import Button from "../components/Button";
 import FieldCard from "../components/FieldCard";
 import LogSheet from "../components/LogSheet";
+import ModelStoppedCard from "../components/ModelStoppedCard";
 import RainChart from "../components/RainChart";
 import RiskList from "../components/RiskList";
 import SourceDrawer from "../components/SourceDrawer";
@@ -93,6 +94,8 @@ export default function FarmDashboard() {
             Log observation
           </Button>
         </header>
+
+        <ModelStoppedCard />
 
         <section className="relative animate-rise overflow-hidden rounded-xl bg-raised [animation-delay:80ms]">
           <picture>

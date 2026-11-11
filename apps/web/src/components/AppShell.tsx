@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import FloatingSidebar from "./FloatingSidebar";
+import ModelStatusCard from "./ModelStatusCard";
 
 const ITEMS = [{ to: "/", label: "Farms", end: true, also: ["/farm/", "/setup"] }];
 
@@ -9,11 +10,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
     <div className="min-h-full md:pl-64">
       <FloatingSidebar
         items={ITEMS}
-        footer={
-          <div className="rounded-md bg-surface p-3 text-caption text-ink-muted">
-            Runs on this computer. Your farm data stays here.
-          </div>
-        }
+        footer={<ModelStatusCard />}
       />
       <main className="mx-auto w-full max-w-6xl px-4 py-6 md:px-8 md:py-10">{children}</main>
     </div>

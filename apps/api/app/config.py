@@ -27,6 +27,11 @@ class Settings(BaseSettings):
     ]
 
     llama_url: str = "http://127.0.0.1:8080"
+    # set both to have the API start and supervise llama-server (ADR-027); leave unset to use
+    # a llama-server you started yourself at llama_url
+    llama_server_bin: Path | None = None
+    llm_model_path: Path | None = None
+    llm_context: int = 4096
     llm_model: str = "qwen2.5-3b-instruct-q4_k_m"
     embedder_model: str = "BAAI/bge-small-en-v1.5"
     # fastembed model cache; the desktop build points this at the copy inside the installer

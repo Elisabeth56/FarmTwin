@@ -27,7 +27,10 @@ class Completion:
 
 
 def _url(path: str) -> str:
-    return get_settings().llama_url.rstrip("/") + path
+    # the supervisor knows the port when it started llama-server; otherwise it's llama_url
+    from app.ai.server import supervisor
+
+    return supervisor.url + path
 
 
 def _body(messages: list[dict], max_tokens: int, temperature: float, stream: bool) -> dict:

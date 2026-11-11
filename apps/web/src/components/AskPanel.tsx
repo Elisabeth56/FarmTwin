@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { askQuestionStream, type AnswerKind, type CitedChunk, type Recommendation } from "../lib/api";
 import { cropColor, cropLabel } from "../lib/crops";
+import { useModel } from "../lib/model";
 import { recall, remember } from "../lib/storage";
 import Button from "./Button";
 import MicButton from "./MicButton";
@@ -17,7 +18,11 @@ type Turn = {
   cards: Recommendation[];
   ids: number[];
   error?: string;
+  // set when the model went down mid-answer, so the question can be asked again once it's back
+  modelDown?: boolean;
 };
+
+const MODEL_DOWN = new Set(["model_unavailable", "model_timeout"]);
 
 type AskPanelProps = {
   farmId: number;
@@ -35,6 +40,9 @@ export default function AskPanel({ farmId, context, onOpenSource }: AskPanelProp
   const [micError, setMicError] = useState<string | null>(null);
   const abort = useRef<AbortController | null>(null);
   const working = turns.at(-1)?.status === "working";
+  const model = useModel();
+  // unknown status counts as ready, so a slow first poll never blocks a question
+  const modelReady = !model.status || model.status.state === "ready";
 
   useEffect(() => () => abort.current?.abort(), []);
 
@@ -67,7 +75,11 @@ export default function AskPanel({ farmId, context, onOpenSource }: AskPanelProp
             cards: event.recommendations,
             ids: event.saved_recommendation_ids,
           }));
-        else if (event.type === "error") update(() => ({ status: "error", error: event.message }));
+        else if (event.type === "error") {
+          const down = MODEL_DOWN.has(event.code ?? "");
+          update(() => ({ status: "error", error: event.message, modelDown: down }));
+          if (down) model.refresh();
+        }
       },
       controller.signal,
     );
@@ -99,8 +111,19 @@ export default function AskPanel({ farmId, context, onOpenSource }: AskPanelProp
       )}
 
       {turns.map((t, i) => (
-        <TurnView key={i} turn={t} onOpenSource={onOpenSource} />
+        <TurnView
+          key={i}
+          turn={t}
+          onOpenSource={onOpenSource}
+          onRetry={t.modelDown && i === turns.length - 1 && modelReady ? () => void ask(t.question) : undefined}
+        />
       ))}
+
+      {!modelReady && (
+        <p className="rounded-md bg-surface px-4 py-3 text-small text-ink-muted">
+          Questions are paused until the model is back. You can still write one; it will wait here.
+        </p>
+      )}
 
       {turns.length === 0 && (
         <div className="flex flex-wrap gap-2">
@@ -152,7 +175,7 @@ export default function AskPanel({ farmId, context, onOpenSource }: AskPanelProp
               Stop
             </Button>
           ) : (
-            <Button type="submit" disabled={input.trim().length < 3} className="flex-1">
+            <Button type="submit" disabled={input.trim().length < 3 || !modelReady} className="flex-1">
               Ask
             </Button>
           )}
@@ -162,7 +185,7 @@ export default function AskPanel({ farmId, context, onOpenSource }: AskPanelProp
   );
 }
 
-function TurnView({ turn, onOpenSource }: { turn: Turn; onOpenSource: (c: CitedChunk) => void }) {
+function TurnView({ turn, onOpenSource, onRetry }: { turn: Turn; onOpenSource: (c: CitedChunk) => void; onRetry?: () => void }) {
   const visible = withoutJson(turn.text);
   return (
     <div className="flex flex-col gap-3 border-t border-hairline pt-4">
@@ -183,6 +206,11 @@ function TurnView({ turn, onOpenSource }: { turn: Turn; onOpenSource: (c: CitedC
 
       {turn.status === "stopped" && <p className="text-small text-ink-muted">Stopped. Ask again whenever you're ready.</p>}
       {turn.status === "error" && <p className="text-small text-risk-high">{turn.error}</p>}
+      {onRetry && (
+        <Button variant="secondary" onClick={onRetry} className="self-start">
+          Ask this again
+        </Button>
+      )}
 
       {turn.status === "done" && turn.cards.length > 0 && <Checklist cards={turn.cards} ids={turn.ids} />}
 

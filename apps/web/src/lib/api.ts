@@ -491,3 +491,19 @@ export async function deleteObservation(id: number): Promise<void> {
   const res = await fetch(`${BASE_URL}/observations/${id}`, { method: "DELETE" });
   if (!res.ok) throw new Error(await errorMessage(res));
 }
+
+// ---------- Local model ----------
+
+export type ModelStatus = {
+  state: "ready" | "starting" | "stopped" | "not_set_up";
+  managed: boolean;
+  detail: string;
+};
+
+export function getModelStatus(): Promise<ModelStatus> {
+  return fetchAPI<ModelStatus>("/model/status");
+}
+
+export function restartModel(): Promise<ModelStatus> {
+  return fetchAPI<ModelStatus>("/model/restart", { method: "POST" });
+}

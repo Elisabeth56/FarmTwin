@@ -1,6 +1,6 @@
 """Production retrieval for FarmTwin.
 
-- Embeds queries with a module-level SentenceTransformer (loaded once).
+- Embeds queries with the local fastembed model (app/rag/embedder.py).
 - Runs KNN against the sqlite-vec virtual table `document_chunks_vec`.
 - Joins to `document_chunks` for metadata and returns dicts.
 """
@@ -14,24 +14,10 @@ from collections.abc import Iterable
 
 from sqlalchemy.orm import Session
 
-from app.config import get_settings
 from app.db.session import SessionLocal
+from app.rag.embedder import embed_query
 
 logger = logging.getLogger(__name__)
-
-_embedder = None
-
-
-def get_embedder():
-    """Loads the embedder on first use so the API starts without the ml extras."""
-    global _embedder
-    if _embedder is None:
-        from sentence_transformers import SentenceTransformer  # pyright: ignore[reportMissingImports]
-
-        name = get_settings().embedder_model
-        logger.info("loading embedder %s", name)
-        _embedder = SentenceTransformer(name)
-    return _embedder
 
 
 def _vec_to_blob(vec: Iterable[float]) -> bytes:
@@ -88,8 +74,7 @@ def retrieve_chunks(
     owns_session = db_session is None
     session = db_session or SessionLocal()
     try:
-        qvec = get_embedder().encode(query, normalize_embeddings=True).tolist()
-        blob = _vec_to_blob(qvec)
+        blob = _vec_to_blob(embed_query(query))
 
         dbapi_conn = session.connection().connection
         cur = dbapi_conn.cursor()

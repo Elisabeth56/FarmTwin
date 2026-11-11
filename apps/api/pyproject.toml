@@ -16,13 +16,12 @@ dependencies = [
     "pyyaml==6.0.2",
     "numpy==1.26.4",
     "alembic==1.14.0",
+    "fastembed==0.9.1",
 ]
 
 [project.optional-dependencies]
-# PyTorch-based embedder and Whisper, replaced by fastembed (ADR-016) and whisper.cpp (ADR-017).
-# Needed to run retrieval and voice until those land; CI runs without them.
+# PyTorch Whisper for v1 voice input, replaced by whisper.cpp in #16 (ADR-017). CI runs without it.
 ml = [
-    "sentence-transformers==3.2.1",
     "torch==2.5.1",
     "transformers==4.46.3",
     "soundfile==0.12.1",

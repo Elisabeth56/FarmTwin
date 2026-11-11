@@ -127,3 +127,12 @@ class DocumentChunk(Base):
     token_count: Mapped[int | None] = mapped_column(Integer)
     content: Mapped[str] = mapped_column(Text)
     content_hash: Mapped[str | None] = mapped_column(String(64), index=True)
+
+
+class IndexMeta(Base):
+    """Key/value facts about the search index, e.g. which embedder built it."""
+
+    __tablename__ = "index_meta"
+
+    key: Mapped[str] = mapped_column(String, primary_key=True)
+    value: Mapped[str] = mapped_column(String)

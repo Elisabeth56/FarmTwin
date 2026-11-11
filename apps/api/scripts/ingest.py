@@ -5,9 +5,10 @@ Chunks are keyed by content hash: unchanged chunks are left alone, edited or new
 ones are embedded, and chunks no longer in the corpus are removed. Running it
 twice in a row embeds nothing the second time.
 
-Run from apps/api (needs the `ml` extra for the embedder):
+If the configured embedder differs from the one that built the index, everything is
+re-embedded. Run from apps/api after `scripts/fetch_embedder.py`:
 
-    uv run --extra ml python scripts/ingest.py
+    uv run python scripts/ingest.py
 """
 
 import json
@@ -23,9 +24,10 @@ from app.db import models
 from app.db.migrate import run_migrations
 from app.db.session import SessionLocal
 from app.rag.corpus import CorpusChunk, load_corpus, plan_sync
+from app.rag.embedder import embed_passages
+from app.rag.index_meta import record_embedder, stored_embedder
 
-MODEL_NAME = "all-MiniLM-L6-v2"
-EMBED_DIM = 384
+EMBED_DIM = 384  # bge-small-en-v1.5
 
 
 def vec_to_blob(vec) -> bytes:
@@ -73,6 +75,10 @@ def main() -> int:
             f"chunk_id INTEGER PRIMARY KEY, embedding FLOAT[{EMBED_DIM}])"
         )
         existing = dict(session.query(models.DocumentChunk.id, models.DocumentChunk.content_hash).all())
+        embedder = get_settings().embedder_model
+        if stored_embedder(session) != embedder:
+            # vectors from another embedder can't be compared with new ones; rebuild them all
+            existing = dict.fromkeys(existing)
         to_add, to_delete = plan_sync(existing, chunks)
 
         # remove stale rows first so their vectors never outlive them
@@ -82,18 +88,17 @@ def main() -> int:
             session.query(models.DocumentChunk).filter(models.DocumentChunk.id.in_(to_delete)).delete()
 
         if to_add:
-            from sentence_transformers import SentenceTransformer
-
-            model = SentenceTransformer(MODEL_NAME)
-            embeddings = model.encode([c.content for c in to_add], normalize_embeddings=True)
+            # embed the title with the body so short chunks still carry their topic
+            embeddings = embed_passages(f"{c.title or ''}\n{c.content}" for c in to_add)
             for chunk, emb in zip(to_add, embeddings, strict=True):
                 row = chunk_row(chunk)
                 session.add(row)
                 session.flush()
                 cur.execute(
                     "INSERT INTO document_chunks_vec(chunk_id, embedding) VALUES (?, ?)",
-                    (row.id, vec_to_blob(emb.tolist())),
+                    (row.id, vec_to_blob(emb)),
                 )
+        record_embedder(session, embedder)
         session.commit()
     finally:
         session.close()

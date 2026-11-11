@@ -28,7 +28,9 @@ class Settings(BaseSettings):
 
     llama_url: str = "http://127.0.0.1:8080"
     llm_model: str = "qwen2.5-3b-instruct-q4_k_m"
-    embedder_model: str = "all-MiniLM-L6-v2"
+    embedder_model: str = "BAAI/bge-small-en-v1.5"
+    # fastembed model cache; the desktop build points this at the copy inside the installer
+    embedder_dir: Path | None = None
     whisper_model: str = "rishabbahal/whisper-small-nigerian-accent"
     # crop rule files and corpus; the desktop build points this at its bundled copy
     knowledge_dir: Path = Path(__file__).resolve().parents[3] / "knowledge"
@@ -56,6 +58,10 @@ class Settings(BaseSettings):
     @property
     def models_dir(self) -> Path:
         return self.data_dir / "models"
+
+    @property
+    def embedder_path(self) -> Path:
+        return self.embedder_dir or self.models_dir / "embedder"
 
     @property
     def logs_dir(self) -> Path:

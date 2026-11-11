@@ -26,8 +26,28 @@ jobs:
       - run: uv run ruff check app scripts tests migrations
       - run: uv run ruff format --check app scripts tests migrations
       - run: uv run pyright
-      - run: uv run pytest -q
       - run: ./scripts/check_no_hardcoded_paths.sh
+      # the only step with network access to the model host; everything after runs offline
+      - uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/embedder
+          key: embedder-${{ hashFiles('apps/api/app/config.py') }}
+      - run: uv run python scripts/fetch_embedder.py
+        env:
+          FARMTWIN_EMBEDDER_DIR: ${{ runner.temp }}/embedder
+      - name: tests, ingest and retrieval with the model host unreachable
+        env:
+          FARMTWIN_EMBEDDER_DIR: ${{ runner.temp }}/embedder
+          FARMTWIN_DATA_DIR: ${{ runner.temp }}/farmtwin-data
+          HF_HUB_OFFLINE: "1"
+          UV_OFFLINE: "1"
+          HTTPS_PROXY: http://127.0.0.1:9
+          HTTP_PROXY: http://127.0.0.1:9
+        run: |
+          uv run pytest -q
+          uv run python scripts/ingest.py
+          uv run python scripts/ingest.py | grep "Added 0, removed 0"
+          uv run python scripts/retrieval_smoke_test.py "when should I spray cowpea against Maruca"
 
   web:
     runs-on: ubuntu-latest

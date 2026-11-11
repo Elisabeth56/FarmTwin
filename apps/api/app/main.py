@@ -16,6 +16,7 @@ from app.api import ask, transcribe
 from app.config import get_settings
 from app.db import models  # noqa: F401  (ensure models are registered on Base)
 from app.db.migrate import run_migrations
+from app.db.session import SessionLocal
 from app.errors import install_error_handlers
 from app.features.farms import router as farms
 from app.features.fields import router as fields
@@ -23,6 +24,7 @@ from app.features.observations import router as observations
 from app.features.plantings import router as plantings
 from app.features.weather import router as weather
 from app.logs import install_request_logging, setup_logging
+from app.rag.index_meta import check_index_embedder
 
 
 @asynccontextmanager
@@ -30,6 +32,8 @@ async def lifespan(_: FastAPI):
     setup_logging()
     # the app only starts serving (and /api/health only answers) once the schema is current
     run_migrations()
+    with SessionLocal() as session:
+        check_index_embedder(session)
     yield
 
 

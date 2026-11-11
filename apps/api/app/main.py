@@ -12,12 +12,13 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import ask, transcribe
+from app.api import transcribe
 from app.config import get_settings
 from app.db import models  # noqa: F401  (ensure models are registered on Base)
 from app.db.migrate import run_migrations
 from app.db.session import SessionLocal
 from app.errors import install_error_handlers
+from app.features.ask import router as ask
 from app.features.farms import router as farms
 from app.features.fields import router as fields
 from app.features.observations import router as observations

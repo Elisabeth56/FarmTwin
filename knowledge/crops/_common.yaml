@@ -3,6 +3,7 @@ crop: _common
 name: All crops
 risks:
   - id: active_pest_pressure
+    title: "Pests reported"
     severity: high
     urgency: immediate
     when:
@@ -11,6 +12,7 @@ risks:
     source: naerls_pest_scouting
 
   - id: active_disease_pressure
+    title: "Disease reported"
     severity: high
     urgency: immediate
     when:

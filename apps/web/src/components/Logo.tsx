@@ -13,7 +13,7 @@ export default function Logo({ withWordmark = true }: { withWordmark?: boolean }
           <path d="M9.5 6.25 16 9.5l-6.5 3.25L3 9.5Z" fill="var(--brand)" opacity="0.8" />
         </g>
       </svg>
-      {withWordmark && <span className="tracking-tight">FarmTwin</span>}
+      {withWordmark && <span className="tracking-tight">farmtwin</span>}
     </span>
   );
 }

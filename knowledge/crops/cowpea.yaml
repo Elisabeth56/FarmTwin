@@ -12,6 +12,7 @@ stages:
 
 risks:
   - id: pests_at_flowering_or_podding
+    title: "Pests at flowering or podding"
     severity: high
     urgency: immediate
     stages: [flowering, podding]

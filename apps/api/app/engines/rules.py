@@ -53,6 +53,8 @@ class Risk(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     id: str
+    # short name shown in the app; falls back to the id with spaces
+    title: str | None = None
     severity: Severity
     urgency: Urgency
     stages: list[str] | None = None
@@ -189,6 +191,7 @@ class RiskFlag:
     time_sensitivity: Urgency
     supporting_facts: list[str] = field(default_factory=list)
     source: str = ""
+    title: str = ""
 
 
 @dataclass
@@ -220,7 +223,8 @@ def evaluate(
         if risk.fact:
             facts = facts + [risk.fact.format(today=readings.today.isoformat())]
         readings.fired[risk.id] = facts
-        flags.append(RiskFlag(risk.id, risk.severity, risk.reason, risk.urgency, facts, risk.source))
+        title = risk.title or risk.id.replace("_", " ").capitalize()
+        flags.append(RiskFlag(risk.id, risk.severity, risk.reason, risk.urgency, facts, risk.source, title))
     return flags
 
 

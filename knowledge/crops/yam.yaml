@@ -11,6 +11,7 @@ stages:
 
 risks:
   - id: rain_splash_anthracnose
+    title: "Anthracnose spread by rain"
     severity: medium
     urgency: this_week
     stages: [growing]

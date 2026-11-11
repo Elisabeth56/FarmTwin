@@ -84,3 +84,35 @@ def test_deleting_a_farm_removes_its_fields(client):
     field = make_field(client, farm["id"])
     assert client.delete(f"/api/farms/{farm['id']}").status_code == 204
     assert client.get(f"/api/fields/{field['id']}").status_code == 404
+
+
+def test_sample_farm_shows_current_risks_in_the_summary(client):
+    sample = client.post("/api/farms/sample")
+    assert sample.status_code == 201
+    summary = next(f for f in client.get("/api/farms/summary").json() if f["id"] == sample.json()["id"])
+    assert {p["crop"] for p in summary["plots"]} == {"maize", "cowpea", "sorghum"}
+    titles = {r["title"] for r in summary["risks"]}
+    assert "Fungal risk after heavy rain" in titles
+    assert "Pests at flowering or podding" in titles
+    assert summary["risks"][0]["severity"] == "high"
+    assert summary["last_logged_at"] is not None
+
+
+def test_plots_split_a_field_between_its_plantings(client):
+    farm = client.post("/api/farms", json={"name": "Intercrop"}).json()
+    field = client.post(
+        "/api/fields", json={"farm_id": farm["id"], "name": "Main", "area_hectares": 1.0}
+    ).json()
+    for crop in ("maize", "cowpea"):
+        client.post(
+            "/api/plantings",
+            json={
+                "field_id": field["id"],
+                "crop_type": crop,
+                "planting_date": "2026-10-01",
+                "status": "active",
+            },
+        )
+    summary = next(f for f in client.get("/api/farms/summary").json() if f["id"] == farm["id"])
+    assert [p["share"] for p in summary["plots"]] == [0.5, 0.5]
+    assert summary["last_logged_at"] is None

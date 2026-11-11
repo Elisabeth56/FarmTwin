@@ -14,6 +14,7 @@ stages:
 
 risks:
   - id: heavy_rainfall_fungal_risk
+    title: "Fungal risk after heavy rain"
     severity: high
     urgency: this_week
     stages: [vegetative]
@@ -25,6 +26,7 @@ risks:
     source: cimmyt_maize_disease_overview
 
   - id: high_humidity_foliar_pressure
+    title: "Leaf disease pressure from humidity"
     severity: medium
     urgency: this_week
     stages: [vegetative, flowering]
@@ -34,6 +36,7 @@ risks:
     source: cimmyt_maize_disease_overview
 
   - id: combined_rain_humidity_outbreak_risk
+    title: "Outbreak risk: rain plus humidity"
     severity: high
     urgency: immediate
     stages: [vegetative]
@@ -45,6 +48,7 @@ risks:
     source: cimmyt_maize_disease_overview
 
   - id: moisture_stress_dry_period
+    title: "Dry spell"
     severity: medium
     urgency: this_week
     stages: [vegetative, flowering]
@@ -58,6 +62,7 @@ risks:
     source: iita_vegetative_stress
 
   - id: heat_stress_at_flowering
+    title: "Heat at flowering"
     severity: high
     urgency: this_week
     stages: [flowering]

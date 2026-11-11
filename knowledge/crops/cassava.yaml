@@ -14,6 +14,7 @@ stages:
 
 risks:
   - id: dry_weather_mite_mealybug
+    title: "Mites and mealybug in dry weather"
     severity: medium
     urgency: this_week
     stages: [establishment, root_initiation]
@@ -28,6 +29,7 @@ risks:
     threshold_source: fao_weather_agriculture
 
   - id: wet_weather_blight_anthracnose
+    title: "Blight and anthracnose after rain"
     severity: medium
     urgency: this_week
     when:
@@ -39,6 +41,7 @@ risks:
     threshold_source: fao_weather_agriculture
 
   - id: waterlogging_root_rot
+    title: "Root rot from waterlogging"
     severity: medium
     urgency: monitor
     stages: [bulking, maturity]

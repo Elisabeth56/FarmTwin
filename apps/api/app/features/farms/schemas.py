@@ -51,3 +51,34 @@ class FieldOverview(BaseModel):
 class FarmOverview(BaseModel):
     farm: FarmOut
     fields: list[FieldOverview]
+
+
+class RiskOut(BaseModel):
+    id: str
+    title: str
+    severity: str
+    urgency: str
+    reason: str
+    facts: list[str]
+    source: str
+    crop: str
+    field: str
+    planting_id: int
+
+
+class Plot(BaseModel):
+    planting_id: int
+    crop: str
+    field: str
+    # relative size for the field mosaic: the field's area split between its plantings
+    share: float
+
+
+class FarmSummary(BaseModel):
+    id: int
+    name: str
+    region: str | None
+    area_hectares: float | None
+    plots: list[Plot]
+    risks: list[RiskOut]
+    last_logged_at: datetime | None

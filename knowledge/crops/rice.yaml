@@ -13,6 +13,7 @@ stages:
 
 risks:
   - id: damp_weather_blast
+    title: "Blast in damp weather"
     severity: high
     urgency: this_week
     stages: [vegetative, reproductive]
@@ -26,6 +27,7 @@ risks:
     threshold_source: fao_weather_agriculture
 
   - id: water_shortage_critical_stage
+    title: "Water shortage at a critical stage"
     severity: high
     urgency: this_week
     stages: [vegetative, reproductive]

@@ -10,14 +10,17 @@ from app.db import models
 from app.db.lookup import farm_or_404
 from app.db.session import get_db
 from app.engines.crop_calendar import compute_growth_stage
+from app.features.farms.sample import create_sample_farm
 from app.features.farms.schemas import (
     FarmIn,
     FarmOut,
     FarmOverview,
+    FarmSummary,
     FarmUpdate,
     FieldOverview,
     PlantingStage,
 )
+from app.features.farms.summary import summaries
 
 router = APIRouter(prefix="/api/farms", tags=["farms"])
 
@@ -25,6 +28,17 @@ router = APIRouter(prefix="/api/farms", tags=["farms"])
 @router.get("", response_model=list[FarmOut])
 def list_farms(db: Session = Depends(get_db)):
     return db.scalars(select(models.Farm).order_by(models.Farm.name)).all()
+
+
+@router.get("/summary", response_model=list[FarmSummary])
+def list_farm_summaries(db: Session = Depends(get_db)):
+    """Each farm with its plots, the risks firing now and when it was last logged."""
+    return summaries(db)
+
+
+@router.post("/sample", response_model=FarmOut, status_code=201)
+def add_sample_farm(db: Session = Depends(get_db)):
+    return create_sample_farm(db)
 
 
 @router.post("", response_model=FarmOut, status_code=201)

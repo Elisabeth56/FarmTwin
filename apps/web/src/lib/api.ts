@@ -146,6 +146,37 @@ export function getFarms(): Promise<Farm[]> {
   return fetchAPI<Farm[]>("/farms");
 }
 
+export type Risk = {
+  id: string;
+  title: string;
+  severity: "high" | "medium" | "low";
+  urgency: "immediate" | "this_week" | "monitor";
+  reason: string;
+  facts: string[];
+  source: string;
+  crop: string;
+  field: string;
+  planting_id: number;
+};
+
+export type FarmSummary = {
+  id: number;
+  name: string;
+  region: string | null;
+  area_hectares: number | null;
+  plots: { planting_id: number; crop: string; field: string; share: number }[];
+  risks: Risk[];
+  last_logged_at: string | null;
+};
+
+export function getFarmSummaries(): Promise<FarmSummary[]> {
+  return fetchAPI<FarmSummary[]>("/farms/summary");
+}
+
+export function createSampleFarm(): Promise<Farm> {
+  return fetchAPI<Farm>("/farms/sample", { method: "POST" });
+}
+
 export function getFarm(id: number): Promise<Farm> {
   return fetchAPI<Farm>(`/farms/${id}`);
 }

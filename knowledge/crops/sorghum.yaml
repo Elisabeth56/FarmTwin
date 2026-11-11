@@ -11,6 +11,7 @@ stages:
 
 risks:
   - id: pests_in_shoot_fly_window
+    title: "Pests in the shoot fly window"
     severity: high
     urgency: immediate
     stages: [seedling]

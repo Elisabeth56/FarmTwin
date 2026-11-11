@@ -6,7 +6,8 @@
     "dev": "concurrently -k -n web,api -c yellow,green \"pnpm --filter @farmtwin/web dev\" \"pnpm dev:api\"",
     "dev:api": "cd apps/api && uv run uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload",
     "build": "pnpm --filter @farmtwin/web build",
-    "lint": "pnpm --filter @farmtwin/web lint"
+    "lint": "pnpm --filter @farmtwin/web lint",
+    "eval": "cd apps/api && uv run python ../../evals/run.py"
   },
   "devDependencies": {
     "concurrently": "^9.2.1"

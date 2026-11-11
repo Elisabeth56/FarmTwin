@@ -84,7 +84,7 @@ def retrieve_chunks(
                 SELECT
                     dc.id, dc.source_org, dc.source_title, dc.chunk_title,
                     dc.content, dc.region, dc.crop, dc.topics,
-                    v.distance
+                    v.distance, dc.source_id
                 FROM document_chunks_vec v
                 JOIN document_chunks dc ON dc.id = v.chunk_id
                 WHERE v.embedding MATCH ? AND k = ?
@@ -115,6 +115,7 @@ def retrieve_chunks(
                     "crop": row[6],
                     "topics": topics,
                     "distance": row[8],
+                    "source_id": row[9],
                 }
             )
         return results

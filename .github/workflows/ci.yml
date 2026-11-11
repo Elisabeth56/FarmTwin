@@ -48,6 +48,11 @@ jobs:
           uv run python scripts/ingest.py
           uv run python scripts/ingest.py | grep "Added 0, removed 0"
           uv run python scripts/retrieval_smoke_test.py "when should I spray cowpea against Maruca"
+          uv run python ../../evals/run.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: eval-retrieval
+          path: evals/results/*-retrieval.json
 
   web:
     runs-on: ubuntu-latest

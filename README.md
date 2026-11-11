@@ -67,6 +67,10 @@ Nothing in this stack calls the internet at runtime. Full architectural detail â
 
 ---
 
+## Checks
+
+Every pull request runs `.github/workflows/ci.yml`: ruff, pyright, pytest and a hardcoded-path check for the api; lint, typecheck, tests and a build for the web app. To make a failing check block merging, enable branch protection on `main` in GitHub settings and require the `api` and `web` checks.
+
 ## Repository structure
 
 ```

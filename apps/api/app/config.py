@@ -32,6 +32,9 @@ class Settings(BaseSettings):
     # fastembed model cache; the desktop build points this at the copy inside the installer
     embedder_dir: Path | None = None
     whisper_model: str = "rishabbahal/whisper-small-nigerian-accent"
+    # vector distance (L2 between normalized embeddings) above which the closest chunk counts as "not in my sources"; tuned on
+    # the eval set (evals/results/baseline-retrieval.json), re-check it after corpus or embedder changes
+    retrieval_max_distance: float = 0.78
     # crop rule files and corpus; the desktop build points this at its bundled copy
     knowledge_dir: Path = Path(__file__).resolve().parents[3] / "knowledge"
 

@@ -57,6 +57,18 @@ class AskResponse(BaseModel):
     saved_recommendation_ids: list[int]
 
 
+# shown instead of an answer when retrieval finds nothing close enough (ADR-018)
+NOT_IN_SOURCES = (
+    "I couldn't find this in FarmTwin's farming guides, so I won't guess. I can help with your "
+    "crops' growth stages, pests, diseases, weather risks, planting and harvest."
+)
+
+
+def _farm_crops(plantings: list[models.Planting]) -> list[str]:
+    """Every crop growing on the farm, so intercropped fields search all their crops."""
+    return sorted({p.crop_type for p in plantings if p.crop_type})
+
+
 def _as_date(v: Any) -> date | None:
     if isinstance(v, datetime):
         return v.date()
@@ -217,7 +229,17 @@ def ask(payload: AskRequest, db: Session = Depends(get_db)) -> AskResponse:
         risk_flags=flags,
         user_question=payload.question,
     )
-    chunks = retriever.retrieve_chunks(query, top_k=6, db_session=db)
+    retrieval = retriever.retrieve(query, _farm_crops(active_crops), top_k=6, db_session=db)
+    if retrieval.refused:
+        return AskResponse(
+            narrative=NOT_IN_SOURCES,
+            recommendations=[],
+            cited_chunks=[],
+            model_name=MODEL_NAME,
+            timing_ms={"total_ms": int((time.time() - t_total_start) * 1000)},
+            saved_recommendation_ids=[],
+        )
+    chunks = retrieval.chunks
 
     # Prompt assembly.
     prompt = context_assembler.assemble_prompt(
@@ -455,7 +477,16 @@ def _prepare_ask_context(payload: AskRequest, db: Session) -> dict:
         risk_flags=flags,
         user_question=payload.question,
     )
-    chunks = retriever.retrieve_chunks(query, top_k=6, db_session=db)
+    retrieval = retriever.retrieve(query, _farm_crops(active_crops), top_k=6, db_session=db)
+    if retrieval.refused:
+        return {
+            "farm": farm,
+            "field": field,
+            "chunks": [],
+            "prompt": None,
+            "early_response": NOT_IN_SOURCES,
+        }
+    chunks = retrieval.chunks
 
     prompt = context_assembler.assemble_prompt(
         farm_facts=farm_facts,
@@ -536,7 +567,7 @@ async def ask_stream(payload: AskRequest, db: Session = Depends(get_db)):
     early = ctx["early_response"]
 
     async def generator():
-        # Short-circuit: no active crop.
+        # Short-circuit: no active crop, or nothing relevant in the sources.
         if early is not None:
             yield _sse({"type": "ready", "cited_chunks": []})
             yield _sse(

@@ -23,7 +23,7 @@ EVALS = Path(__file__).resolve().parent
 sys.path.insert(0, str(EVALS.parent / "apps" / "api"))
 
 from app.config import get_settings  # noqa: E402
-from app.rag.retriever import build_query, retrieve_chunks  # noqa: E402
+from app.rag.retriever import build_query, retrieve  # noqa: E402
 
 TOP_K = 6
 BASELINE = EVALS / "results" / "baseline-retrieval.json"
@@ -36,7 +36,8 @@ def load_cases() -> list[dict]:
 def run_case(case: dict) -> dict:
     query = build_query(" ".join(case["crops"]), case["stage"] or "", "", [], case["question"])
     start = time.perf_counter()
-    hits = retrieve_chunks(query, top_k=TOP_K)
+    result = retrieve(query, case["crops"] or None, top_k=TOP_K)
+    hits = result.chunks
     latency_ms = (time.perf_counter() - start) * 1000
 
     sources = [h["source_id"] for h in hits]
@@ -52,7 +53,8 @@ def run_case(case: dict) -> dict:
         "tags": case["tags"],
         "crops": case["crops"],
         "retrieved": sources,
-        "best_distance": hits[0]["distance"] if hits else None,
+        "best_distance": result.best_distance,
+        "refused": result.refused,
         "hit": first is not None,
         "recall": len(expected & set(sources)) / len(expected) if expected else None,
         "rr": 1 / first if first else 0.0,
@@ -83,7 +85,9 @@ def summarize(rows: list[dict]) -> dict:
         "chunk_hit@1": mean([r["chunk_rank"] == 1 for r in answerable]),
         f"chunk_hit@{TOP_K}": mean([r["chunk_rank"] is not None for r in answerable]),
         "chunk_mrr": mean([r["chunk_rr"] for r in answerable]),
-        # the relevance cutoff (#13) has to separate these two
+        "refused_unanswerable": mean([r["refused"] for r in unanswerable]),
+        "refused_answerable": mean([r["refused"] for r in answerable]),
+        # the relevance cutoff (settings.retrieval_max_distance) sits between these two
         "best_distance_answerable": mean(
             [r["best_distance"] for r in answerable if r["best_distance"] is not None]
         ),
@@ -142,6 +146,7 @@ def main() -> int:
         "date": date.today().isoformat(),
         "commit": git_sha(),
         "embedder": get_settings().embedder_model,
+        "max_distance": get_settings().retrieval_max_distance,
         "top_k": TOP_K,
         "summary": summary,
         "cases": rows,

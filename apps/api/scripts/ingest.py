@@ -1,6 +1,7 @@
 """FarmTwin corpus ingestion.
 
-Syncs `knowledge/corpus/*.md` into `document_chunks` and its sqlite-vec sibling.
+Syncs `knowledge/corpus/*.md` into `document_chunks` and its vector (sqlite-vec) and
+keyword (FTS5) indexes.
 Chunks are keyed by content hash: unchanged chunks are left alone, edited or new
 ones are embedded, and chunks no longer in the corpus are removed. Running it
 twice in a row embeds nothing the second time.
@@ -84,6 +85,7 @@ def main() -> int:
         # remove stale rows first so their vectors never outlive them
         for row_id in to_delete:
             cur.execute("DELETE FROM document_chunks_vec WHERE chunk_id = ?", (row_id,))
+            cur.execute("DELETE FROM document_chunks_fts WHERE rowid = ?", (row_id,))
         if to_delete:
             session.query(models.DocumentChunk).filter(models.DocumentChunk.id.in_(to_delete)).delete()
 
@@ -97,6 +99,10 @@ def main() -> int:
                 cur.execute(
                     "INSERT INTO document_chunks_vec(chunk_id, embedding) VALUES (?, ?)",
                     (row.id, vec_to_blob(emb)),
+                )
+                cur.execute(
+                    "INSERT INTO document_chunks_fts(rowid, chunk_title, content) VALUES (?, ?, ?)",
+                    (row.id, chunk.title or "", chunk.content),
                 )
         record_embedder(session, embedder)
         session.commit()

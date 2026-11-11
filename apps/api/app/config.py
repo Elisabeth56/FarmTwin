@@ -30,6 +30,8 @@ class Settings(BaseSettings):
     llm_model: str = "qwen2.5-3b-instruct-q4_k_m"
     embedder_model: str = "all-MiniLM-L6-v2"
     whisper_model: str = "rishabbahal/whisper-small-nigerian-accent"
+    # crop rule files and corpus; the desktop build points this at its bundled copy
+    knowledge_dir: Path = Path(__file__).resolve().parents[3] / "knowledge"
 
     @field_validator("data_dir")
     @classmethod

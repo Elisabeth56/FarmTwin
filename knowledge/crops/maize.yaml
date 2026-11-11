@@ -1,0 +1,67 @@
+# Maize: stages and risk rules. Values carried over unchanged from the v1 engine
+# (apps/api/app/engines in the hackathon build); every rule cites the corpus chunk behind it.
+crop: maize
+name: Maize
+sources: [iita_maize_lifecycle_overview, cimmyt_maize_disease_overview, iita_vegetative_stress, fao_weather_agriculture]
+
+stages:
+  - {id: germination, from_day: 0, to_day: 7, description: "Seed absorbs water and emerges."}
+  - {id: seedling, from_day: 7, to_day: 21, description: "Early leaf development, root establishment."}
+  - {id: vegetative, from_day: 21, to_day: 60, description: "Rapid leaf and stalk growth."}
+  - {id: flowering, from_day: 60, to_day: 75, description: "Tasseling and silking; highly water-sensitive."}
+  - {id: grain_filling, from_day: 75, to_day: 105, description: "Kernel development and dry matter accumulation."}
+  - {id: maturity, from_day: 105, to_day: 120, description: "Physiological maturity; drying down for harvest."}
+
+risks:
+  - id: heavy_rainfall_fungal_risk
+    severity: high
+    urgency: this_week
+    stages: [vegetative]
+    when:
+      any:
+        - observation: {type: rainfall, min: 50, within_days: 5}
+        - weather: {field: rainfall_mm, min: 50}
+    reason: Heavy recent rainfall on vegetative maize creates ideal conditions for fungal foliar diseases.
+    source: cimmyt_maize_disease_overview
+
+  - id: high_humidity_foliar_pressure
+    severity: medium
+    urgency: this_week
+    stages: [vegetative, flowering]
+    when:
+      weather: {field: humidity_pct, min: 80}
+    reason: Sustained humidity at or above 80% on maize in the vegetative/flowering window elevates foliar disease pressure.
+    source: cimmyt_maize_disease_overview
+
+  - id: combined_rain_humidity_outbreak_risk
+    severity: high
+    urgency: immediate
+    stages: [vegetative]
+    when:
+      all:
+        - rule: heavy_rainfall_fungal_risk
+        - rule: high_humidity_foliar_pressure
+    reason: Heavy rainfall combined with sustained high humidity on vegetative maize is the classic trigger for a fungal disease outbreak; act before symptoms appear.
+    source: cimmyt_maize_disease_overview
+
+  - id: moisture_stress_dry_period
+    severity: medium
+    urgency: this_week
+    stages: [vegetative, flowering]
+    when:
+      not:
+        any:
+          - observation: {type: rainfall, min: 10, within_days: 10}
+          - weather: {field: rainfall_mm, min: 5, within_days: 10}
+    fact: No rainfall observations ≥10mm in last 10 days as of {today}
+    reason: No significant rainfall recorded in the last 10 days during a moisture-sensitive stage; yield loss risk if the dry period continues.
+    source: iita_vegetative_stress
+
+  - id: heat_stress_at_flowering
+    severity: high
+    urgency: this_week
+    stages: [flowering]
+    when:
+      weather: {field: temp_max_c, min: 35}
+    reason: Air temperature ≥35°C during flowering can impair pollination and reduce grain set.
+    source: fao_weather_agriculture

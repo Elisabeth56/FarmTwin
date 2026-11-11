@@ -1,0 +1,10 @@
+# Yam: coarse two-stage calendar carried over from v1. Detailed stages and risk rules come with #9.
+crop: yam
+name: Yam
+sources: [iita_yam_basics]
+
+stages:
+  - {id: growing, from_day: 0, to_day: 270, description: "Vine growth and tuber development."}
+  - {id: maturity, from_day: 270, to_day: 330, description: "Tubers ready for harvest window."}
+
+risks: []

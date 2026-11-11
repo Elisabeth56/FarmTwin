@@ -1,0 +1,21 @@
+# Cowpea: stages for a medium-maturity variety (80-89 days) anchored on the IITA farmers' guide's
+# day counts: aphid spray at 14-21 days, flower bud initiation at 30-35 days with sprays 10 days
+# apart after it, maturity at 80-89 days.
+crop: cowpea
+name: Cowpea
+sources: [iita_cowpea_farmers_guide_2009]
+
+stages:
+  - {id: seedling, from_day: 0, to_day: 30, description: "Emergence and early leaves; aphids are the main pest."}
+  - {id: flowering, from_day: 30, to_day: 55, description: "Flower buds open; thrips and Maruca attack."}
+  - {id: podding, from_day: 55, to_day: 85, description: "Pods fill; pod-sucking bugs attack."}
+
+risks:
+  - id: pests_at_flowering_or_podding
+    severity: high
+    urgency: immediate
+    stages: [flowering, podding]
+    when:
+      observation: {type: pest, within_days: 7}
+    reason: Pests during cowpea flowering and podding hit the pods directly; pod-sucking bugs alone can cost 30-70% of the yield. The guide sprays at flower bud initiation, again 10 days later, and a third time if Maruca or pod bugs are heavy.
+    source: iita_cowpea_farmers_guide_2009

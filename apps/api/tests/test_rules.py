@@ -6,7 +6,12 @@ import pytest
 
 from app.engines.rules import CropFile, evaluate, growth_stage, load_crops
 
-CASES = json.loads((Path(__file__).parent / "fixtures" / "v1_engine_cases.json").read_text())
+# v1 parity holds for maize only; the other crops got sourced calendars and rules in #9
+CASES = [
+    c
+    for c in json.loads((Path(__file__).parent / "fixtures" / "v1_engine_cases.json").read_text())
+    if c["crop"] == "maize"
+]
 TODAY = date(2026, 7, 15)
 
 
@@ -94,7 +99,7 @@ def test_heat_only_matters_at_flowering():
 
 def test_pest_reports_apply_to_every_crop():
     pest = {"obs_type": "pest", "value_text": "mealybugs on shoot tips", "observed_at": TODAY.isoformat()}
-    assert "active_pest_pressure" in names(evaluate("cassava", "growing", [pest], None, TODAY))
+    assert "active_pest_pressure" in names(evaluate("cassava", "bulking", [pest], None, TODAY))
 
 
 def test_disease_reports_older_than_a_week_are_ignored():
@@ -123,6 +128,10 @@ def test_every_rule_cites_a_corpus_source():
     for spec in [*crops.values(), common]:
         for risk in spec.risks:
             assert risk.source in known, f"{spec.crop}.{risk.id} cites unknown source {risk.source}"
+            if risk.threshold_source:
+                assert risk.threshold_source in known, f"{spec.crop}.{risk.id}"
+        for source in spec.sources:
+            assert source in known, f"{spec.crop} lists unknown source {source}"
 
 
 @pytest.mark.parametrize(
@@ -186,3 +195,64 @@ def test_every_rule_cites_a_corpus_source():
 def test_bad_rule_files_are_rejected(bad, message):
     with pytest.raises(ValueError, match=message):
         CropFile.model_validate(bad)
+
+
+def pest(days_ago=0):
+    return {
+        "obs_type": "pest",
+        "value_text": "insects",
+        "observed_at": (TODAY - timedelta(days=days_ago)).isoformat(),
+    }
+
+
+@pytest.mark.parametrize("crop", ["maize", "cassava", "yam", "sorghum", "rice", "cowpea"])
+def test_every_supported_crop_has_a_calendar(crop):
+    stage = growth_stage(crop, TODAY - timedelta(days=20), TODAY)
+    assert stage["stage"] not in ("pre_planting", "past_maturity")
+
+
+def test_rice_stages_follow_faro_44():
+    planted = TODAY - timedelta(days=60)
+    stage = growth_stage("rice", planted, TODAY)
+    assert stage["stage"] == "reproductive"
+    assert stage["total_cycle_days"] == 110
+
+
+def test_damp_weather_raises_blast_risk_on_young_rice():
+    assert "damp_weather_blast" in names(evaluate("rice", "vegetative", [], weather(humidity_pct=85), TODAY))
+    assert "damp_weather_blast" not in names(
+        evaluate("rice", "ripening", [], weather(humidity_pct=85), TODAY)
+    )
+
+
+def test_dry_spell_at_a_critical_rice_stage():
+    assert "water_shortage_critical_stage" in names(evaluate("rice", "reproductive", [], None, TODAY))
+    assert "water_shortage_critical_stage" not in names(
+        evaluate("rice", "reproductive", [rain(20, 3)], None, TODAY)
+    )
+
+
+def test_dry_weather_on_young_cassava_flags_mites_and_mealybug():
+    assert "dry_weather_mite_mealybug" in names(evaluate("cassava", "root_initiation", [], None, TODAY))
+    assert "dry_weather_mite_mealybug" not in names(evaluate("cassava", "bulking", [], None, TODAY))
+
+
+def test_heavy_rain_on_cassava():
+    flags = names(evaluate("cassava", "bulking", [rain(60, 1)], None, TODAY))
+    assert {"wet_weather_blight_anthracnose", "waterlogging_root_rot"} <= flags
+
+
+def test_heavy_rain_spreads_yam_anthracnose():
+    assert "rain_splash_anthracnose" in names(evaluate("yam", "growing", [], weather(rainfall_mm=55), TODAY))
+    assert "rain_splash_anthracnose" not in names(evaluate("yam", "growing", [rain(20, 1)], None, TODAY))
+
+
+def test_pests_in_the_sorghum_shoot_fly_window():
+    assert "pests_in_shoot_fly_window" in names(evaluate("sorghum", "seedling", [pest()], None, TODAY))
+    assert "pests_in_shoot_fly_window" not in names(evaluate("sorghum", "growing", [pest()], None, TODAY))
+
+
+def test_pests_at_cowpea_flowering():
+    flags = evaluate("cowpea", "flowering", [pest(2)], None, TODAY)
+    assert {"pests_at_flowering_or_podding", "active_pest_pressure"} <= names(flags)
+    assert "pests_at_flowering_or_podding" not in names(evaluate("cowpea", "seedling", [pest()], None, TODAY))

@@ -1,0 +1,20 @@
+# Sorghum: stages for SAMSORG 14 (about 110-120 days) from the ICRISAT North East Nigeria handbook.
+# The handbook gives the shoot fly window and the weeding window but no day count for flowering,
+# so everything after the first month is one stage until a source pins it down.
+crop: sorghum
+name: Sorghum
+sources: [icrisat_sorghum_ne_nigeria_2020]
+
+stages:
+  - {id: seedling, from_day: 0, to_day: 30, description: "Emergence and early growth; the shoot fly window."}
+  - {id: growing, from_day: 30, to_day: 120, description: "Stem growth through flowering and grain fill; urea before flowering."}
+
+risks:
+  - id: pests_in_shoot_fly_window
+    severity: high
+    urgency: immediate
+    stages: [seedling]
+    when:
+      observation: {type: pest, within_days: 7}
+    reason: Pests on sorghum in its first month fall in the shoot fly window. Look for dead hearts, where the central shoot has died; the risk is higher on late-sown fields.
+    source: icrisat_sorghum_ne_nigeria_2020

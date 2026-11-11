@@ -21,6 +21,7 @@ risks:
     reason: Plain sentence shown to the user and given to the model.
     fact: Optional sentence added to the evidence, with {today} available.
     source: cimmyt_maize_disease_overview   # must be a source_id in knowledge/corpus
+    threshold_source: fao_weather_agriculture   # optional, see below
 ```
 
 Stage outside every range: `pre_planting` before day 0, `past_maturity` after the last stage. The harvest window is the last 10% of the cycle.
@@ -40,4 +41,6 @@ Each reading that makes a condition hold becomes a supporting fact on the risk, 
 
 1. Every number comes from a document in `knowledge/corpus`, and every risk names that document's `source_id`. The test suite fails on an unknown source.
 2. Keep conditions to comparisons over recent readings. Anything that needs real computation goes in Python with its own test.
-3. Add tests for each new rule in `apps/api/tests/test_rules.py`.
+3. Extension guides say what weather drives a risk ("damp conditions", "the dry season") but rarely give a number. Use the shared weather definitions already in the corpus (heavy rain is 50 mm or more; high humidity is 80% or more; a dry spell is no 10 mm rain in 10 days, from `fao_weather_agriculture`) and name that document in `threshold_source`. Don't invent a crop-specific number.
+4. Stage boundaries come from day counts the document gives (weeding weeks, spray windows, days to maturity). Say in the file's header comment which variety the calendar follows and how the boundaries were derived. If the document gives no day count, keep the stage coarse rather than guess.
+5. Add tests for each new rule in `apps/api/tests/test_rules.py`.

@@ -61,6 +61,8 @@ class Risk(BaseModel):
     # shown when the condition holds through absence (a `not`), where no reading explains it
     fact: str | None = None
     source: str
+    # where a weather threshold comes from, when it is not the risk's own source
+    threshold_source: str | None = None
 
 
 class CropFile(BaseModel):

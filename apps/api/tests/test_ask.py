@@ -170,15 +170,33 @@ def test_prompt_version_and_model_are_logged(client, farm, found, model, caplog)
     assert "prompt=ask/v2" in line and "model=qwen2.5-3b-instruct-q4_k_m" in line and "outcome=cards" in line
 
 
-def test_stream_sends_ready_tokens_then_the_validated_answer(client, farm, found, model):
+def test_stream_sends_progress_ready_tokens_then_the_validated_answer(client, farm, found, model):
     model[0].extend([BAD, GOOD])
     events = stream_events(client, farm)
-    assert events[0]["type"] == "ready" and len(events[0]["cited_chunks"]) == 2
-    assert {e["type"] for e in events[1:-1]} == {"token"}
+    assert events[0]["type"] == "progress"  # sent before any work, so the app shows it at once
+    types = [e["type"] for e in events]
+    ready = types.index("ready")
+    assert len(events[ready]["cited_chunks"]) == 2
+    assert "token" in types[ready:]
     final = events[-1]
-    assert final["type"] == "recommendation_ready"
+    assert final["type"] == "recommendation_ready" and final["kind"] == "answer"
     assert final["recommendations"][0]["priority"] == "high"  # came from the repair
     assert "```" not in final["narrative"]
+
+
+def test_not_found_stream_has_no_sources(client, farm, model, monkeypatch):
+    monkeypatch.setattr(context.retriever, "retrieve", lambda *a, **k: Retrieval([], 0.9))
+    events = stream_events(client, farm)
+    ready = next(e for e in events if e["type"] == "ready")
+    final = events[-1]
+    assert ready["cited_chunks"] == [] and final["cited_chunks"] == []
+    assert final["kind"] == "not_in_sources"
+    assert model[1] == []
+
+
+def test_stream_for_a_missing_farm_is_a_plain_404(client):
+    res = client.post("/api/ask/stream", json={"farm_id": 999999, "question": "Anything?"})
+    assert res.status_code == 404
 
 
 def test_model_down_is_reported_plainly(client, farm, found, monkeypatch):

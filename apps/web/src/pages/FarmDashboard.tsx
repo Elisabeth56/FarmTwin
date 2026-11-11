@@ -1,12 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import AppShell from "../components/AppShell";
-import AskPanel from "../components/AskPanel";
+import AskPanel, { type AskContextChip } from "../components/AskPanel";
 import Button from "../components/Button";
 import FieldCard from "../components/FieldCard";
 import LogSheet from "../components/LogSheet";
 import RainChart from "../components/RainChart";
-import RecommendationsPanel from "../components/RecommendationsPanel";
 import RiskList from "../components/RiskList";
 import SourceDrawer from "../components/SourceDrawer";
 import {
@@ -15,8 +14,9 @@ import {
   type CitedChunk,
   type FarmDashboardData,
   type Observation,
-  type Recommendation,
 } from "../lib/api";
+import { cropLabel } from "../lib/crops";
+import { stageLabel } from "../lib/format";
 
 type Load = { state: "loading" } | { state: "error"; message: string } | { state: "ready"; data: FarmDashboardData };
 type Undo = { obs: Observation; label: string };
@@ -29,7 +29,6 @@ export default function FarmDashboard() {
   const [load, setLoad] = useState<Load>({ state: "loading" });
   const [logOpen, setLogOpen] = useState(false);
   const [undo, setUndo] = useState<Undo | null>(null);
-  const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [chunk, setChunk] = useState<CitedChunk | null>(null);
 
   const refresh = useCallback(
@@ -127,10 +126,7 @@ export default function FarmDashboard() {
           <RiskList risks={risks} />
         </section>
 
-        <section className="grid items-start gap-4 lg:grid-cols-[1.2fr_1fr]">
-          <AskPanel farmId={farmId} onCitationClick={setChunk} onNewRecommendations={setRecommendations} />
-          <RecommendationsPanel recommendations={recommendations} />
-        </section>
+        <AskPanel farmId={farmId} context={askContext(load.data)} onOpenSource={setChunk} />
       </div>
 
       <LogSheet
@@ -156,4 +152,13 @@ export default function FarmDashboard() {
       <SourceDrawer chunk={chunk} onClose={() => setChunk(null)} />
     </AppShell>
   );
+}
+
+/** The chips above the question: what the answer will take into account. */
+function askContext({ fields, risks }: FarmDashboardData): AskContextChip[] {
+  const chips: AskContextChip[] = fields.flatMap((f) =>
+    f.plantings.map((p) => ({ key: `p${p.id}`, crop: p.crop, label: `${cropLabel(p.crop)} · ${stageLabel(p.stage)}` })),
+  );
+  if (risks[0]) chips.push({ key: "risk", risk: risks[0].severity, label: risks[0].title });
+  return chips;
 }

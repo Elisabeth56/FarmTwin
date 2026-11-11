@@ -1,480 +1,281 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { askQuestionStream, type AnswerKind, type CitedChunk, type Recommendation } from "../lib/api";
+import { cropColor, cropLabel } from "../lib/crops";
+import { recall, remember } from "../lib/storage";
 import Button from "./Button";
-import Card from "./Card";
 import MicButton from "./MicButton";
-import {
-  askQuestionStream,
-  type CitedChunk,
-  type Recommendation,
-  type StreamEvent,
-} from "../lib/api";
 
-export type AskPanelProps = {
-  farmId: number;
-  onCitationClick: (chunk: CitedChunk) => void;
-  onNewRecommendations: (recs: Recommendation[]) => void;
-};
-
-type StreamingResponse = {
-  narrative: string;
-  recommendations: Recommendation[];
-  cited_chunks: CitedChunk[];
-  model_name?: string;
-  timing_ms?: {
-    prompt_ms?: number;
-    generation_ms?: number;
-    llm_wallclock_ms?: number;
-    total_ms: number;
-  };
-  streaming: boolean;
-  gotFirstToken: boolean;
-  cancelled?: boolean;
-};
+export type AskContextChip = { key: string; label: string; crop?: string; risk?: "high" | "medium" | "low" };
 
 type Turn = {
-  id: number;
   question: string;
-  status: "streaming" | "done" | "error";
-  response?: StreamingResponse;
+  status: "working" | "done" | "stopped" | "error";
+  progress: string;
+  text: string;
+  kind: AnswerKind;
+  sources: CitedChunk[];
+  cards: Recommendation[];
+  ids: number[];
   error?: string;
 };
 
-const CITATION_RE = /\[K(\d+)\]/g;
+type AskPanelProps = {
+  farmId: number;
+  context: AskContextChip[];
+  onOpenSource: (chunk: CitedChunk) => void;
+};
 
-const PARTIAL_FENCE_RE = /`{1,3}(?:j(?:s(?:o(?:n)?)?)?)?\s*$/;
+const RISK_DOT = { high: "bg-risk-high", medium: "bg-risk-medium", low: "bg-risk-low" } as const;
+const SUGGESTIONS = ["What should I do this week?", "Is my crop at risk from the recent weather?"];
 
-export function stripJsonBlock(narrative: string): {
-  visibleText: string;
-  jsonStarted: boolean;
-} {
-  if (!narrative) return { visibleText: "", jsonStarted: false };
-
-  const fullIdx = narrative.indexOf("```json");
-  if (fullIdx !== -1) {
-    return { visibleText: narrative.slice(0, fullIdx).trimEnd(), jsonStarted: true };
-  }
-
-  const partialMatch = narrative.match(PARTIAL_FENCE_RE);
-  if (partialMatch && partialMatch.index !== undefined) {
-    return {
-      visibleText: narrative.slice(0, partialMatch.index).trimEnd(),
-      jsonStarted: false,
-    };
-  }
-
-  return { visibleText: narrative, jsonStarted: false };
-}
-
-function formatDuration(ms?: number): string {
-  if (!ms || ms <= 0) return "—";
-  const totalSec = Math.round(ms / 1000);
-  const m = Math.floor(totalSec / 60);
-  const s = totalSec % 60;
-  if (m === 0) return `${s}s`;
-  return `${m}m ${s}s`;
-}
-
-function renderNarrativeWithCitations(
-  narrative: string,
-  chunks: CitedChunk[],
-  onCitationClick: (chunk: CitedChunk) => void,
-) {
-  const chunkMap = new Map<string, CitedChunk>();
-  for (const c of chunks) chunkMap.set(c.citation, c);
-
-  const parts: Array<string | { citation: string }> = [];
-  let last = 0;
-  const re = new RegExp(CITATION_RE);
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(narrative)) !== null) {
-    if (m.index > last) parts.push(narrative.slice(last, m.index));
-    parts.push({ citation: `K${m[1]}` });
-    last = m.index + m[0].length;
-  }
-  if (last < narrative.length) parts.push(narrative.slice(last));
-
-  return parts.map((part, i) => {
-    if (typeof part === "string") {
-      return <span key={i}>{part}</span>;
-    }
-    const chunk = chunkMap.get(part.citation);
-    if (!chunk) {
-      return (
-        <span key={i} className="text-ink-faint">
-          [{part.citation}]
-        </span>
-      );
-    }
-    return (
-      <button
-        key={i}
-        type="button"
-        onClick={() => onCitationClick(chunk)}
-        className="inline-flex items-center rounded bg-brand-tint text-brand text-[11px] font-medium px-1.5 py-0.5 mx-0.5 hover:bg-brand hover:text-on-ink transition-colors align-baseline"
-        title={chunk.chunk_title}
-      >
-        {part.citation}
-      </button>
-    );
-  });
-}
-
-export default function AskPanel({
-  farmId,
-  onCitationClick,
-  onNewRecommendations,
-}: AskPanelProps) {
+/** Ask about this farm. The answer streams in, cites numbered sources and ends with a checklist. */
+export default function AskPanel({ farmId, context, onOpenSource }: AskPanelProps) {
   const [turns, setTurns] = useState<Turn[]>([]);
   const [input, setInput] = useState("");
-  const [busy, setBusy] = useState(false);
   const [micError, setMicError] = useState<string | null>(null);
-  const [micRecording, setMicRecording] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const abortRef = useRef<AbortController | null>(null);
-  const micErrorTimerRef = useRef<number | null>(null);
+  const abort = useRef<AbortController | null>(null);
+  const working = turns.at(-1)?.status === "working";
 
-  useEffect(() => {
-    if (!micError) return;
-    if (micErrorTimerRef.current !== null) {
-      window.clearTimeout(micErrorTimerRef.current);
-    }
-    micErrorTimerRef.current = window.setTimeout(() => {
-      setMicError(null);
-      micErrorTimerRef.current = null;
-    }, 5000);
-    return () => {
-      if (micErrorTimerRef.current !== null) {
-        window.clearTimeout(micErrorTimerRef.current);
-        micErrorTimerRef.current = null;
-      }
-    };
-  }, [micError]);
+  useEffect(() => () => abort.current?.abort(), []);
 
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [turns]);
+  const update = (patch: (t: Turn) => Partial<Turn>) =>
+    setTurns((all) => all.map((t, i) => (i === all.length - 1 ? { ...t, ...patch(t) } : t)));
 
-  function updateTurn(id: number, updater: (t: Turn) => Turn) {
-    setTurns((prev) => prev.map((t) => (t.id === id ? updater(t) : t)));
-  }
-
-  async function submit(question: string) {
+  const ask = async (question: string) => {
     const q = question.trim();
-    if (!q || busy) return;
-    const id = Date.now();
-    setBusy(true);
+    if (q.length < 3 || working) return;
     setInput("");
-    const initialResponse: StreamingResponse = {
-      narrative: "",
-      recommendations: [],
-      cited_chunks: [],
-      streaming: true,
-      gotFirstToken: false,
-    };
-    setTurns((prev) => [
-      ...prev,
-      { id, question: q, status: "streaming", response: initialResponse },
+    // the first progress line is local, so it shows the moment the question is sent
+    setTurns((all) => [
+      ...all,
+      { question: q, status: "working", progress: "Sending your question…", text: "", kind: "answer", sources: [], cards: [], ids: [] },
     ]);
-
     const controller = new AbortController();
-    abortRef.current = controller;
+    abort.current = controller;
 
-    const handleEvent = (event: StreamEvent) => {
-      if (event.type === "ready") {
-        updateTurn(id, (t) => ({
-          ...t,
-          response: t.response
-            ? { ...t.response, cited_chunks: event.cited_chunks }
-            : t.response,
-        }));
-      } else if (event.type === "token") {
-        updateTurn(id, (t) => ({
-          ...t,
-          response: t.response
-            ? {
-                ...t.response,
-                narrative: t.response.narrative + event.content,
-                gotFirstToken: true,
-              }
-            : t.response,
-        }));
-      } else if (event.type === "recommendation_ready") {
-        updateTurn(id, (t) => ({
-          ...t,
-          status: "done",
-          response: t.response
-            ? {
-                ...t.response,
-                narrative: event.narrative || t.response.narrative,
-                recommendations: event.recommendations,
-                cited_chunks: event.cited_chunks ?? t.response.cited_chunks,
-                model_name: event.model_name,
-                timing_ms: event.timing_ms,
-                streaming: false,
-              }
-            : t.response,
-        }));
-        if (event.recommendations && event.recommendations.length > 0) {
-          onNewRecommendations(event.recommendations);
-        }
-      } else if (event.type === "error") {
-        updateTurn(id, (t) => ({
-          ...t,
-          status: "error",
-          error: event.message,
-          response: t.response
-            ? { ...t.response, streaming: false }
-            : t.response,
-        }));
-      }
-    };
-
-    try {
-      await askQuestionStream(
-        { farm_id: farmId, question: q },
-        handleEvent,
-        controller.signal,
-      );
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Ask failed.";
-      updateTurn(id, (t) => ({
-        ...t,
-        status: "error",
-        error: message,
-        response: t.response
-          ? { ...t.response, streaming: false }
-          : t.response,
-      }));
-    } finally {
-      abortRef.current = null;
-      setBusy(false);
-    }
-  }
-
-  function stopGenerating() {
-    const controller = abortRef.current;
-    if (!controller) return;
-    controller.abort();
-    abortRef.current = null;
-    setTurns((prev) =>
-      prev.map((t) =>
-        t.status === "streaming"
-          ? {
-              ...t,
-              status: "done",
-              response: t.response
-                ? { ...t.response, streaming: false, cancelled: true }
-                : t.response,
-            }
-          : t,
-      ),
+    await askQuestionStream(
+      { farm_id: farmId, question: q },
+      (event) => {
+        if (event.type === "progress") update(() => ({ progress: event.message }));
+        else if (event.type === "token") update((t) => ({ text: t.text + event.content, progress: "Writing the answer…" }));
+        else if (event.type === "recommendation_ready")
+          update(() => ({
+            status: "done",
+            kind: event.kind,
+            text: event.narrative,
+            sources: event.kind === "answer" ? (event.cited_chunks ?? []) : [],
+            cards: event.recommendations,
+            ids: event.saved_recommendation_ids,
+          }));
+        else if (event.type === "error") update(() => ({ status: "error", error: event.message }));
+      },
+      controller.signal,
     );
-    setBusy(false);
-  }
+    abort.current = null;
+  };
 
-  function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      submit(input);
-    }
-  }
-
-  function retry(turn: Turn) {
-    if (busy) return;
-    setTurns((prev) => prev.filter((t) => t.id !== turn.id));
-    submit(turn.question);
-  }
+  const stop = () => {
+    abort.current?.abort();
+    update(() => ({ status: "stopped" }));
+  };
 
   return (
-    <Card>
-      <div className="text-caption uppercase tracking-wide text-ink-faint">
-        Ask FarmTwin
-      </div>
-      <div className="text-small text-ink-muted mt-1">
-        Get advice grounded in your farm's state and local agricultural
-        knowledge.
+    <div className="flex animate-rise flex-col gap-5 rounded-lg bg-raised p-5">
+      <div className="flex flex-col gap-1">
+        <span className="text-h3">Ask about this farm</span>
+        <span className="text-small text-ink-muted">Answers use your logs, the risks above and FarmTwin's farming guides.</span>
       </div>
 
-      <div
-        ref={scrollRef}
-        className="mt-4 max-h-[500px] overflow-y-auto flex flex-col gap-4 pr-1"
+      {context.length > 0 && (
+        <div aria-label="What the answer will know" className="flex flex-wrap gap-2">
+          {context.map((c) => (
+            <span key={c.key} className="inline-flex items-center gap-2 rounded-pill bg-surface px-3 py-1 text-caption text-ink-muted">
+              {c.crop && <span aria-hidden className="size-2 rounded-pill" style={{ background: cropColor(c.crop) }} />}
+              {c.risk && <span aria-hidden className={`size-2 rounded-pill ${RISK_DOT[c.risk]}`} />}
+              {c.label}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {turns.map((t, i) => (
+        <TurnView key={i} turn={t} onOpenSource={onOpenSource} />
+      ))}
+
+      {turns.length === 0 && (
+        <div className="flex flex-wrap gap-2">
+          {SUGGESTIONS.map((s) => (
+            <Button key={s} variant="quiet" onClick={() => void ask(s)}>
+              {s}
+            </Button>
+          ))}
+        </div>
+      )}
+
+      <form
+        className="flex flex-col gap-2"
+        onSubmit={(e) => {
+          e.preventDefault();
+          void ask(input);
+        }}
       >
-        {turns.length === 0 && (
-          <div className="text-small text-ink-muted bg-ground rounded-md p-4">
-            Try asking: <em>"What should I do this week?"</em> or{" "}
-            <em>"Is my crop at risk from recent weather?"</em>
-          </div>
-        )}
-
-        {turns.map((turn) => (
-          <div key={turn.id} className="flex flex-col gap-3">
-            <div className="self-end max-w-[85%] bg-brand-tint text-ink rounded-lg rounded-br-sm px-3 py-2 text-small">
-              {turn.question}
-            </div>
-
-            {(turn.status === "streaming" || turn.status === "done") &&
-              turn.response &&
-              (() => {
-                const { visibleText, jsonStarted } = stripJsonBlock(
-                  turn.response.narrative,
-                );
-                const isStreaming = turn.status === "streaming";
-                const showCursor = isStreaming && !jsonStarted;
-                const showPrepRecs =
-                  isStreaming &&
-                  jsonStarted &&
-                  turn.response.recommendations.length === 0;
-                return (
-                  <div className="text-small text-ink leading-relaxed">
-                    {isStreaming && !turn.response.gotFirstToken ? (
-                      <div className="animate-pulse text-ink-muted">
-                        Preparing context…
-                      </div>
-                    ) : (
-                      <div className="whitespace-pre-wrap">
-                        {renderNarrativeWithCitations(
-                          visibleText,
-                          turn.response.cited_chunks,
-                          onCitationClick,
-                        )}
-                        {showCursor && (
-                          <span
-                            className="inline-block w-[7px] h-[14px] ml-0.5 bg-brand align-[-2px] animate-pulse"
-                            aria-hidden="true"
-                          />
-                        )}
-                      </div>
-                    )}
-
-                    {showPrepRecs && (
-                      <div className="text-small text-ink-faint animate-pulse mt-3">
-                        Preparing recommendations…
-                      </div>
-                    )}
-
-                    {turn.status === "done" && turn.response.cancelled && (
-                      <div className="text-[11px] text-ink-faint mt-2 italic">
-                        Generation cancelled by user.
-                      </div>
-                    )}
-
-                    {turn.status === "done" && turn.response.model_name && (
-                      <div className="text-[11px] text-ink-faint mt-3">
-                        Model: {turn.response.model_name} · Generated in{" "}
-                        {formatDuration(turn.response.timing_ms?.total_ms)}
-                      </div>
-                    )}
-                  </div>
-                );
-              })()}
-
-            {turn.status === "error" && turn.error && (
-              <ErrorMessage message={turn.error} onRetry={() => retry(turn)} />
-            )}
-          </div>
-        ))}
-      </div>
-
-      <div className="mt-4 flex flex-col gap-2 border-t border-hairline pt-4">
+        <label className="sr-only" htmlFor="ask-input">
+          Your question
+        </label>
         <textarea
-          className="w-full rounded-md border border-hairline bg-raised px-4 py-2.5 text-ink placeholder:text-ink-faint focus:border-brand focus:ring-1 focus:ring-brand outline-none transition-colors min-h-[60px] resize-none"
-          placeholder="Ask a question about your farm…"
+          id="ask-input"
+          rows={2}
           value={input}
+          maxLength={500}
           onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          disabled={busy}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              void ask(input);
+            }
+          }}
+          placeholder="Ask in English or Pidgin…"
+          className="rounded-md bg-surface px-4 py-3 text-body text-ink ring-1 ring-hairline ring-inset outline-none placeholder:text-ink-muted"
         />
-        {busy && (
-          <div className="text-[11px] text-ink-faint">
-            This can take 2–4 minutes on local hardware. Grounded, offline
-            reasoning is slow but private — tokens will appear as they're
-            generated.
-          </div>
-        )}
-        <div className="flex items-center gap-2 flex-wrap">
+        {micError && <p className="text-small text-risk-high">{micError}</p>}
+        <div className="flex items-center gap-2">
           <MicButton
+            disabled={working}
             onTranscript={(text) => {
               setInput(text);
               setMicError(null);
             }}
-            onError={(message) => setMicError(message)}
-            onBusyChange={setMicRecording}
-            disabled={busy}
+            onError={setMicError}
           />
-          {busy ? (
-            <Button
-              className="flex-1"
-              onClick={stopGenerating}
-              variant="secondary"
-            >
-              Stop generating
+          {working ? (
+            <Button type="button" variant="secondary" onClick={stop} className="flex-1">
+              Stop
             </Button>
           ) : (
-            <Button
-              className="flex-1"
-              onClick={() => submit(input)}
-              disabled={!input.trim() || micRecording}
-            >
-              Send
+            <Button type="submit" disabled={input.trim().length < 3} className="flex-1">
+              Ask
             </Button>
           )}
         </div>
-        {micError && (
-          <div
-            role="alert"
-            className="text-[11px] text-risk-high bg-risk-high/5 border border-risk-high/30 rounded-sm px-2 py-1.5"
-          >
-            {micError}
-          </div>
-        )}
-      </div>
-    </Card>
+      </form>
+    </div>
   );
 }
 
-function ErrorMessage({
-  message,
-  onRetry,
-}: {
-  message: string;
-  onRetry: () => void;
-}) {
-  const isServerDown = /Local model not available/i.test(message);
-  const isTimeout = /took too long/i.test(message);
-
+function TurnView({ turn, onOpenSource }: { turn: Turn; onOpenSource: (c: CitedChunk) => void }) {
+  const visible = withoutJson(turn.text);
   return (
-    <div className="rounded-md border border-risk-high/30 bg-risk-high/5 p-3">
-      <div className="text-small font-medium text-risk-high">
-        {isServerDown
-          ? "Local model not available"
-          : isTimeout
-            ? "Model took too long"
-            : "Something went wrong"}
-      </div>
-      <div className="text-small text-ink-muted mt-1">
-        {isServerDown
-          ? "Start llama-server first."
-          : isTimeout
-            ? "This can happen when other apps are competing for CPU. Try closing other apps and asking again."
-            : message}
-      </div>
-      {isServerDown && (
-        <pre className="mt-2 text-[11px] bg-raised border border-hairline rounded-sm p-2 overflow-x-auto whitespace-pre-wrap font-mono text-ink">
-          cd ~/dev/tools/llama.cpp && ./build/bin/llama-server \
-            --model ~/farmtwin-models/qwen2.5-3b-instruct-q4_k_m.gguf \
-            --host 127.0.0.1 --port 8080 --ctx-size 4096 \
-            --threads 4 --load-mode mlock
-        </pre>
+    <div className="flex flex-col gap-3 border-t border-hairline pt-4">
+      <p className="self-end rounded-md bg-brand-tint px-4 py-2 text-body">{turn.question}</p>
+
+      {turn.status === "working" && (
+        <p role="status" className="flex items-center gap-2 text-small text-ink-muted">
+          <span aria-hidden className="size-2 animate-pulse rounded-pill bg-brand" />
+          {turn.progress}
+        </p>
       )}
-      <button
-        type="button"
-        onClick={onRetry}
-        className="mt-3 text-small text-brand hover:underline"
-      >
-        Retry
-      </button>
+
+      {visible && (
+        <p className={`text-body whitespace-pre-wrap ${turn.kind === "answer" ? "text-ink" : "text-ink-muted"}`}>
+          {withCitations(visible, turn.sources, onOpenSource)}
+        </p>
+      )}
+
+      {turn.status === "stopped" && <p className="text-small text-ink-muted">Stopped. Ask again whenever you're ready.</p>}
+      {turn.status === "error" && <p className="text-small text-risk-high">{turn.error}</p>}
+
+      {turn.status === "done" && turn.cards.length > 0 && <Checklist cards={turn.cards} ids={turn.ids} />}
+
+      {turn.status === "done" && turn.sources.length > 0 && (
+        <div className="flex flex-col gap-2">
+          <span className="text-caption text-ink-muted">Sources</span>
+          <ol className="flex flex-col gap-1">
+            {turn.sources.map((c, i) => (
+              <li key={c.chunk_id}>
+                <button
+                  type="button"
+                  onClick={() => onOpenSource(c)}
+                  className="flex min-h-11 w-full items-center gap-3 rounded-md bg-surface px-3 text-left text-small hover:bg-ink/5"
+                >
+                  <span className="tabular grid size-6 shrink-0 place-items-center rounded-pill bg-ink text-caption text-on-ink">{i + 1}</span>
+                  <span className="flex flex-col">
+                    <span>{c.chunk_title}</span>
+                    <span className="text-caption text-ink-muted">
+                      {c.source_org} · {cropLabel(c.crop)}
+                    </span>
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
     </div>
   );
+}
+
+/** "Do this week" for urgent cards, "Keep an eye on" for the rest. Ticks are remembered on this device. */
+function Checklist({ cards, ids }: { cards: Recommendation[]; ids: number[] }) {
+  const keyFor = (i: number) => `ft.done.${ids[i] ?? "x"}`;
+  const [done, setDone] = useState<Record<number, boolean>>(() =>
+    Object.fromEntries(cards.map((_, i) => [i, recall(keyFor(i)) === "1"])),
+  );
+  const toggle = (i: number) => {
+    setDone((d) => ({ ...d, [i]: !d[i] }));
+    if (ids[i] !== undefined) remember(keyFor(i), done[i] ? "0" : "1");
+  };
+  const groups: [string, number[]][] = [
+    ["Do this week", cards.map((_, i) => i).filter((i) => cards[i].when_urgency !== "monitor")],
+    ["Keep an eye on", cards.map((_, i) => i).filter((i) => cards[i].when_urgency === "monitor")],
+  ];
+  return (
+    <div className="flex flex-col gap-3 rounded-md bg-surface p-4">
+      {groups
+        .filter(([, items]) => items.length > 0)
+        .map(([title, items]) => (
+          <div key={title} className="flex flex-col gap-2">
+            <span className="text-caption text-ink-muted">{title}</span>
+            {items.map((i) => (
+              <label key={i} className="flex cursor-pointer items-start gap-3">
+                <input type="checkbox" checked={!!done[i]} onChange={() => toggle(i)} className="mt-1 size-5 shrink-0 accent-[var(--brand)]" />
+                <span className="flex flex-col">
+                  <span className={`text-body ${done[i] ? "text-ink-muted line-through" : ""}`}>
+                    {cards[i].what}
+                    {cards[i].when_urgency === "immediate" && <span className="ml-2 text-caption text-risk-high">today</span>}
+                  </span>
+                  <span className="text-small text-ink-muted">{cards[i].why}</span>
+                </span>
+              </label>
+            ))}
+          </div>
+        ))}
+    </div>
+  );
+}
+
+/** Hides the recommendations block while it streams in. */
+function withoutJson(text: string): string {
+  const fence = text.indexOf("```");
+  return (fence >= 0 ? text.slice(0, fence) : text).trimEnd();
+}
+
+/** Turns [K3] into a numbered button for the matching cited source. Unknown IDs are dropped. */
+function withCitations(text: string, sources: CitedChunk[], open: (c: CitedChunk) => void): ReactNode[] {
+  return text.split(/(\s?\[K\d+\])/g).map((part, i) => {
+    const m = part.match(/^\s?\[K(\d+)\]$/);
+    if (!m) return part;
+    const n = sources.findIndex((s) => s.citation === `K${m[1]}`);
+    if (n < 0) return null;
+    return (
+      <button
+        key={i}
+        type="button"
+        onClick={() => open(sources[n])}
+        aria-label={`Source ${n + 1}: ${sources[n].chunk_title}`}
+        className="mx-0.5 inline-grid size-5 place-items-center rounded-pill bg-ink align-text-top text-caption text-on-ink"
+      >
+        {n + 1}
+      </button>
+    );
+  });
 }

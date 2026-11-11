@@ -285,11 +285,15 @@ export type AskResponse = {
   saved_recommendation_ids: number[];
 };
 
+export type AnswerKind = "answer" | "not_in_sources" | "no_planting";
+
 export type StreamEvent =
+  | { type: "progress"; message: string }
   | { type: "ready"; cited_chunks: CitedChunk[] }
   | { type: "token"; content: string }
   | {
       type: "recommendation_ready";
+      kind: AnswerKind;
       narrative: string;
       recommendations: Recommendation[];
       cited_chunks?: CitedChunk[];
@@ -302,7 +306,7 @@ export type StreamEvent =
         total_ms: number;
       };
     }
-  | { type: "error"; message: string };
+  | { type: "error"; message: string; code?: string };
 
 export async function askQuestionStream(
   req: AskRequest,

@@ -31,6 +31,8 @@ class AskContext:
     prompt_version: str
     # set when the answer is known without the model
     early_answer: str | None = None
+    # answer | no_planting | not_in_sources: lets the app skip sources for a non-answer
+    kind: str = "answer"
 
     @property
     def primary_field_id(self) -> int | None:
@@ -45,7 +47,7 @@ def prepare(db: Session, farm_id: int, question: str, today: date | None = None)
     weather = latest_weather(db, farm.id)
     states = planting_states(db, farm, weather, today)
     if not states:
-        return AskContext(farm, [], [], [], version, early_answer=NO_PLANTING)
+        return AskContext(farm, [], [], [], version, early_answer=NO_PLANTING, kind="no_planting")
 
     crops = sorted({s.planting.crop_type for s in states})
     query = retriever.build_query(
@@ -57,7 +59,7 @@ def prepare(db: Session, farm_id: int, question: str, today: date | None = None)
     )
     found = retriever.retrieve(query, crops, top_k=6, db_session=db)
     if found.refused:
-        return AskContext(farm, states, [], [], version, early_answer=NOT_IN_SOURCES)
+        return AskContext(farm, states, [], [], version, early_answer=NOT_IN_SOURCES, kind="not_in_sources")
 
     messages = render_messages(farm, states, weather, found.chunks, question, today, version)
     return AskContext(farm, states, found.chunks, messages, version)

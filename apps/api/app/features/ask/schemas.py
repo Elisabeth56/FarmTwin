@@ -25,6 +25,7 @@ class RecommendationBlock(BaseModel):
 class AskOut(BaseModel):
     model_config = ConfigDict(protected_namespaces=())
 
+    kind: str = "answer"
     narrative: str
     recommendations: list[dict]
     cited_chunks: list[dict]

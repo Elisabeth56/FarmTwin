@@ -223,11 +223,12 @@ def _mock(monkeypatch, handler):
     monkeypatch.setattr(
         llm.httpx, "AsyncClient", lambda **kw: real(transport=httpx.MockTransport(handler), **kw)
     )
-    monkeypatch.setattr(
-        llm.httpx,
-        "post",
-        lambda url, **kw: httpx.Client(transport=httpx.MockTransport(handler)).post(url, **kw),
-    )
+
+    def post(url, trust_env=True, **kw):
+        assert trust_env is False  # llama-server is local; system proxies must not apply
+        return httpx.Client(transport=httpx.MockTransport(handler)).post(url, **kw)
+
+    monkeypatch.setattr(llm.httpx, "post", post)
 
 
 async def _collect(messages):

@@ -38,7 +38,7 @@ def parse_corpus_file(path: Path) -> list[CorpusChunk]:
     chunks: list[CorpusChunk] = []
     i = 0
     while i < len(blocks):
-        frontmatter = _frontmatter(blocks[i])
+        frontmatter = _frontmatter(blocks[i], path.name)
         if frontmatter is None or i + 1 >= len(blocks):
             i += 1
             continue
@@ -72,11 +72,14 @@ def plan_sync(
     return to_add, to_delete
 
 
-def _frontmatter(block: str) -> dict | None:
-    if "source_id" not in block:
+def _frontmatter(block: str, file: str) -> dict | None:
+    if not block.lstrip().startswith("source_id:"):
         return None
+    # a broken frontmatter block used to drop its chunk silently; fail loudly instead
     try:
         data = yaml.safe_load(block)
-    except yaml.YAMLError:
-        return None
-    return data if isinstance(data, dict) and "source_id" in data else None
+    except yaml.YAMLError as exc:
+        raise ValueError(f"{file}: bad frontmatter (quote values that contain ': '): {exc}") from exc
+    if not isinstance(data, dict):
+        raise ValueError(f"{file}: frontmatter is not a mapping")
+    return data

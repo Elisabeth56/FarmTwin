@@ -37,7 +37,7 @@ source_id: penet_yam_splash_2014
 source_title: "Direct Splash Dispersal Prevails over Indirect and Subsequent Spread during Rains in Colletotrichum gloeosporioides Infecting Yams"
 source_org: PLoS ONE (INRA)
 source_url: https://doi.org/10.1371/journal.pone.0115757
-source_note: Penet L. et al., 2014, PLoS ONE 9(12): e115757. Open access, CC BY. Paraphrased.
+source_note: "Penet L. et al., 2014, PLoS ONE 9(12): e115757. Open access, CC BY. Paraphrased."
 region: Guadeloupe (rain-simulator experiment on water yam)
 crop: yam
 topics: [yam, anthracnose, rain, splash, spread]

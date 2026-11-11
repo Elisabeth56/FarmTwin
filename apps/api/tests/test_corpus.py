@@ -65,3 +65,19 @@ def test_second_sync_is_a_no_op():
     to_add, _ = plan_sync({}, chunks)
     existing = {i: c.content_hash for i, c in enumerate(to_add)}
     assert plan_sync(existing, chunks) == ([], [])
+
+
+def test_bad_frontmatter_fails_instead_of_dropping_the_chunk(tmp_path: Path):
+    path = tmp_path / "x.md"
+    path.write_text("---\nsource_id: s\nsource_title: A: B\n---\n\nBody.\n")
+    with pytest.raises(ValueError, match="x.md"):
+        parse_corpus_file(path)
+
+
+def test_no_chunk_is_lost(corpus):
+    declared = sum(
+        line.startswith("source_id:")
+        for path in (KNOWLEDGE / "corpus").glob("*.md")
+        for line in path.read_text().splitlines()
+    )
+    assert len(corpus) == declared

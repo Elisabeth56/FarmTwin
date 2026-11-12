@@ -36,7 +36,7 @@ async function apply(choice) {
   if (tier === 'full') {
     note.textContent = '3D · drag to turn';
     if (!twin) {
-      const { mountTwin } = await import('./twin.js');
+      const { mountTwin } = await import('@farmtwin/twin');
       twin = mountTwin({ frame, canvas: $('c'), badge, chip: $('chip'), chipDot: $('chipDot'), chipText: $('chipText'), autoRotate: !reduce, onReady: () => frame.classList.add('live') });
     } else { twin.resume(); frame.classList.add('live'); }
     twin.setRain(rain);

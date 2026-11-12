@@ -4,7 +4,13 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 
-export function mountTwin({ frame, canvas, badge, chip, chipDot, chipText, autoRotate = true, onReady }) {
+// Six plot slots in a 3 x 2 grid; the landing page fills them with all six crops, the app with a
+// farm's own plantings. `badgePlot` is the slot the risk badge points at.
+const SLOTS = [[-5, -1.85], [-1.5, -1.85], [2, -1.85], [-5, 1.85], [-1.5, 1.85], [2, 1.85]];
+export const LANDING_PLOTS = ['maize', 'sorghum', 'rice', 'cassava', 'yam', 'cowpea'].map(crop => ({ crop }));
+
+export function mountTwin({ frame, canvas, badge, chip, chipDot, chipText, autoRotate = true, onReady,
+  plots: plotSpec = LANDING_PLOTS, badgePlot = 0, onDemand = false }) {
 // ---------- scene ----------
 let renderer, scene, camera, controls, started = false;
 const plots = [];
@@ -81,16 +87,16 @@ function buildFarm() {
   farm.add(mesh(new THREE.BoxGeometry(11.2, 0.03, 0.55), pathMat, -1.4, 0.06, 0));
   farm.add(mesh(new THREE.BoxGeometry(0.55, 0.03, 4.6), pathMat, 4.0, 0.06, -0.6));
 
-  const defs = [
-    { name: 'Maize', color: '#E3B341', x: -5, z: -1.85, build: g => cereal(g, { h: 0.95, headY: 0.06, headS: 1, droop: 0.2, headGeo: new THREE.ConeGeometry(0.06, 0.22, 5), headColor: '#E3B341', stalkMat: mat('#5E9A47') }) },
-    { name: 'Sorghum', color: '#B06A3B', x: -1.5, z: -1.85, build: g => cereal(g, { h: 1.2, headY: 0.12, headS: 2.2, droop: 0.5, headGeo: new THREE.SphereGeometry(0.08, 6, 5), headColor: '#B06A3B', stalkMat: mat('#6E9A4E') }) },
-    { name: 'Rice', color: '#5FA89A', x: 2, z: -1.85, water: true, build: g => {
+  const builders = {
+    maize: { name: 'Maize', color: '#E3B341', build: g => cereal(g, { h: 0.95, headY: 0.06, headS: 1, droop: 0.2, headGeo: new THREE.ConeGeometry(0.06, 0.22, 5), headColor: '#E3B341', stalkMat: mat('#5E9A47') }) },
+    sorghum: { name: 'Sorghum', color: '#B06A3B', build: g => cereal(g, { h: 1.2, headY: 0.12, headS: 2.2, droop: 0.5, headGeo: new THREE.SphereGeometry(0.08, 6, 5), headColor: '#B06A3B', stalkMat: mat('#6E9A4E') }) },
+    rice: { name: 'Rice', color: '#5FA89A', water: true, build: g => {
       const t = [];
       for (let i = 0; i < 7; i++) for (let j = 0; j < 8; j++) for (let k = 0; k < 3; k++)
         t.push(m4(-1.15 + i * 0.38, 0.2, -1.3 + j * 0.37, (rand() - 0.5) * 0.5, rand() * 6, (rand() - 0.5) * 0.5, 1, 0.8 + rand() * 0.4, 1));
       g.add(instanced(tufGeo, mat('#7DB356'), t));
     } },
-    { name: 'Cassava', color: '#CDA07A', x: -5, z: 1.85, build: g => {
+    cassava: { name: 'Cassava', color: '#CDA07A', build: g => {
       const mounds = [], stems = [], leaves = [];
       for (let i = 0; i < 3; i++) for (let j = 0; j < 4; j++) {
         const x = -0.9 + i * 0.9, z = -1.15 + j * 0.77;
@@ -102,7 +108,7 @@ function buildFarm() {
       g.add(instanced(stalkGeo, mat('#8C5A3C'), stems));
       g.add(instanced(new THREE.ConeGeometry(0.07, 0.42, 4).rotateZ(-Math.PI / 2).translate(0.21, 0, 0), deepGreen, leaves));
     } },
-    { name: 'Yam', color: '#8C6BB1', x: -1.5, z: 1.85, build: g => {
+    yam: { name: 'Yam', color: '#8C6BB1', build: g => {
       const heaps = [], stakes = [], vine = [];
       for (let i = 0; i < 2; i++) for (let j = 0; j < 3; j++) {
         const x = -0.6 + i * 1.2, z = -1.0 + j * 1.0, lean = (rand() - 0.5) * 0.2;
@@ -115,7 +121,7 @@ function buildFarm() {
       g.add(instanced(new THREE.SphereGeometry(0.1, 5, 4), leafGreen, vine));
       g.add(instanced(new THREE.SphereGeometry(0.09, 6, 5), mat('#8C6BB1'), [m4(-0.25, 0.26, 1.2, 0, 0, 1.2, 1, 1.8, 1)]));
     } },
-    { name: 'Cowpea', color: '#4A77B4', x: 2, z: 1.85, build: g => {
+    cowpea: { name: 'Cowpea', color: '#4A77B4', build: g => {
       const bush = [], flowers = [];
       for (let i = 0; i < 6; i++) for (let j = 0; j < 6; j++) {
         const x = -1.1 + i * 0.44, z = -1.15 + j * 0.46, s = 0.8 + rand() * 0.4;
@@ -125,7 +131,9 @@ function buildFarm() {
       g.add(instanced(new THREE.IcosahedronGeometry(0.2, 0), mat('#5E8C46'), bush));
       g.add(instanced(new THREE.SphereGeometry(0.035, 4, 3), mat('#C9B6EE'), flowers));
     } },
-  ];
+  };
+  // a farm can have more plantings than slots; the first six are drawn
+  const defs = plotSpec.slice(0, SLOTS.length).map((p, i) => ({ ...builders[p.crop] || builders.maize, name: p.label || builders[p.crop]?.name || p.crop, x: SLOTS[i][0], z: SLOTS[i][1] }));
 
   const hitMat = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false });
   defs.forEach((d, i) => {
@@ -188,8 +196,8 @@ function buildFarm() {
   return farm;
 }
 
-let farm, raycaster, pointer = new THREE.Vector2(), hovered = null, t0 = 0, idleTimer = 0;
-const badgeAnchor = new THREE.Vector3(-5, 1.9, -1.85);
+let sizer, farm, raycaster, pointer = new THREE.Vector2(), hovered = null, t0 = 0, idleTimer = 0;
+const badgeAnchor = new THREE.Vector3(SLOTS[badgePlot][0], 1.9, SLOTS[badgePlot][1]);
 
 function start() {
   if (started) return; started = true;
@@ -219,14 +227,15 @@ function start() {
   controls.minPolarAngle = 0.75; controls.maxPolarAngle = 1.12;
   controls.autoRotate = autoRotate; controls.autoRotateSpeed = 0.5;
   controls.target.set(0, -0.6, 0);
-  controls.addEventListener('start', () => { controls.autoRotate = false; clearTimeout(idleTimer); });
-  controls.addEventListener('end', () => { idleTimer = setTimeout(() => { controls.autoRotate = autoRotate; }, 4000); });
+  controls.addEventListener('start', () => { controls.autoRotate = false; clearTimeout(idleTimer); dragging = true; wake(); });
+  controls.addEventListener('change', () => wake());
+  controls.addEventListener('end', () => { dragging = false; idleTimer = setTimeout(() => { controls.autoRotate = autoRotate; wake(); }, 4000); });
 
   raycaster = new THREE.Raycaster();
-  canvas.addEventListener('pointermove', e => { const r = canvas.getBoundingClientRect(); pointer.x = ((e.clientX - r.left) / r.width) * 2 - 1; pointer.y = -((e.clientY - r.top) / r.height) * 2 + 1; pointer.px = e.clientX - r.left; pointer.py = e.clientY - r.top; pointer.active = true; });
-  canvas.addEventListener('pointerleave', () => { pointer.active = false; });
+  canvas.addEventListener('pointermove', e => { const r = canvas.getBoundingClientRect(); pointer.x = ((e.clientX - r.left) / r.width) * 2 - 1; pointer.y = -((e.clientY - r.top) / r.height) * 2 + 1; pointer.px = e.clientX - r.left; pointer.py = e.clientY - r.top; pointer.active = true; wake(); });
+  canvas.addEventListener('pointerleave', () => { pointer.active = false; wake(); });
 
-  resize(); new ResizeObserver(resize).observe(frame);
+  resize(); sizer = new ResizeObserver(resize); sizer.observe(frame);
   t0 = performance.now(); loop();
   if (onReady) onReady();
 }
@@ -239,10 +248,10 @@ function resize() {
 }
 
 const ease = t => 1 - Math.pow(1 - Math.min(Math.max(t, 0), 1), 3.2);
-let running = false, visible = true, last = performance.now();
+let running = false, visible = true, last = performance.now(), dragging = false, settled = 0;
 function loop() {
   if (!visible || !active) { running = false; return; }
-  running = true; requestAnimationFrame(loop);
+  running = true;
   const now = performance.now(), dt = Math.min((now - last) / 1000, 0.05); last = now;
   const el = now - t0;
 
@@ -279,20 +288,39 @@ function loop() {
   const p = badgeAnchor.clone().add(new THREE.Vector3(0, farm.position.y, 0)).project(camera);
   const bx = (p.x * 0.5 + 0.5) * frame.clientWidth, by = (-p.y * 0.5 + 0.5) * frame.clientHeight;
   badge.style.transform = `translate(${bx}px, ${by}px) translate(-50%, -100%)`;
+
+  // on demand: after a second of nothing moving, stop drawing until input or a state change
+  if (onDemand) {
+    const moving = el < 1600 || dragging || controls.autoRotate || pointer.active || Math.abs((rain ? 1 : 0) - rainAmount) > 0.002
+      || plots.some(g => Math.abs((g === hovered ? 0.18 : 0) - g.userData.lift) > 0.002);
+    settled = moving ? now : settled;
+    if (now - settled > 1000) { running = false; return; }
+  }
+  requestAnimationFrame(loop);
 }
 
 
   let active = true;
   const wake = () => { if (visible && active && started && !running) { last = performance.now(); loop(); } };
   // pause when the frame is offscreen or the tab is hidden
-  new IntersectionObserver(([e]) => { visible = e.isIntersecting && !document.hidden; wake(); }).observe(frame);
-  document.addEventListener('visibilitychange', () => { visible = !document.hidden; wake(); });
+  const seen = new IntersectionObserver(([e]) => { visible = e.isIntersecting && !document.hidden; wake(); });
+  seen.observe(frame);
+  const onVisibility = () => { visible = !document.hidden; wake(); };
+  document.addEventListener('visibilitychange', onVisibility);
 
   start();
   return {
-    setRain(on) { rain = on; badge.classList.toggle('on', on); },
+    setRain(on) { rain = on; badge.classList.toggle('on', on); wake(); },
     pause() { active = false; chip.style.display = 'none'; hovered = null; },
     resume() { active = true; wake(); },
+    // the app mounts one twin per farm screen and tears it down on navigation
+    dispose() {
+      active = false; clearTimeout(idleTimer);
+      seen.disconnect(); sizer?.disconnect(); document.removeEventListener('visibilitychange', onVisibility);
+      controls?.dispose();
+      scene?.traverse(o => { o.geometry?.dispose(); [].concat(o.material || []).forEach(m => m.dispose()); });
+      renderer?.dispose();
+    },
     // capture hooks for rendering the lite loop and stills
     setView(azimuth, polar = 1.0) {
       controls.autoRotate = false; controls.enableDamping = false;

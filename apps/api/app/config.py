@@ -40,6 +40,8 @@ class Settings(BaseSettings):
     llama_server_bin: Path | None = None
     # defaults to the pinned model file in models_dir (app/ai/setup.py)
     llm_model_path: Path | None = None
+    # tests turn this off: each test client would start its own background index sync
+    sync_index_on_start: bool = True
     llm_context: int = 4096
     llm_model: str = "qwen2.5-3b-instruct-q4_k_m"
     embedder_model: str = "BAAI/bge-small-en-v1.5"

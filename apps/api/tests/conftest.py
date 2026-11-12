@@ -10,6 +10,8 @@ def data_dir(tmp_path_factory):
 
     path = tmp_path_factory.mktemp("farmtwin-data")
     os.environ["FARMTWIN_DATA_DIR"] = str(path)
+    # tests that need the index build it themselves
+    os.environ["FARMTWIN_SYNC_INDEX_ON_START"] = "false"
     return path
 
 

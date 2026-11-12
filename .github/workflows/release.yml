@@ -74,6 +74,10 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ""
+          # linuxdeploy's bundled strip can't read newer ELF sections and fails the AppImage;
+          # runners have no FUSE, so AppImages extract themselves instead of mounting
+          NO_STRIP: "true"
+          APPIMAGE_EXTRACT_AND_RUN: "1"
         with:
           projectPath: apps/desktop
           # empty on pull requests: build only, no release
@@ -85,7 +89,7 @@ jobs:
           releaseDraft: true
           prerelease: ${{ contains(github.ref_name, '-') }}
           includeUpdaterJson: true
-          args: --target ${{ matrix.rust }} --bundles ${{ matrix.bundles }} --config '${{ steps.updater.outputs.config }}'
+          args: --target ${{ matrix.rust }} --bundles ${{ matrix.bundles }} --config '${{ steps.updater.outputs.config }}' --verbose
 
       - if: github.event_name == 'pull_request'
         uses: actions/upload-artifact@v4

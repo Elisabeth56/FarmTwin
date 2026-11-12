@@ -39,7 +39,8 @@ async def lifespan(_: FastAPI):
     run_migrations()
     # keep the search index in step with the shipped guides; in the background so the app
     # opens at once (questions asked in the first seconds wait for nothing, they just find less)
-    threading.Thread(target=_sync_index_quietly, daemon=True).start()
+    if get_settings().sync_index_on_start:
+        threading.Thread(target=_sync_index_quietly, daemon=True).start()
     supervisor.start()
     system.watch_parent()
     yield

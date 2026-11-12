@@ -1,6 +1,6 @@
 # ADR-027: The API starts and restarts llama-server
 
-- Status: Proposed
+- Status: Accepted
 - Date: 2026-11-12
 - Amends: ADR-022 (who owns the llama-server sidecar)
 

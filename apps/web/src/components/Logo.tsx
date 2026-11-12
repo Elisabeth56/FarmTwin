@@ -1,19 +1,27 @@
-/** The FarmTwin mark (a farm plot as an isometric slab) and wordmark, drawn from the tokens. */
+import { useId } from "react";
+
+/** The FarmTwin mark (a farm plot on a green tile, one quarter in maize) and the wordmark. The mark
+ * keeps its own colours in light and dark mode, like an app icon. */
 export default function Logo({ withWordmark = true }: { withWordmark?: boolean }) {
+  const clip = useId();
   return (
     <span className="inline-flex items-center gap-2 text-body text-ink">
       <svg viewBox="0 0 32 32" width="28" height="28" aria-hidden>
-        <path d="M3 9.5 16 16v6.5L3 16Z" fill="var(--ink)" stroke="var(--ink)" strokeLinejoin="round" />
-        <path d="M16 16 29 9.5V16L16 22.5Z" fill="var(--ink)" stroke="var(--ink)" strokeLinejoin="round" />
-        <path d="M16 16 29 9.5V16L16 22.5Z" fill="black" opacity="0.25" />
-        <g stroke="var(--ground)" strokeWidth="1.4" strokeLinejoin="round">
-          <path d="M16 3l6.5 3.25L16 9.5 9.5 6.25Z" fill="var(--brand)" />
-          <path d="M22.5 6.25 29 9.5l-6.5 3.25L16 9.5Z" fill="var(--crop-maize)" />
-          <path d="M16 9.5l6.5 3.25L16 16l-6.5-3.25Z" fill="var(--brand)" />
-          <path d="M9.5 6.25 16 9.5l-6.5 3.25L3 9.5Z" fill="var(--brand)" opacity="0.8" />
+        <rect width="32" height="32" rx="8" fill="#2E6B45" />
+        <g transform="translate(16 16) scale(1.16) translate(-16 -16)">
+          <path d="M5 13.5 16 19v5L5 18.5Z" fill="#1F3328" />
+          <path d="M16 19 27 13.5v5L16 24Z" fill="#14231B" />
+          <clipPath id={clip}>
+            <path d="M16 8 27 13.5 16 19 5 13.5Z" />
+          </clipPath>
+          <g clipPath={`url(#${clip})`}>
+            <path d="M16 8 27 13.5 16 19 5 13.5Z" fill="#CFE6A8" />
+            <path d="M21.5 10.75 27 13.5l-5.5 2.75L16 13.5Z" fill="#E3B341" />
+            <path d="M10.5 10.75 21.5 16.25M21.5 10.75 10.5 16.25" stroke="#2E6B45" strokeWidth="1.5" />
+          </g>
         </g>
       </svg>
-      {withWordmark && <span className="tracking-tight">farmtwin</span>}
+      {withWordmark && <span className="font-bold tracking-tight">farmtwin</span>}
     </span>
   );
 }

@@ -1,0 +1,48 @@
+---
+title: Install
+description: Install FarmTwin on Windows, Mac or Linux, including the one-time security warning.
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+Get the installer for your system from the [download page](/download/).
+
+FarmTwin isn't signed with a paid developer certificate yet, so Windows and macOS show a warning the first time you open it. The steps below get past it once; after that it opens normally.
+
+<Tabs syncKey="os">
+<TabItem label="Windows">
+
+1. Download the `.msi` file.
+2. Open it. Windows may show **Windows protected your PC**.
+3. Click **More info**, then **Run anyway**.
+4. Follow the installer, then open FarmTwin from the Start menu.
+
+</TabItem>
+<TabItem label="Mac">
+
+1. Download the `.dmg` for your Mac: **Apple silicon** (M1 and newer) or **Intel**.
+2. Open it and drag FarmTwin into Applications.
+3. Open FarmTwin. macOS says it can't verify the developer. Click **Done**.
+4. Go to **System Settings → Privacy & Security**, scroll down, and click **Open Anyway** next to FarmTwin.
+5. Confirm with your password.
+
+Not sure which Mac you have? Apple menu → **About This Mac**. "Chip: Apple M…" means Apple silicon; "Processor: Intel" means Intel.
+
+</TabItem>
+<TabItem label="Linux">
+
+The AppImage runs on most distributions:
+
+```bash
+chmod +x FarmTwin_*.AppImage
+./FarmTwin_*.AppImage
+```
+
+Or the `.deb` package on Ubuntu and Debian:
+
+```bash
+sudo apt install ./FarmTwin_*_amd64.deb
+```
+
+</TabItem>
+</Tabs>

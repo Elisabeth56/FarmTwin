@@ -30,7 +30,7 @@ from platformdirs import user_data_dir  # noqa: E402
 
 # a scratch data folder, set before the app reads its settings; the embedder is shared with the
 # real app's folder so it's only downloaded once
-os.environ.setdefault("FARMTWIN_EMBEDDER_DIR", str(Path(user_data_dir("FarmTwin")) / "models" / "embedder"))
+os.environ.setdefault("FARMTWIN_EMBEDDER_DIR", str(Path(user_data_dir("FarmTwin", appauthor=False)) / "models" / "embedder"))
 os.environ["FARMTWIN_DATA_DIR"] = tempfile.mkdtemp(prefix="farmtwin-eval-")
 
 import httpx  # noqa: E402

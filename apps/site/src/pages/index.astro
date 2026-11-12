@@ -1,0 +1,240 @@
+---
+import Layout from "../layouts/Layout.astro";
+import DownloadCards from "../components/DownloadCards.astro";
+---
+<Layout title="FarmTwin — your farm, on your laptop" description="Offline farm advice for Nigerian smallholder farms. Free for Windows, Mac and Linux." hero>
+<main id="landing">
+  <!-- hero -->
+  <section class="hero" id="top">
+    <div class="wrap">
+      <div class="frame" id="frame" data-tier="still">
+        <picture><source id="stillWebp" srcset="/assets/farm-dry.webp" type="image/webp"><img id="stillImg" src="/assets/farm-dry.jpg" alt="A small Nigerian farm in 3D: maize, sorghum and rice plots at the back, cassava, yam and cowpea at the front, a mud-brick house with a zinc roof, a thatched granary and a mango tree." width="1600" height="900"></picture>
+        <video id="liteVid" muted loop playsinline preload="none" aria-hidden="true"></video>
+        <canvas id="c" aria-label="Interactive 3D farm. Drag to turn it."></canvas>
+        <span class="tier-note" id="tierNote">Loading</span>
+        <div class="badge" id="badge"><span class="p"><span class="dot" style="background:var(--risk-high)"></span>Fungal risk · high</span><span class="stem"></span></div>
+        <div class="chip" id="chip"><span class="dot" id="chipDot"></span><span id="chipText"></span></div>
+      </div>
+      <h1 aria-label="Your farm, on your laptop."><span>Your</span> <span>farm,</span> <span>on</span> <span>your</span> <span>laptop.</span></h1>
+      <p class="lead">FarmTwin keeps a record of every farm you look after, works out crop stage and risk from what you log, and answers questions from trusted extension guides. It runs without internet once it's set up.</p>
+      <div class="row">
+        <a class="btn primary" href="/download/" id="heroDl">Download</a>
+        <button class="btn quiet" id="rain" type="button" aria-pressed="false"><span class="track"><span class="knob"></span></span><span id="rainLabel">Log 65 mm of rain</span></button>
+      </div>
+      <p class="fine">Free · Windows, Mac and Linux · Works offline</p>
+      <div class="crop-strip" aria-label="Crops FarmTwin covers">
+        <span class="cchip" style="--c:var(--maize)"><span class="dot" style="background:var(--maize)"></span>Maize</span>
+        <span class="cchip" style="--c:var(--cassava)"><span class="dot" style="background:var(--cassava)"></span>Cassava</span>
+        <span class="cchip" style="--c:var(--yam)"><span class="dot" style="background:var(--yam)"></span>Yam</span>
+        <span class="cchip" style="--c:var(--sorghum)"><span class="dot" style="background:var(--sorghum)"></span>Sorghum</span>
+        <span class="cchip" style="--c:var(--rice)"><span class="dot" style="background:var(--rice)"></span>Rice</span>
+        <span class="cchip" style="--c:var(--cowpea)"><span class="dot" style="background:var(--cowpea)"></span>Cowpea</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- tension -->
+  <section class="ch tension">
+    <div class="wrap rv">
+      <div style="display:flex;flex-direction:column;gap:20px">
+        <span class="eyebrow"><i style="background:var(--maize)"></i>Why it exists</span>
+        <h2>Advice arrives late. <span class="hl">The rain doesn't.<svg viewBox="0 0 300 12" preserveAspectRatio="none" aria-hidden="true"><path d="M3 8 C 80 2, 180 2, 297 7"/></svg></span></h2>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:18px">
+        <p class="big">One extension officer looks after many farms, often with weak signal and a laptop that has to last the day.</p>
+        <p class="lead">By the time a question reaches the right guide, the window to act has usually passed. FarmTwin keeps the guides, the rules and each farm's history on the laptop itself, so the answer is there in the field.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- pinned benefits -->
+  <section class="ch" style="padding-top:0">
+    <div class="wrap">
+      <span class="eyebrow rv"><i style="background:var(--sorghum)"></i>What you get</span>
+      <h2 class="rv d1" style="margin-top:16px">Everything a field visit needs, in one window.</h2>
+      <div class="pin">
+        <div class="steps" id="steps">
+          <div class="rail"><i id="railFill"></i></div>
+
+          <div class="step" style="--c:var(--maize)">
+            <span class="num">1</span>
+            <h3>A twin for every farm</h3>
+            <p class="lead">Each farm keeps its fields, plantings, rainfall, pests and notes. Open it and you're looking at that farm, as it is this week.</p>
+            <div class="v-inline">
+              <div class="vig">
+                <div class="row2"><span class="muted" style="font-size:14px">Your farms</span><span class="src">4 farms</span></div>
+                <div class="farm"><span class="sw" style="background:var(--maize)"></span><div><b>Adamu's farm</b><div class="muted" style="font-size:14px">Maize · Cowpea · Zaria</div></div></div>
+                <div class="farm"><span class="sw" style="background:var(--cassava)"></span><div><b>Ngozi's farm</b><div class="muted" style="font-size:14px">Cassava · Yam · Nsukka</div></div></div>
+                <div class="farm"><span class="sw" style="background:var(--rice)"></span><div><b>Ibrahim's farm</b><div class="muted" style="font-size:14px">Rice · Sorghum · Kano</div></div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="step" style="--c:var(--sorghum)">
+            <span class="num">2</span>
+            <h3>Risk from rules, not guesses</h3>
+            <p class="lead">Stage and risk come from fixed rules for each crop, run on what you logged. Every warning shows the rule that fired and the readings behind it.</p>
+            <div class="v-inline">
+              <div class="vig">
+                <div class="row2"><span>Maize · Main field</span><span class="src"><span class="dot" style="background:var(--maize)"></span>Day 38 · vegetative</span></div>
+                <div class="row2"><span class="muted" style="font-size:14px">Fungal risk</span><span class="src"><span class="dot" style="background:var(--risk-high)"></span>High</span></div>
+                <div class="bar"><i style="width:82%;background:var(--risk-high)"></i></div>
+                <p class="muted" style="font-size:14px;line-height:21px">Rule: humidity above 80% for 3 days during the vegetative stage. Logged: 84%, 87%, 85%.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="step" style="--c:var(--rice)">
+            <span class="num">3</span>
+            <h3>Answers that show their sources</h3>
+            <p class="lead">Ask in plain words. The answer is built from extension guides on the laptop, and every claim points to the guide it came from. If the guides don't cover it, FarmTwin says so.</p>
+            <div class="v-inline">
+              <div class="vig">
+                <div class="q">When should I apply the second dose of fertiliser?</div>
+                <div class="a">Top-dress with urea about four to six weeks after planting, when the soil is moist. Your maize is at day 38, so this week is the window.</div>
+                <div style="display:flex;gap:6px;flex-wrap:wrap"><span class="src"><span class="dot" style="background:var(--rice)"></span>NAERLS maize guide</span><span class="src"><span class="dot" style="background:var(--rice)"></span>IITA fertiliser note</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="step" style="--c:var(--cowpea)">
+            <span class="num">4</span>
+            <h3>Talk instead of type</h3>
+            <p class="lead">Record a question in Nigerian English and FarmTwin writes it out for you. Pidgin is being tested against the same accuracy bar before it ships.</p>
+            <div class="v-inline">
+              <div class="vig" style="align-items:center">
+                <div class="wave" style="--c:var(--cowpea)">
+                  <i style="--h:20px"></i><i style="--h:38px;animation-delay:.1s"></i><i style="--h:28px;animation-delay:.2s"></i><i style="--h:44px;animation-delay:.05s"></i><i style="--h:24px;animation-delay:.15s"></i><i style="--h:40px;animation-delay:.25s"></i><i style="--h:18px;animation-delay:.12s"></i><i style="--h:34px;animation-delay:.3s"></i><i style="--h:26px;animation-delay:.08s"></i>
+                </div>
+                <p class="muted" style="font-size:14px">Listening · Nigerian English</p>
+                <div class="a" style="align-self:stretch">"The leaves on my cassava are turning yellow at the edges."</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="stage" id="stage" aria-hidden="true"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- how it works -->
+  <section class="ch" id="how" style="padding-top:32px">
+    <div class="wrap">
+      <span class="eyebrow rv"><i style="background:var(--rice)"></i>How it works</span>
+      <h2 class="rv d1" style="margin-top:16px">Log what you see. FarmTwin does the counting.</h2>
+      <div class="how">
+        <div class="card rv" style="--c:var(--maize)"><span class="n">1</span><h3>Add the farm</h3><p>Name it, add fields and what's planted where. Intercropping is fine: a field can hold maize and cowpea together.</p></div>
+        <div class="card rv d1" style="--c:var(--rice)"><span class="n">2</span><h3>Log the week</h3><p>Rainfall, humidity, temperature, pests and notes. Type it or say it. Each entry updates the farm's twin straight away.</p></div>
+        <div class="card rv d2" style="--c:var(--sorghum)"><span class="n">3</span><h3>See stage and risk</h3><p>Crop stage, harvest window and active risks, worked out by rules you can read. Nothing on this screen is guessed by AI.</p></div>
+        <div class="card rv d3" style="--c:var(--cowpea)"><span class="n">4</span><h3>Ask, with sources</h3><p>The local AI model explains what to do and why, using that farm's numbers and the guides on your laptop.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- crops -->
+  <section class="ch" id="crops" style="padding-top:32px">
+    <div class="wrap">
+      <span class="eyebrow rv"><i style="background:var(--yam)"></i>Six crops</span>
+      <h2 class="rv d1" style="margin-top:16px">The crops most Nigerian farmers plant.</h2>
+      <p class="lead rv d2" style="margin-top:16px">Each crop has its own calendar, its own risk rules and its own guides. More crops are added the same way: one rule file and the guides behind it.</p>
+      <div class="crops">
+        <article class="crop rv" style="--c:var(--maize)"><span class="wash"></span><svg class="iso" viewBox="0 0 72 48" aria-hidden="true"><path d="M4 22 L36 38 L36 44 L4 28 Z" fill="#8E6E4E"/><path d="M36 38 L68 22 L68 28 L36 44 Z" fill="#6E5440"/><path d="M36 6 L68 22 L36 38 L4 22 Z" fill="var(--maize)"/></svg><h3>Maize</h3><p class="muted">Planting to tasselling to harvest, with top-dressing windows.</p><div class="tags"><span>Fall armyworm</span><span>Maize streak</span><span>Leaf blight</span></div></article>
+        <article class="crop rv d1" style="--c:var(--cassava)"><span class="wash"></span><svg class="iso" viewBox="0 0 72 48" aria-hidden="true"><path d="M4 22 L36 38 L36 44 L4 28 Z" fill="#8E6E4E"/><path d="M36 38 L68 22 L68 28 L36 44 Z" fill="#6E5440"/><path d="M36 6 L68 22 L36 38 L4 22 Z" fill="var(--cassava)"/></svg><h3>Cassava</h3><p class="muted">A year-long calendar from stem cuttings to root bulking.</p><div class="tags"><span>Mosaic disease</span><span>Mealybug</span><span>Green mite</span></div></article>
+        <article class="crop rv d2" style="--c:var(--yam)"><span class="wash"></span><svg class="iso" viewBox="0 0 72 48" aria-hidden="true"><path d="M4 22 L36 38 L36 44 L4 28 Z" fill="#8E6E4E"/><path d="M36 38 L68 22 L68 28 L36 44 Z" fill="#6E5440"/><path d="M36 6 L68 22 L36 38 L4 22 Z" fill="var(--yam)"/></svg><h3>Yam</h3><p class="muted">Heaps, staking and vine growth through to harvest and storage.</p><div class="tags"><span>Anthracnose</span><span>Nematodes</span><span>Tuber rot</span></div></article>
+        <article class="crop rv" style="--c:var(--sorghum)"><span class="wash"></span><svg class="iso" viewBox="0 0 72 48" aria-hidden="true"><path d="M4 22 L36 38 L36 44 L4 28 Z" fill="#8E6E4E"/><path d="M36 38 L68 22 L68 28 L36 44 Z" fill="#6E5440"/><path d="M36 6 L68 22 L36 38 L4 22 Z" fill="var(--sorghum)"/></svg><h3>Sorghum</h3><p class="muted">Long-season and early varieties, from emergence to grain fill.</p><div class="tags"><span>Striga</span><span>Midge</span><span>Grain mould</span></div></article>
+        <article class="crop rv d1" style="--c:var(--rice)"><span class="wash"></span><svg class="iso" viewBox="0 0 72 48" aria-hidden="true"><path d="M4 22 L36 38 L36 44 L4 28 Z" fill="#8E6E4E"/><path d="M36 38 L68 22 L68 28 L36 44 Z" fill="#6E5440"/><path d="M36 6 L68 22 L36 38 L4 22 Z" fill="var(--rice)"/></svg><h3>Rice</h3><p class="muted">Lowland and upland rice, nursery to transplanting to harvest.</p><div class="tags"><span>Blast</span><span>Yellow mottle</span><span>Weeds</span></div></article>
+        <article class="crop rv d2" style="--c:var(--cowpea)"><span class="wash"></span><svg class="iso" viewBox="0 0 72 48" aria-hidden="true"><path d="M4 22 L36 38 L36 44 L4 28 Z" fill="#8E6E4E"/><path d="M36 38 L68 22 L68 28 L36 44 Z" fill="#6E5440"/><path d="M36 6 L68 22 L36 38 L4 22 Z" fill="var(--cowpea)"/></svg><h3>Cowpea</h3><p class="muted">Often grown with maize or sorghum. Flowering and pod stages tracked.</p><div class="tags"><span>Aphids</span><span>Pod borer</span><span>Thrips</span></div></article>
+      </div>
+    </div>
+  </section>
+
+  <!-- offline -->
+  <section class="ch" id="offline" style="padding-top:32px">
+    <div class="wrap">
+      <div class="ink-panel rv">
+        <div style="display:flex;flex-direction:column;gap:18px">
+          <span class="eyebrow" style="color:rgb(236 238 232 / .78)"><i style="background:var(--maize)"></i>Built for the field</span>
+          <h2>Made for the laptop you already have.</h2>
+          <p class="lead">The AI model, the guides and your farm records all live on the laptop. Nothing leaves it, and nothing waits on a network.</p>
+        </div>
+        <div class="stats">
+          <div class="stat rv d1" style="--c:var(--maize)"><b>8 GB</b><span>of RAM is enough. Tested on a 2014 MacBook Pro.</span></div>
+          <div class="stat rv d2" style="--c:var(--rice)"><b>0</b><span>internet needed after setup. Updates are optional.</span></div>
+          <div class="stat rv d3" style="--c:var(--cassava)"><b>1</b><span>flash drive can carry the model to every laptop at a training.</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- evaluation -->
+  <section class="ch" style="padding-top:32px">
+    <div class="wrap">
+      <span class="eyebrow rv"><i style="background:var(--cowpea)"></i>How we test it</span>
+      <h2 class="rv d1" style="margin-top:16px">We measure it, and we publish what didn't pass.</h2>
+      <div class="evals rv d2">
+        <div class="ev">
+          <span class="k">Choosing the model</span>
+          <div>
+            <p>Qwen2.5-3B beat Llama-3.2-3B on our farm question set. Llama was ruled out for citing sources that weren't in front of it.</p>
+            <div class="meter">
+              <div><span>Qwen2.5-3B</span><span class="t"><i style="--w:83.5%;background:var(--rice)"></i></span><span>83.5</span></div>
+              <div><span>Llama-3.2-3B</span><span class="t"><i style="--w:72.9%;background:var(--ink-faint)"></i></span><span>72.9</span></div>
+            </div>
+          </div>
+          <span class="verdict"><span class="dot" style="background:var(--risk-low)"></span>Shipped</span>
+        </div>
+        <div class="ev">
+          <span class="k">Voice in Pidgin</span>
+          <p>Two speech models were tested on Nigerian Pidgin clips against a 40% word error limit set in advance. Both failed, so voice launched in English only. Newer Pidgin models are being tested against the same limit.</p>
+          <span class="verdict"><span class="dot" style="background:var(--risk-medium)"></span>Retesting</span>
+        </div>
+        <div class="ev">
+          <span class="k">Saying "I don't know"</span>
+          <p>When the guides on the laptop don't cover a question, FarmTwin says so instead of answering anyway. Version 2 measures how often it gets this right.</p>
+          <span class="verdict"><span class="dot" style="background:var(--brand)"></span>In v2</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- people -->
+  <section class="ch" style="padding-top:32px">
+    <div class="wrap">
+      <span class="eyebrow rv"><i style="background:var(--cassava)"></i>Who it's for</span>
+      <h2 class="rv d1" style="margin-top:16px">For the people who know the field best.</h2>
+      <div class="people">
+        <figure class="ph rv" style="--c:var(--maize);margin:0"><span class="tag">Photo</span><figcaption class="lbl"><span>Extension officers</span><small>Keep every farm you support in one place, and answer on the spot.</small></figcaption></figure>
+        <figure class="ph rv d1" style="--c:var(--cassava);margin:0"><span class="tag">Photo</span><figcaption class="lbl"><span>Farmers and cooperatives</span><small>A shared laptop at the cooperative office works for every member.</small></figcaption></figure>
+        <figure class="ph rv d2" style="--c:var(--rice);margin:0"><span class="tag">Photo</span><figcaption class="lbl"><span>Agric students</span><small>Practise on real crop calendars and see why each rule fires.</small></figcaption></figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- download -->
+  <section class="ch" id="download" style="padding-top:32px">
+    <div class="wrap">
+      <span class="eyebrow rv"><i style="background:var(--brand)"></i>Download</span>
+      <h2 class="rv d1" style="margin-top:16px">Free for Windows, Mac and Linux.</h2>
+      <DownloadCards />
+      <div class="note rv"><span class="dot" style="background:var(--maize)"></span>On first launch FarmTwin downloads its AI model (about 2 GB), or imports it from a flash drive. <a href="/docs/first-run/" style="color:var(--brand)">How first run works</a></div>
+    </div>
+  </section>
+
+  <!-- faq -->
+  <section class="ch" style="padding-top:32px">
+    <div class="wrap">
+      <span class="eyebrow rv"><i style="background:var(--sorghum)"></i>Questions</span>
+      <h2 class="rv d1" style="margin-top:16px">Before you install.</h2>
+      <div class="faq rv d2" id="faq">
+        <div class="q"><button type="button" aria-expanded="false">Is FarmTwin free?<span class="pm" aria-hidden="true">+</span></button><div class="ans"><div><p>Yes. It's free to download and use, and the code is on GitHub.</p></div></div></div>
+        <div class="q"><button type="button" aria-expanded="false">Does it need internet?<span class="pm" aria-hidden="true">+</span></button><div class="ans"><div><p>Only once, to download the app and its model. After that it works fully offline. If someone already has the model file, you can import it from a flash drive and skip the download.</p></div></div></div>
+        <div class="q"><button type="button" aria-expanded="false">Where is my farm data kept?<span class="pm" aria-hidden="true">+</span></button><div class="ans"><div><p>In one file on your laptop. Nothing is uploaded. You can back it up by copying that file; the docs show where it lives on each system.</p></div></div></div>
+        <div class="q"><button type="button" aria-expanded="false">Why does Windows or macOS warn me when I install it?<span class="pm" aria-hidden="true">+</span></button><div class="ans"><div><p>FarmTwin isn't signed with a paid developer certificate yet, so your system shows a one-time warning. The install guide walks through the exact steps for each system.</p></div></div></div>
+        <div class="q"><button type="button" aria-expanded="false">Can I ask in Pidgin?<span class="pm" aria-hidden="true">+</span></button><div class="ans"><div><p>Typed questions in Pidgin are part of the version 2 tests. Voice in Pidgin will ship once a speech model passes the accuracy limit. Answers are in English for now.</p></div></div></div>
+        <div class="q"><button type="button" aria-expanded="false">Will it run on an old laptop?<span class="pm" aria-hidden="true">+</span></button><div class="ans"><div><p>It's designed for 8 GB of RAM and tested on a 2014 MacBook Pro. Answers take longer on older machines, but they come.</p></div></div></div>
+      </div>
+    </div>
+  </section>
+</main>
+  <script src="../scripts/hero.js"></script>
+</Layout>

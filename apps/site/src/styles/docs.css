@@ -1,0 +1,80 @@
+/* Starlight in FarmTwin's tokens: same ground, ink, brand green and type as the site and app. */
+:root,
+::backdrop,
+:root[data-theme="light"] {
+  --sl-font: "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --sl-color-accent-low: #cfe6a8;
+  --sl-color-accent: #2e6b45;
+  --sl-color-accent-high: #1f3328;
+  --sl-color-white: #1f3328;
+  --sl-color-gray-1: #1f3328;
+  --sl-color-gray-2: #33473b;
+  --sl-color-gray-3: #58675e;
+  --sl-color-gray-4: #7a877e;
+  --sl-color-gray-5: #d5dad2;
+  --sl-color-gray-6: #f5f6f2;
+  --sl-color-gray-7: #fbfcf9;
+  --sl-color-black: #eceee8;
+  --sl-color-bg-nav: #fbfcf9;
+  --sl-color-bg-sidebar: #eceee8;
+  --sl-color-hairline-light: #d5dad2;
+  --sl-color-hairline: #d5dad2;
+}
+
+:root[data-theme="dark"] {
+  --sl-color-accent-low: #2d4630;
+  --sl-color-accent: #8cc46e;
+  --sl-color-accent-high: #cfe6a8;
+  --sl-color-white: #e6ece4;
+  --sl-color-gray-1: #e6ece4;
+  --sl-color-gray-2: #c5d0c7;
+  --sl-color-gray-3: #a3b0a6;
+  --sl-color-gray-4: #76847a;
+  --sl-color-gray-5: #2c3730;
+  --sl-color-gray-6: #1a221d;
+  --sl-color-gray-7: #121814;
+  --sl-color-black: #121814;
+  --sl-color-bg-nav: #1a221d;
+  --sl-color-bg-sidebar: #121814;
+}
+
+h1,
+h2,
+h3 {
+  font-weight: 400 !important;
+  letter-spacing: -0.02em;
+}
+
+.sl-markdown-content :is(a) {
+  color: var(--sl-color-accent);
+}
+
+/* the header floats like the site's nav */
+header.header {
+  margin: 12px;
+  width: calc(100% - 24px);
+  border-radius: 9999px;
+  border: none;
+  box-shadow: 0 1px 2px rgb(31 51 40 / 0.05), 0 12px 32px rgb(31 51 40 / 0.1);
+}
+
+.sidebar-pane,
+.right-sidebar {
+  padding-top: 12px;
+}
+
+.starlight-aside,
+.expressive-code,
+.sl-markdown-content table {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.site-title {
+  color: var(--sl-color-gray-1);
+}
+
+.sidebar-content summary .large,
+.sidebar-content a[aria-current="page"] {
+  font-weight: 400;
+}

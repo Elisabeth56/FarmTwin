@@ -74,3 +74,4 @@ jobs:
       - run: pnpm --filter @farmtwin/web typecheck
       - run: pnpm --filter @farmtwin/web test
       - run: pnpm --filter @farmtwin/web build
+      - run: pnpm --filter @farmtwin/site build

@@ -1,0 +1,23 @@
+---
+// Lite mode and the farm version switch only matter where the hero farm is.
+const { showTier = false } = Astro.props as { showTier?: boolean };
+---
+<footer class="foot" id="foot">
+  <div class="top">
+    <div class="cols">
+      <div class="col"><b>Product</b><a href="/#how">How it works</a><a href="/#crops">Crops</a><a href="/download/">Download</a></div>
+      <div class="col"><b>Docs</b><a href="/docs/install/">Install</a><a href="/docs/first-run/">First run</a><a href="/docs/troubleshooting/">Troubleshooting</a></div>
+      <div class="col"><b>Project</b><a href="https://github.com/Elisabeth56/FarmTwin">GitHub</a><a href="/">Case study</a></div>
+    </div>
+    {showTier && (
+    <div style="display:flex;flex-direction:column;gap:12px;align-items:flex-start">
+      <button class="btn quiet" id="liteBtn" type="button" aria-pressed="false"><span class="track"><span class="knob"></span></span>Lite mode</button>
+      <div class="seg" style="display:inline-flex;gap:4px;padding:4px;border-radius:9999px;background:rgb(31 51 40 / .06);font-size:13px" role="group" aria-label="3D farm version (prototype)">
+        <span style="padding:8px 6px 8px 10px;color:var(--ink-muted)">Farm version</span>
+        <button type="button" data-t="auto" class="tbtn">Auto</button><button type="button" data-t="full" class="tbtn">3D</button><button type="button" data-t="lite" class="tbtn">Video</button><button type="button" data-t="still" class="tbtn">Still</button>
+      </div>
+    </div>
+    )}
+  </div>
+  <div class="mark" id="mark" aria-label="farmtwin"></div>
+</footer>

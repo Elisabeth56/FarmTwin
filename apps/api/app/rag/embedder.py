@@ -39,6 +39,16 @@ def get_model(local_files_only: bool = True):
     return _model
 
 
+def release() -> None:
+    """Frees the model before the interpreter exits. onnxruntime aborts the process ("terminate
+    called without an active exception") if its thread pool is still alive at shutdown."""
+    global _model
+    _model = None
+    import gc
+
+    gc.collect()
+
+
 def embed_query(text: str) -> list[float]:
     return next(iter(get_model().query_embed(text))).tolist()
 

@@ -1,10 +1,13 @@
 # Desktop release (ADR-022): a v* tag builds the installers for all four targets and attaches them,
 # with a checksum file and the updater feed, to a draft GitHub release. Publishing the draft is a
-# person's call.
+# person's call. Pull requests that touch the desktop build run the same builds and keep the
+# installers as workflow artifacts, without releasing anything.
 name: release
 on:
   push:
     tags: ["v*"]
+  pull_request:
+    paths: [apps/desktop/**, apps/api/farmtwin-api.spec, .github/workflows/release.yml]
 
 permissions:
   contents: write
@@ -73,7 +76,8 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ""
         with:
           projectPath: apps/desktop
-          tagName: ${{ github.ref_name }}
+          # empty on pull requests: build only, no release
+          tagName: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || '' }}
           releaseName: FarmTwin ${{ github.ref_name }}
           releaseBody: |
             Download the installer for your laptop below, then follow the install guide: https://farmtwin-beta.vercel.app/docs/install/
@@ -83,7 +87,20 @@ jobs:
           includeUpdaterJson: true
           args: --target ${{ matrix.rust }} --bundles ${{ matrix.bundles }} --config '${{ steps.updater.outputs.config }}'
 
+      - if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: farmtwin-${{ matrix.target }}
+          path: |
+            apps/desktop/src-tauri/target/${{ matrix.rust }}/release/bundle/dmg/*.dmg
+            apps/desktop/src-tauri/target/${{ matrix.rust }}/release/bundle/msi/*.msi
+            apps/desktop/src-tauri/target/${{ matrix.rust }}/release/bundle/nsis/*.exe
+            apps/desktop/src-tauri/target/${{ matrix.rust }}/release/bundle/appimage/*.AppImage
+            apps/desktop/src-tauri/target/${{ matrix.rust }}/release/bundle/deb/*.deb
+          retention-days: 7
+
   checksums:
+    if: startsWith(github.ref, 'refs/tags/')
     needs: build
     runs-on: ubuntu-latest
     steps:

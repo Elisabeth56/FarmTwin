@@ -62,6 +62,13 @@ jobs:
           find apps/desktop/resources -type f \( -perm -u+x -o -name '*.dylib' -o -name '*.so' \) \
             -exec codesign --force --sign - {} \;
 
+      # linuxdeploy checks every ELF file in the AppImage; the frozen API's wheels keep their own
+      # libraries (numpy.libs, ...) next to them, so tell it where they are
+      - if: runner.os == 'Linux'
+        run: |
+          dirs=$(find "$PWD/apps/desktop/resources" -name '*.so*' -printf '%h\n' | sort -u | paste -sd:)
+          echo "LD_LIBRARY_PATH=$dirs${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" >> "$GITHUB_ENV"
+
       - name: updater signing (skipped when the key isn't set up yet)
         id: updater
         env:

@@ -21,3 +21,9 @@ def client():
 
     with TestClient(app) as c:
         yield c
+
+
+def pytest_sessionfinish(session, exitstatus):
+    from app.rag import embedder
+
+    embedder.release()

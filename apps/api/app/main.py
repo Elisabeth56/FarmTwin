@@ -29,6 +29,7 @@ from app.features.plantings import router as plantings
 from app.features.system import router as system
 from app.features.weather import router as weather
 from app.logs import install_request_logging, setup_logging
+from app.rag import embedder
 from app.rag.index import sync_index
 
 
@@ -45,6 +46,7 @@ async def lifespan(_: FastAPI):
     system.watch_parent()
     yield
     supervisor.stop()
+    embedder.release()
 
 
 def _sync_index_quietly() -> None:

@@ -34,7 +34,7 @@ Ear rots caused by Fusarium, Aspergillus, and other fungi develop during grain f
 
 ---
 source_id: iita_disease_summary_table
-source_title: Quick Reference: Maize Foliar Diseases at a Glance
+source_title: "Quick Reference: Maize Foliar Diseases at a Glance"
 source_org: IITA
 source_url: https://iita.org
 source_note: Synthesized from IITA field guides.

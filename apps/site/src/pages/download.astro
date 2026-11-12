@@ -1,0 +1,33 @@
+---
+import Layout from "../layouts/Layout.astro";
+import DownloadCards from "../components/DownloadCards.astro";
+---
+<Layout title="Download FarmTwin" description="Free installers for Windows, Mac (Apple silicon and Intel) and Linux.">
+  <main class="dl-page">
+    <section class="ch" style="padding-top:160px">
+      <div class="wrap">
+        <span class="eyebrow"><i style="background:var(--brand)"></i>Download</span>
+        <h1 style="margin-top:16px">Free for Windows, Mac and Linux.</h1>
+        <p class="lead" style="margin-top:16px;max-width:52ch;color:var(--ink-muted)">
+          Download the installer for your laptop. On first launch FarmTwin gets its AI model, about 2 GB, by download or from a flash drive. After that it works offline.
+        </p>
+        <DownloadCards />
+        <ol class="steps-after">
+          <li><b>Install it.</b> Windows and macOS show a one-time warning because the app isn't signed with a paid certificate. <a href="/docs/install/">The install guide</a> shows the exact clicks.</li>
+          <li><b>Get the model.</b> Download it or import the file from someone who has it. <a href="/docs/first-run/">How first run works</a>.</li>
+          <li><b>Add a farm.</b> Or explore the sample farm first.</li>
+        </ol>
+        <p style="margin-top:32px;color:var(--ink-muted)">Prefer the code? <a href="https://github.com/Elisabeth56/FarmTwin" style="color:var(--brand)">FarmTwin on GitHub</a>.</p>
+      </div>
+    </section>
+  </main>
+</Layout>
+
+<style>
+  .dl-page h1 { font-size: clamp(40px, 6vw, 72px); line-height: 1; letter-spacing: -0.035em; max-width: 16ch; }
+  .steps-after { margin: 48px 0 0; padding: 0; list-style: none; display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); counter-reset: s; }
+  .steps-after li { background: var(--raised); border-radius: 24px; padding: 24px; color: var(--ink-muted); counter-increment: s; }
+  .steps-after li::before { content: counter(s); display: grid; place-items: center; width: 28px; height: 28px; border-radius: 9999px; background: var(--ink); color: var(--on-ink); margin-bottom: 16px; font-size: 14px; }
+  .steps-after b { color: var(--ink); font-weight: 400; display: block; margin-bottom: 4px; }
+  .steps-after a { color: var(--brand); }
+</style>

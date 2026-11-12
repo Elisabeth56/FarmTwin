@@ -1,0 +1,77 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  api:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: apps/api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: apps/api/uv.lock
+      - run: uv sync --frozen
+      - run: uv run ruff check app scripts tests migrations
+      - run: uv run ruff format --check app scripts tests migrations
+      - run: uv run pyright
+      - run: ./scripts/check_no_hardcoded_paths.sh
+      # the only step with network access to the model host; everything after runs offline
+      - uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/embedder
+          key: embedder-${{ hashFiles('apps/api/app/config.py') }}
+      - run: uv run python scripts/fetch_embedder.py
+        env:
+          FARMTWIN_EMBEDDER_DIR: ${{ runner.temp }}/embedder
+      - name: tests, ingest and retrieval with the model host unreachable
+        env:
+          FARMTWIN_EMBEDDER_DIR: ${{ runner.temp }}/embedder
+          FARMTWIN_DATA_DIR: ${{ runner.temp }}/farmtwin-data
+          HF_HUB_OFFLINE: "1"
+          UV_OFFLINE: "1"
+          HTTPS_PROXY: http://127.0.0.1:9
+          HTTP_PROXY: http://127.0.0.1:9
+        run: |
+          uv run pytest -q
+          uv run python scripts/ingest.py
+          uv run python scripts/ingest.py | grep "Added 0, removed 0"
+          uv run python scripts/retrieval_smoke_test.py "when should I spray cowpea against Maruca"
+          uv run python ../../evals/run.py
+          echo "::group::eval json" && cat ../../evals/results/*-retrieval.json && echo "::endgroup::"
+          # the answer eval harness end to end, against the fake model (real numbers come from a real model run)
+          touch "$RUNNER_TEMP/fake.gguf"
+          FAKE_LLAMA_DELAY=0 FARMTWIN_LLAMA_SERVER_BIN=$PWD/scripts/fake_llama.sh FARMTWIN_LLM_MODEL_PATH=$RUNNER_TEMP/fake.gguf \
+            uv run python ../../evals/answers.py | tail -25
+      - uses: actions/upload-artifact@v4
+        with:
+          name: eval-retrieval
+          path: evals/results/*-retrieval.json
+
+  web:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @farmtwin/web lint
+      - run: pnpm --filter @farmtwin/web typecheck
+      - run: pnpm --filter @farmtwin/web test
+      - run: pnpm --filter @farmtwin/web build
+      - run: pnpm --filter @farmtwin/site build

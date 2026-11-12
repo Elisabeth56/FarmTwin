@@ -1,0 +1,31 @@
+---
+import Nav from "../components/Nav.astro";
+import Footer from "../components/Footer.astro";
+import "../styles/site.css";
+
+interface Props {
+  title: string;
+  description: string;
+  hero?: boolean;
+}
+const { title, description, hero = false } = Astro.props;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content="/assets/farm-dry.jpg" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <Nav />
+    <slot />
+    <Footer showTier={hero} />
+    <script src="../scripts/site.js"></script>
+  </body>
+</html>

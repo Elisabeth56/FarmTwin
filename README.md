@@ -19,12 +19,12 @@ The two-minute demo walks through: landing page → farm setup (Adamu's Farm, Ka
 FarmTwin runs as three local processes: `llama-server` (LLM), FastAPI (backend), and Vite (frontend). Setup is a one-time script; each run needs three terminal tabs.
 
 **Prerequisites** (see [Hardware requirements](#hardware-requirements) for details):
-- Python 3.11 (specifically — see [DECISIONS.md](DECISIONS.md) ADR-005)
+- Python 3.11 (specifically — see [docs/decisions](docs/decisions) ADR-005)
 - Node.js 20+
 - CMake, ffmpeg, git-lfs
 - ~5 GB free disk (Qwen GGUF + Whisper-small + Python/Node deps)
 
-**One-time setup** — assumes `./scripts/setup.sh` has been run. It clones and builds llama.cpp at the pinned commit, downloads the Qwen2.5-3B-Instruct Q4_K_M GGUF (~1.9 GB) and the `rishabbahal/whisper-small-nigerian-accent` model (~1 GB) into `~/farmtwin-models/`, creates the Python 3.11 venv, installs backend + frontend dependencies, and ingests the 45-chunk agricultural corpus into `backend/farmtwin.db`.
+**One-time setup** — assumes `./scripts/setup.sh` has been run. It clones and builds llama.cpp at the pinned commit, downloads the Qwen2.5-3B-Instruct Q4_K_M GGUF (~1.9 GB) and the `rishabbahal/whisper-small-nigerian-accent` model (~1 GB) into `~/farmtwin-models/`, creates the Python 3.11 venv, installs backend + frontend dependencies, and ingests the 62-chunk agricultural corpus covering six crops into `apps/api/farmtwin.db`.
 
 ```bash
 ./scripts/setup.sh
@@ -59,56 +59,48 @@ Open [http://127.0.0.1:5173](http://127.0.0.1:5173) in a browser. First inferenc
 - **Frontend:** Vite + React 19 + TypeScript + Tailwind. Three routes (landing, farm setup, dashboard) plus a source-drawer overlay.
 - **Backend:** Python 3.11 + FastAPI + SQLAlchemy over SQLite. 7 tables, CRUD routers for farms/fields/crops/observations/weather, `POST /api/ask` streaming via Server-Sent Events, `POST /api/transcribe` for voice input.
 - **Deterministic engines:** `crop_calendar.py` (growth stage from planting date), `risk_rules.py` (rule-based risk-flag evaluation), `context_assembler.py` (prompt assembly). The LLM is never asked to do arithmetic, date math, or state tracking.
-- **RAG:** 45-chunk agricultural corpus in `knowledge/corpus/`, embedded with `sentence-transformers/all-MiniLM-L6-v2` (384-dim), stored in SQLite with the `sqlite-vec` extension for KNN retrieval. Top-6 chunks per query.
-- **LLM:** `llama-server` from llama.cpp serving Qwen2.5-3B-Instruct at Q4_K_M quantization (~1.9 GB on disk, ~3.06 GB peak RSS). Selected by benchmark over Llama-3.2-3B — see [BENCHMARKS.md](BENCHMARKS.md) and [REPORT.md](REPORT.md) §5.
+- **RAG:** 62-chunk agricultural corpus covering six crops in `knowledge/corpus/`, embedded with `BAAI/bge-small-en-v1.5` through fastembed (384-dim, ONNX, no PyTorch), stored in SQLite with the `sqlite-vec` extension for KNN retrieval. Top-6 chunks per query.
+- **LLM:** `llama-server` from llama.cpp serving Qwen2.5-3B-Instruct at Q4_K_M quantization (~1.9 GB on disk, ~3.06 GB peak RSS). Selected by benchmark over Llama-3.2-3B — see [benchmarks](docs/v1/benchmarks.md) and [report](docs/v1/report.md) §5.
 - **STT:** HuggingFace `rishabbahal/whisper-small-nigerian-accent` — a Whisper-small fine-tune on Nigerian-accented English. Loaded once as a module singleton in the FastAPI process.
 
-Nothing in this stack calls the internet at runtime. Full architectural detail — including the frozen v1.0 architecture and Amendment #1 — is in [ARCHITECTURE.md](ARCHITECTURE.md).
+Nothing in this stack calls the internet at runtime. Full architectural detail — including the frozen v1.0 architecture and Amendment #1 — is in [v1 architecture](docs/v1/architecture.md).
 
 ---
+
+## Checks
+
+Every pull request runs `.github/workflows/ci.yml`: ruff, pyright, pytest and a hardcoded-path check for the api; lint, typecheck, tests and a build for the web app. To make a failing check block merging, enable branch protection on `main` in GitHub settings and require the `api` and `web` checks.
 
 ## Repository structure
 
 ```
 FarmTwin/
-├── backend/              FastAPI + SQLAlchemy + sqlite-vec
-│   ├── app/
-│   │   ├── api/          CRUD routers + /api/ask (SSE) + /api/transcribe
-│   │   ├── db/           SQLAlchemy models and session
-│   │   ├── engines/      crop_calendar, risk_rules, context_assembler
-│   │   ├── llm/          llama-server HTTP client
-│   │   ├── rag/          retriever over sqlite-vec
-│   │   └── stt/          HuggingFace Whisper singleton
-│   └── requirements.txt
-├── frontend/             Vite + React + TypeScript + Tailwind
-│   ├── src/pages/        Landing, FarmSetup, FarmDashboard
-│   └── src/components/   AskPanel, MicButton, RecommendationCard, ...
-├── knowledge/corpus/     45 markdown chunks (NAERLS, IITA, CIMMYT, FAO)
-├── evaluation/
-│   ├── gold_prompts.json          10 grading prompts (incl. 2 official ADTC)
-│   ├── bench_results/             Day 6 benchmark JSON
-│   ├── stt_clips/                 15 audio clips (8 EN, 7 Pidgin)
-│   └── stt_results/               Day 5.5 WER writeups
-├── scripts/              ingest, benchmark runner, WER eval, smoke tests
-├── REPORT.md             Full technical writeup (submission report)
-├── ARCHITECTURE.md       Frozen v1.0 architecture + Amendment #1
-├── DECISIONS.md          12 ADRs
-├── BENCHMARKS.md         Real, reproducible benchmark numbers
-├── HACKATHON.md          ADTC 2026 constraints record
-├── PRODUCT.md            Product knowledge (frozen)
-└── AGENTS.md             Engineering rules for coding agents
+├── apps/
+│   ├── web/              Vite + React + TypeScript app UI
+│   └── api/              FastAPI + SQLAlchemy + sqlite-vec
+│       ├── app/          api, db, engines, llm, rag, stt
+│       └── scripts/      ingest and smoke tests
+├── knowledge/corpus/     curated agricultural corpus (NAERLS, IITA, CIMMYT, FAO)
+├── evals/
+│   ├── v1/               v1 gold prompts, benchmark runner and results
+│   └── stt/              speech clips, WER scripts and write-ups
+├── docs/
+│   ├── architecture.md   v2 architecture
+│   ├── decisions/        ADR-001 to ADR-026, one file each
+│   └── v1/               frozen v1 documents (product, hackathon, architecture, benchmarks, report)
+└── AGENTS.md             engineering rules for coding agents
 ```
 
 ---
 
 ## Key documents
 
-- [REPORT.md](REPORT.md) — The full technical writeup submitted to ADTC. Design decisions, model selection with numbers, offline verification, honest limitations.
-- [ARCHITECTURE.md](ARCHITECTURE.md) — Frozen v1.0 architecture (MVP, user journey, LLM role, RAG, data model, screens, backend components, benchmark strategy) plus Amendment #1 (landing page + STT).
-- [DECISIONS.md](DECISIONS.md) — Chronological ADR log covering every deviation from the frozen documents.
-- [BENCHMARKS.md](BENCHMARKS.md) — Day 1 baselines, Day 2 shape test, Day 6 model-selection benchmark. Only measured numbers.
-- [HACKATHON.md](HACKATHON.md) — The ADTC 2026 rules (domain, hardware, 7 GB memory ceiling, scoring, submission requirements, truthfulness rule).
-- [PRODUCT.md](PRODUCT.md) — The frozen product knowledge (tagline, positioning, demo scenario, official ADTC test prompts).
+- [report](docs/v1/report.md) — The full technical writeup submitted to ADTC. Design decisions, model selection with numbers, offline verification, honest limitations.
+- [v1 architecture](docs/v1/architecture.md) — Frozen v1.0 architecture (MVP, user journey, LLM role, RAG, data model, screens, backend components, benchmark strategy) plus Amendment #1 (landing page + STT).
+- [docs/decisions](docs/decisions) — Chronological ADR log covering every deviation from the frozen documents.
+- [benchmarks](docs/v1/benchmarks.md) — Day 1 baselines, Day 2 shape test, Day 6 model-selection benchmark. Only measured numbers.
+- [hackathon](docs/v1/hackathon.md) — The ADTC 2026 rules (domain, hardware, 7 GB memory ceiling, scoring, submission requirements, truthfulness rule).
+- [product](docs/v1/product.md) — The frozen product knowledge (tagline, positioning, demo scenario, official ADTC test prompts).
 - [AGENTS.md](AGENTS.md) — Engineering rules that governed every coding session during the sprint.
 - [evaluation/stt_results/day5_5_wer.md](evaluation/stt_results/day5_5_wer.md), [evaluation/stt_results/day5_5_wer_hf.md](evaluation/stt_results/day5_5_wer_hf.md) — STT evaluation, both candidate models.
 
@@ -145,9 +137,9 @@ Peak RSS during a 3-query burst on the reference model is **3.06 GB** — 44% of
 
 ## Acknowledgements
 
-- **NAERLS, IITA, CIMMYT, and FAO** — source organizations for the agricultural knowledge corpus. Every chunk in `knowledge/corpus/` is attributed to one of these at the organizational level; content was cross-checked against multiple published bulletins for factual accuracy (see [REPORT.md](REPORT.md) §9.4 for the honest note on chunk-level provenance).
+- **NAERLS, IITA, CIMMYT, and FAO** — source organizations for the agricultural knowledge corpus. Every chunk in `knowledge/corpus/` is attributed to one of these at the organizational level; content was cross-checked against multiple published bulletins for factual accuracy (see [report](docs/v1/report.md) §9.4 for the honest note on chunk-level provenance).
 - **`rishabbahal/whisper-small-nigerian-accent`** on HuggingFace — the Whisper-small fine-tune on Nigerian-accented English that ships as the STT model.
-- **llama.cpp**, **sqlite-vec**, **sentence-transformers**, and the wider open-source local-LLM ecosystem that makes offline-first ML on a $400 laptop possible at all.
+- **llama.cpp**, **sqlite-vec**, **fastembed**, and the wider open-source local-LLM ecosystem that makes offline-first ML on a $400 laptop possible at all.
 - **Anthropic Claude** — used for pair programming during the 7-day sprint. Every architectural decision, every design tradeoff, and every line committed was reviewed and owned by the author; Claude accelerated implementation but did not choose the shape of the system.
 
 ---

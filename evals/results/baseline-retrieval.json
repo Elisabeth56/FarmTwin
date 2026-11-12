@@ -1,0 +1,1258 @@
+{
+  "date": "2026-11-11",
+  "commit": "9ff547d",
+  "embedder": "BAAI/bge-small-en-v1.5",
+  "top_k": 6,
+  "summary": {
+    "cases": 51,
+    "hit@6": 1.0,
+    "recall@6": 0.981,
+    "mrr": 0.967,
+    "chunk_hit@1": 0.822,
+    "chunk_hit@6": 0.978,
+    "chunk_mrr": 0.889,
+    "best_distance_answerable": 0.627,
+    "best_distance_unanswerable": 0.866,
+    "latency_p50_ms": 5.2,
+    "latency_p95_ms": 6.7,
+    "by_group": {
+      "cassava": {
+        "n": 9,
+        "hit": 1.0,
+        "chunk_mrr": 0.815
+      },
+      "cowpea": {
+        "n": 8,
+        "hit": 1.0,
+        "chunk_mrr": 0.938
+      },
+      "intercrop": {
+        "n": 2,
+        "hit": 1.0,
+        "chunk_mrr": 1.0
+      },
+      "maize": {
+        "n": 13,
+        "hit": 1.0,
+        "chunk_mrr": 1.0
+      },
+      "pidgin": {
+        "n": 4,
+        "hit": 1.0,
+        "chunk_mrr": 0.75
+      },
+      "rice": {
+        "n": 7,
+        "hit": 1.0,
+        "chunk_mrr": 0.69
+      },
+      "sorghum": {
+        "n": 5,
+        "hit": 1.0,
+        "chunk_mrr": 0.867
+      },
+      "yam": {
+        "n": 5,
+        "hit": 1.0,
+        "chunk_mrr": 1.0
+      }
+    }
+  },
+  "cases": [
+    {
+      "id": "maize-01",
+      "answerable": true,
+      "tags": [],
+      "crops": [
+        "maize"
+      ],
+      "retrieved": [
+        "cimmyt_maize_disease_overview",
+        "cimmyt_downy_mildew",
+        "iita_vegetative_stress",
+        "iita_vegetative_stress",
+        "iita_maize_disease_scouting",
+        "fao_weather_agriculture"
+      ],
+      "best_distance": 0.5777376294136047,
+      "hit": true,
+      "recall": 0.6666666666666666,
+      "rr": 1.0,
+      "chunk_rank": 1,
+      "chunk_rr": 1.0,
+      "latency_ms": 322.9
+    },
+    {
+      "id": "maize-02",
+      "answerable": true,
+      "tags": [],
+      "crops": [
+        "maize"
+      ],
+      "retrieved": [
+        "naerls_vegetative_management",
+        "iita_maize_lifecycle_overview",
+        "naerls_vegetative_management",
+        "naerls_vegetative_management",
+        "naerls_harvest_timing",
+        "fao_weather_agriculture"
+      ],
+      "best_distance": 0.5521736741065979,
+      "hit": true,
+      "recall": 1.0,
+      "rr": 1.0,
+      "chunk_rank": 1,
+      "chunk_rr": 1.0,
+      "latency_ms": 5.4
+    },
+    {
+      "id": "maize-03",
+      "answerable": true,
+      "tags": [],
+      "crops": [
+        "maize"
+      ],
+      "retrieved": [
+        "iita_fall_armyworm",
+        "naerls_harvest_timing",
+        "iita_stem_borer",
+        "naerls_vegetative_management",
+        "cimmyt_maize_disease_overview",
+        "iita_maize_lifecycle_overview"
+      ],
+      "best_distance": 0.7137971520423889,
+      "hit": true,
+      "recall": 1.0,
+      "rr": 1.0,
+      "chunk_rank": 1,
+      "chunk_rr": 1.0,
+      "latency_ms": 6.7
+    },
+    {
+      "id": "maize-04",
+      "answerable": true,
+      "tags": [],
+      "crops": [
+        "maize"
+      ],
+      "retrieved": [
+        "fao_weather_agriculture",
+        "iita_maize_lifecycle_overview",
+        "cimmyt_maize_disease_overview",
+        "iita_vegetative_stress",
+        "naerls_harvest_timing",
+        "cimmyt_maize_disease_overview"
+      ],
+      "best_distance": 0.6700459122657776,
+      "hit": true,
+      "recall": 1.0,
+      "rr": 1.0,
+      "chunk_rank": 1,
+      "chunk_rr": 1.0,
+      "latency_ms": 6.3
+    },
+    {
+      "id": "maize-05",
+      "answerable": true,
+      "tags": [],
+      "crops": [
+        "maize"
+      ],
+      "retrieved": [
+        "naerls_harvest_timing",
+        "iita_maize_lifecycle_overview",
+        "iita_maize_lifecycle_overview",
+        "naerls_vegetative_management",
+        "fao_post_harvest",
+        "naerls_vegetative_management"
+      ],
+      "best_distance": 0.5772293210029602,
+      "hit": true,
+      "recall": 1.0,
+      "rr": 1.0,
+      "chunk_rank": 1,
+      "chunk_rr": 1.0,
+      "latency_ms": 4.5
+    },
+    {
+      "id": "maize-06",
+      "answerable": true,
+      "tags": [],
+      "crops": [
+        "maize"
+      ],
+      "retrieved": [
+        "fao_post_harvest",
+        "naerls_harvest_timing",
+        "fao_weather_agriculture",
+        "cimmyt_maize_disease_overview",
+        "iita_maize_lifecycle_overview",
+        "iita_rice_northern_nigeria_2020"
+      ],
+      "best_distance": 0.5564452409744263,
+      "hit": true,
+      "recall": 1.0,
+      "rr": 1.0,
+      "chunk_rank": 1,
+      "chunk_rr": 1.0,
+      "latency_ms": 4.5
+    },
+    {
+      "id": "maize-07",
+      "answerable": true,
+      "tags": [],
+      "crops": [
+        "maize"
+      ],
+      "retrieved": [
+        "cimmyt_maize_disease_overview",
+        "iita_disease_summary_table",
+        "naerls_vegetative_management",
+        "cimmyt_maize_disease_overview",
+        "iita_maize_disease_scouting",
+        "naerls_harvest_timing"
+      ],
+      "best_distance": 0.5628961324691772,
+      "hit": true,
+      "recall": 1.0,
+      "rr": 1.0,
+      "chunk_rank": 1,
+      "chunk_rr": 1.0,
+      "latency_ms": 5.5
+    },
+    {
+      "id": "maize-08",
+      "answerable": true,
+      "tags": [],
+      "crops": [
+        "maize"
+      ],
+      "retrieved": [
+        "iita_maize_disease_scouting",
+        "iita_maize_disease_scouting",
+        "naerls_disease_management",
+        "cimmyt_maize_disease_overview",
+        "naerls_disease_management",
+        "naerls_pest_scouting"
+      ],
+      "best_distance": 0.5286585092544556,
+      "hit": true,
+      "recall": 1.0,
+      "rr": 1.0,
+      "chunk_rank": 1,
+      "chunk_rr": 1.0,
+      "latency_ms": 5.2
+    },
+    {
+      "id": "maize-09",
+      "answerable": true,
+      "tags": [],
+      "crops": [
+        "maize"
+      ],
+      "retrieved": [
+        "iita_sammaz_varieties",
+        "iita_sammaz_varieties",
+        "naerls_kaduna_agroecology",
+        "naerls_maize_calendar",
+        "icrisat_sorghum_ne_nigeria_2020",
+        "naerls_kaduna_agroecology"
+      ],
+      "best_distance": 0.5510219931602478,
+      "hit": true,
+      "recall": 1.0,
+      "rr": 1.0,
+      "chunk_rank": 1,
+      "chunk_rr": 1.0,
+      "latency_ms": 4.7
+    },
+    {
+      "id": "maize-10",
+      "answerable": true,
+      "tags": [],
+      "crops": [
+        "maize"
+      ],
+      "retrieved": [
+        "iita_vegetative_stress",
+        "iita_maize_lifecycle_overview",
+        "naerls_harvest_timing",
+        "iita_vegetative_stress",
+        "iita_maize_lifecycle_overview",
+        "fao_post_harvest"
+      ],
+      "best_distance": 0.6383132934570312,
+      "hit": true,
+      "recall": 0.5,
+      "rr": 1.0,
+      "chunk_rank": 1,
+      "chunk_rr": 1.0,
+      "latency_ms": 5.5
+    },
+    {
+      "id": "cowpea-01",
+      "answerable": true,
+      "tags": [],
+      "crops": [
+        "cowpea"
+      ],
+      "retrieved": [
+        "iita_cowpea_farmers_guide_2009",
+        "iita_cowpea_farmers_guide_2009",
+        "iita_cowpea_farmers_guide_2009",
+        "naerls_disease_management",
+        "iita_cassava_pest_control_2000",
+        "iita_fall_armyworm"
+      ],
+      "best_distance": 0.5465090274810791,
+      "hit": true,
+      "recall": 1.0,
+      "rr": 1.0,
+      "chunk_rank": 1,
+      "chunk_rr": 1.0,
+      "latency_ms": 4.9
+    },
+    {
+      "id": "cowpea-02",
+      "answerable": true,
+      "tags": [],
+      "crops": [
+        "cowpea"
+      ],
+      "retrieved": [
+        "iita_cowpea_farmers_guide_2009",
+        "iita_cowpea_farmers_guide_2009",
+        "iita_cowpea_farmers_guide_2009",
+        "iita_cassava_pest_control_2000",
+        "icrisat_sorghum_ne_nigeria_2020",
+        "iita_fall_armyworm"
+      ],
+      "best_distance": 0.5158998370170593,
+      "hit": true,
+      "recall": 1.0,
+      "rr": 1.0,
+      "chunk_rank": 1,
+      "chunk_rr": 1.0,
+      "latency_ms": 5.8
+    },
+    {
+      "id": "cowpea-03",
+      "answerable": true,
+      "tags": [],
+      "crops": [
+        "cowpea"
+      ],
+      "retrieved": [
+        "iita_cowpea_farmers_guide_2009",
+        "iita_cowpea_farmers_guide_2009",
+        "icrisat_sorghum_ne_nigeria_2020",
+        "iita_maize_lifecycle_overview",
+        "iita_rice_northern_nigeria_2020",
+        "iita_cowpea_farmers_guide_2009"
+      ],
+      "best_distance": 0.5180863738059998,
+      "hit": true,
+      "recall": 1.0,
+      "rr": 1.0,
+      "chunk_rank": 1,
+      "chunk_rr": 1.0,
+      "latency_ms": 4.6
+    },
+    {
+      "id": "cowpea-04",
+      "answerable": true,
+      "tags": [],
+      "crops": [
+        "cowpea"
+      ],
+      "retrieved": [
+        "iita_cowpea_farmers_guide_2009",
+        "iita_cowpea_farmers_guide_2009",
+        "iita_cowpea_farmers_guide_2009",
+        "iita_fall_armyworm",
+        "iita_cassava_pest_control_2000",
+        "naerls_pest_scouting"
+      ],
+      "best_distance": 0.5747473239898682,
+      "hit": true,
+      "recall": 1.0,
+      "rr": 1.0,
+      "chunk_rank": 1,
+      "chunk_rr": 1.0,
+      "latency_ms": 5.4
+    },
+    {
+      "id": "cowpea-05",
+      "answerable": true,
+      "tags": [],
+      "crops": [
+        "cowpea"
+      ],
+      "retrieved": [
+        "iita_cowpea_farmers_guide_2009",
+        "iita_cowpea_farmers_guide_2009",
+        "iita_cowpea_farmers_guide_2009",
+        "ispp_cassava_disease_guide_2007",
+        "cimmyt_maize_disease_overview",
+        "naerls_vegetative_management"
+      ],
+      "best_distance": 0.7008050680160522,
+      "hit": true,
+      "recall": 1.0,
+      "rr": 1.0,
+      "chunk_rank": 2,
+      "chunk_rr": 0.5,
+      "latency_ms": 7.1
+    },
+    {
+      "id": "cowpea-06",
+      "answerable": true,
+      "tags": [],
+      "crops": [
+        "cowpea"
+      ],
+      "retrieved": [
+        "iita_cowpea_farmers_guide_2009",
+        "fao_post_harvest",
+        "iita_cowpea_farmers_guide_2009",
+        "naerls_harvest_timing",
+        "iita_rice_northern_nigeria_2020",
+        "iita_cassava_pest_control_2000"
+      ],
+      "best_distance": 0.602437436580658,
+      "hit": true,
+      "recall": 1.0,
+      "rr": 1.0,
+      "chunk_rank": 1,
+      "chunk_rr": 1.0,
+      "latency_ms": 4.7
+    },
+    {
+      "id": "rice-01",
+      "answerable": true,
+      "tags": [],
+      "crops": [
+        "rice"
+      ],
+      "retrieved": [
+        "iita_rice_northern_nigeria_2020",
+        "iita_rice_basics",
+        "iita_rice_northern_nigeria_2020",
+        "naerls_kaduna_agroecology",
+        "naerls_maize_calendar",
+        "naerls_vegetative_management"
+      ],
+      "best_distance": 0.6427547335624695,
+      "hit": true,
+      "recall": 1.0,
+      "rr": 1.0,
+      "chunk_rank": 1,
+      "chunk_rr": 1.0,
+      "latency_ms": 4.5
+    },
+    {
+      "id": "rice-02",
+      "answerable": true,
+      "tags": [],
+      "crops": [
+        "rice"
+      ],
+      "retrieved": [
+        "iita_rice_northern_nigeria_2020",
+        "iita_rice_northern_nigeria_2020",
+        "iita_vegetative_stress",
+        "iita_vegetative_stress",
+        "cimmyt_maize_disease_overview",
+        "cimmyt_ear_rots"
+      ],
+      "best_distance": 0.7116639614105225,
+      "hit": true,
+      "recall": 1.0,
+      "rr": 1.0,
+      "chunk_rank": 2,
+      "chunk_rr": 0.5,
+      "latency_ms": 5.3
+    },
+    {
+      "id": "rice-03",
+      "answerable": true,
+      "tags": [],
+      "crops": [
+        "rice"
+      ],
+      "retrieved": [
+        "iita_rice_northern_nigeria_2020",
+        "naerls_vegetative_management",
+        "iita_rice_northern_nigeria_2020",
+        "naerls_vegetative_management",
+        "iita_maize_lifecycle_overview",
+        "iita_rice_basics"
+      ],
+      "best_distance": 0.6998175978660583,
+      "hit": true,
+      "recall": 1.0,
+      "rr": 1.0,
+      "chunk_rank": 3,
+      "chunk_rr": 0.3333333333333333,
+      "latency_ms": 4.4
+    },
+    {
+      "id": "rice-04",
+      "answerable": true,
+      "tags": [],
+      "crops": [
+        "rice"
+      ],
+      "retrieved": [
+        "iita_rice_northern_nigeria_2020",
+        "iita_vegetative_stress",
+        "iita_vegetative_stress",
+        "iita_maize_lifecycle_overview",
+        "iita_rice_basics",
+        "iita_rice_northern_nigeria_2020"
+      ],
+      "best_distance": 0.5937498807907104,
+      "hit": true,
+      "recall": 1.0,
+      "rr": 1.0,
+      "chunk_rank": 1,
+      "chunk_rr": 1.0,
+      "latency_ms": 4.4
+    },
+    {
+      "id": "rice-05",
+      "answerable": true,
+      "tags": [],
+      "crops": [
+        "rice"
+      ],
+      "retrieved": [
+        "iita_rice_northern_nigeria_2020",
+        "iita_rice_northern_nigeria_2020",
+        "iita_maize_lifecycle_overview",
+        "icrisat_sorghum_ne_nigeria_2020",
+        "iita_rice_basics",
+        "iita_vegetative_stress"
+      ],
+      "best_distance": 0.5820156335830688,
+      "hit": true,
+      "recall": 1.0,
+      "rr": 1.0,
+      "chunk_rank": 1,
+      "chunk_rr": 1.0,
+      "latency_ms": 4.4
+    },
+    {
+      "id": "rice-06",
+      "answerable": true,
+      "tags": [],
+      "crops": [
+        "rice"
+      ],
+      "retrieved": [
+        "iita_rice_northern_nigeria_2020",
+        "iita_stem_borer",
+        "icrisat_sorghum_ne_nigeria_2020",
+        "iita_rice_northern_nigeria_2020",
+        "naerls_pest_scouting",
+        "iita_cowpea_farmers_guide_2009"
+      ],
+      "best_distance": 0.6414905190467834,
+      "hit": true,
+      "recall": 1.0,
+      "rr": 1.0,
+      "chunk_rank": 1,
+      "chunk_rr": 1.0,
+      "latency_ms": 4.6
+    },
+    {
+      "id": "sorghum-01",
+      "answerable": true,
+      "tags": [],
+      "crops": [
+        "sorghum"
+      ],
+      "retrieved": [
+        "icrisat_sorghum_ne_nigeria_2020",
+        "icrisat_sorghum_ne_nigeria_2020",
+        "naerls_harvest_timing",
+        "cimmyt_maize_disease_overview",
+        "naerls_vegetative_management",
+        "iita_vegetative_stress"
+      ],
+      "best_distance": 0.6904611587524414,
+      "hit": true,
+      "recall": 1.0,
+      "rr": 1.0,
+      "chunk_rank": 1,
+      "chunk_rr": 1.0,
+      "latency_ms": 5.5
+    },
+    {
+      "id": "sorghum-02",
+      "answerable": true,
+      "tags": [],
+      "crops": [
+        "sorghum"
+      ],
+      "retrieved": [
+        "icrisat_sorghum_ne_nigeria_2020",
+        "iita_rice_northern_nigeria_2020",
+        "naerls_maize_calendar",
+        "icrisat_sorghum_ne_nigeria_2020",
+        "iita_cassava_pest_control_2000",
+        "fao_weather_agriculture"
+      ],
+      "best_distance": 0.5625488758087158,
+      "hit": true,
+      "recall": 1.0,
+      "rr": 1.0,
+      "chunk_rank": 1,
+      "chunk_rr": 1.0,
+      "latency_ms": 4.7
+    },
+    {
+      "id": "sorghum-03",
+      "answerable": true,
+      "tags": [],
+      "crops": [
+        "sorghum"
+      ],
+      "retrieved": [
+        "icrisat_sorghum_ne_nigeria_2020",
+        "icrisat_sorghum_ne_nigeria_2020",
+        "iita_maize_lifecycle_overview",
+        "iita_rice_northern_nigeria_2020",
+        "iita_cowpea_farmers_guide_2009",
+        "iita_maize_lifecycle_overview"
+      ],
+      "best_distance": 0.5555567145347595,
+      "hit": true,
+      "recall": 1.0,
+      "rr": 1.0,
+      "chunk_rank": 1,
+      "chunk_rr": 1.0,
+      "latency_ms": 4.5
+    },
+    {
+      "id": "sorghum-04",
+      "answerable": true,
+      "tags": [],
+      "crops": [
+        "sorghum"
+      ],
+      "retrieved": [
+        "icrisat_sorghum_ne_nigeria_2020",
+        "cimmyt_ear_rots",
+        "cimmyt_maize_disease_overview",
+        "icrisat_sorghum_ne_nigeria_2020",
+        "cimmyt_maize_disease_overview",
+        "naerls_harvest_timing"
+      ],
+      "best_distance": 0.7370637655258179,
+      "hit": true,
+      "recall": 1.0,
+      "rr": 1.0,
+      "chunk_rank": 1,
+      "chunk_rr": 1.0,
+      "latency_ms": 5.2
+    },
+    {
+      "id": "sorghum-05",
+      "answerable": true,
+      "tags": [],
+      "crops": [
+        "sorghum"
+      ],
+      "retrieved": [
+        "icrisat_sorghum_ne_nigeria_2020",
+        "naerls_vegetative_management",
+        "icrisat_sorghum_ne_nigeria_2020",
+        "iita_cassava_pest_control_2000",
+        "iita_cowpea_farmers_guide_2009",
+        "iita_growing_cassava_manual"
+      ],
+      "best_distance": 0.70602947473526,
+      "hit": true,
+      "recall": 1.0,
+      "rr": 1.0,
+      "chunk_rank": 3,
+      "chunk_rr": 0.3333333333333333,
+      "latency_ms": 5.3
+    },
+    {
+      "id": "cassava-01",
+      "answerable": true,
+      "tags": [],
+      "crops": [
+        "cassava"
+      ],
+      "retrieved": [
+        "ispp_cassava_disease_guide_2007",
+        "iita_cassava_pest_control_2000",
+        "iita_growing_cassava_manual",
+        "iita_cassava_basics",
+        "iita_cassava_pest_control_2000",
+        "ispp_cassava_disease_guide_2007"
+      ],
+      "best_distance": 0.6484749913215637,
+      "hit": true,
+      "recall": 1.0,
+      "rr": 0.5,
+      "chunk_rank": 2,
+      "chunk_rr": 0.5,
+      "latency_ms": 6.6
+    },
+    {
+      "id": "cassava-02",
+      "answerable": true,
+      "tags": [],
+      "crops": [
+        "cassava"
+      ],
+      "retrieved": [
+        "iita_cassava_pest_control_2000",
+        "ispp_cassava_disease_guide_2007",
+        "ispp_cassava_disease_guide_2007",
+        "iita_cassava_basics",
+        "iita_growing_cassava_manual",
+        "cimmyt_maize_disease_overview"
+      ],
+      "best_distance": 0.6624650359153748,
+      "hit": true,
+      "recall": 1.0,
+      "rr": 0.5,
+      "chunk_rank": 3,
+      "chunk_rr": 0.3333333333333333,
+      "latency_ms": 5.3
+    },
+    {
+      "id": "cassava-03",
+      "answerable": true,
+      "tags": [],
+      "crops": [
+        "cassava"
+      ],
+      "retrieved": [
+        "iita_growing_cassava_manual",
+        "iita_cassava_pest_control_2000",
+        "iita_cassava_basics",
+        "naerls_vegetative_management",
+        "iita_cowpea_farmers_guide_2009",
+        "iita_cassava_pest_control_2000"
+      ],
+      "best_distance": 0.5908913016319275,
+      "hit": true,
+      "recall": 1.0,
+      "rr": 1.0,
+      "chunk_rank": 1,
+      "chunk_rr": 1.0,
+      "latency_ms": 4.5
+    },
+    {
+      "id": "cassava-04",
+      "answerable": true,
+      "tags": [],
+      "crops": [
+        "cassava"
+      ],
+      "retrieved": [
+        "iita_growing_cassava_manual",
+        "iita_cassava_basics",
+        "iita_cassava_pest_control_2000",
+        "naerls_harvest_timing",
+        "icrisat_sorghum_ne_nigeria_2020",
+        "naerls_maize_calendar"
+      ],
+      "best_distance": 0.5779814124107361,
+      "hit": true,
+      "recall": 1.0,
+      "rr": 1.0,
+      "chunk_rank": 1,
+      "chunk_rr": 1.0,
+      "latency_ms": 4.3
+    },
+    {
+      "id": "cassava-05",
+      "answerable": true,
+      "tags": [],
+      "crops": [
+        "cassava"
+      ],
+      "retrieved": [
+        "ispp_cassava_disease_guide_2007",
+        "iita_vegetative_stress",
+        "fao_weather_agriculture",
+        "iita_cassava_pest_control_2000",
+        "iita_growing_cassava_manual",
+        "naerls_disease_management"
+      ],
+      "best_distance": 0.7347142100334167,
+      "hit": true,
+      "recall": 1.0,
+      "rr": 1.0,
+      "chunk_rank": 1,
+      "chunk_rr": 1.0,
+      "latency_ms": 5.5
+    },
+    {
+      "id": "cassava-06",
+      "answerable": true,
+      "tags": [],
+      "crops": [
+        "cassava"
+      ],
+      "retrieved": [
+        "iita_growing_cassava_manual",
+        "iita_cassava_pest_control_2000",
+        "ispp_cassava_disease_guide_2007",
+        "iita_cassava_basics",
+        "iita_cassava_pest_control_2000",
+        "naerls_maize_calendar"
+      ],
+      "best_distance": 0.6831082701683044,
+      "hit": true,
+      "recall": 1.0,
+      "rr": 0.5,
+      "chunk_rank": 2,
+      "chunk_rr": 0.5,
+      "latency_ms": 5.2
+    },
+    {
+      "id": "cassava-07",
+      "answerable": true,
+      "tags": [],
+      "crops": [
+        "cassava"
+      ],
+      "retrieved": [
+        "ispp_cassava_disease_guide_2007",
+        "iita_cassava_pest_control_2000",
+        "iita_cassava_basics",
+        "iita_growing_cassava_manual",
+        "ispp_cassava_disease_guide_2007",
+        "iita_cassava_pest_control_2000"
+      ],
+      "best_distance": 0.6569997072219849,
+      "hit": true,
+      "recall": 1.0,
+      "rr": 1.0,
+      "chunk_rank": 1,
+      "chunk_rr": 1.0,
+      "latency_ms": 5.7
+    },
+    {
+      "id": "yam-01",
+      "answerable": true,
+      "tags": [],
+      "crops": [
+        "yam"
+      ],
+      "retrieved": [
+        "cgiar_yam_regeneration_2008",
+        "iita_yam_basics",
+        "naerls_maize_calendar",
+        "iita_rice_northern_nigeria_2020",
+        "iita_cassava_pest_control_2000",
+        "naerls_vegetative_management"
+      ],
+      "best_distance": 0.6256675720214844,
+      "hit": true,
+      "recall": 1.0,
+      "rr": 1.0,
+      "chunk_rank": 1,
+      "chunk_rr": 1.0,
+      "latency_ms": 4.1
+    },
+    {
+      "id": "yam-02",
+      "answerable": true,
+      "tags": [],
+      "crops": [
+        "yam"
+      ],
+      "retrieved": [
+        "ntui_yam_anthracnose_2021",
+        "iita_yam_basics",
+        "cgiar_yam_regeneration_2008",
+        "penet_yam_splash_2014",
+        "cimmyt_downy_mildew",
+        "iita_vegetative_stress"
+      ],
+      "best_distance": 0.6922447085380554,
+      "hit": true,
+      "recall": 1.0,
+      "rr": 1.0,
+      "chunk_rank": 1,
+      "chunk_rr": 1.0,
+      "latency_ms": 5.6
+    },
+    {
+      "id": "yam-03",
+      "answerable": true,
+      "tags": [],
+      "crops": [
+        "yam"
+      ],
+      "retrieved": [
+        "cgiar_yam_regeneration_2008",
+        "iita_yam_basics",
+        "icrisat_sorghum_ne_nigeria_2020",
+        "iita_cassava_pest_control_2000",
+        "naerls_harvest_timing",
+        "naerls_maize_calendar"
+      ],
+      "best_distance": 0.5827625393867493,
+      "hit": true,
+      "recall": 1.0,
+      "rr": 1.0,
+      "chunk_rank": 1,
+      "chunk_rr": 1.0,
+      "latency_ms": 4.5
+    },
+    {
+      "id": "yam-04",
+      "answerable": true,
+      "tags": [],
+      "crops": [
+        "yam"
+      ],
+      "retrieved": [
+        "cgiar_yam_regeneration_2008",
+        "iita_yam_basics",
+        "naerls_harvest_timing",
+        "iita_rice_northern_nigeria_2020",
+        "iita_maize_lifecycle_overview",
+        "icrisat_sorghum_ne_nigeria_2020"
+      ],
+      "best_distance": 0.6721240878105164,
+      "hit": true,
+      "recall": 1.0,
+      "rr": 1.0,
+      "chunk_rank": 1,
+      "chunk_rr": 1.0,
+      "latency_ms": 4.9
+    },
+    {
+      "id": "yam-05",
+      "answerable": true,
+      "tags": [],
+      "crops": [
+        "yam"
+      ],
+      "retrieved": [
+        "ntui_yam_anthracnose_2021",
+        "cgiar_yam_regeneration_2008",
+        "penet_yam_splash_2014",
+        "iita_yam_basics",
+        "ispp_cassava_disease_guide_2007",
+        "icrisat_sorghum_ne_nigeria_2020"
+      ],
+      "best_distance": 0.6151744723320007,
+      "hit": true,
+      "recall": 1.0,
+      "rr": 1.0,
+      "chunk_rank": 1,
+      "chunk_rr": 1.0,
+      "latency_ms": 5.6
+    },
+    {
+      "id": "intercrop-01",
+      "answerable": true,
+      "tags": [
+        "intercrop"
+      ],
+      "crops": [
+        "maize",
+        "cowpea"
+      ],
+      "retrieved": [
+        "iita_cowpea_farmers_guide_2009",
+        "iita_cowpea_farmers_guide_2009",
+        "iita_stem_borer",
+        "iita_cassava_pest_control_2000",
+        "iita_fall_armyworm",
+        "iita_fall_armyworm"
+      ],
+      "best_distance": 0.629237174987793,
+      "hit": true,
+      "recall": 1.0,
+      "rr": 1.0,
+      "chunk_rank": 1,
+      "chunk_rr": 1.0,
+      "latency_ms": 7.2
+    },
+    {
+      "id": "intercrop-02",
+      "answerable": true,
+      "tags": [
+        "intercrop"
+      ],
+      "crops": [
+        "cassava",
+        "maize"
+      ],
+      "retrieved": [
+        "iita_cassava_pest_control_2000",
+        "iita_cassava_pest_control_2000",
+        "iita_cassava_basics",
+        "naerls_harvest_timing",
+        "ispp_cassava_disease_guide_2007",
+        "iita_growing_cassava_manual"
+      ],
+      "best_distance": 0.7021744847297668,
+      "hit": true,
+      "recall": 1.0,
+      "rr": 1.0,
+      "chunk_rank": 1,
+      "chunk_rr": 1.0,
+      "latency_ms": 6.5
+    },
+    {
+      "id": "pidgin-01",
+      "answerable": true,
+      "tags": [
+        "pidgin"
+      ],
+      "crops": [
+        "cowpea"
+      ],
+      "retrieved": [
+        "iita_cowpea_farmers_guide_2009",
+        "iita_cowpea_farmers_guide_2009",
+        "iita_cowpea_farmers_guide_2009",
+        "iita_fall_armyworm",
+        "iita_fall_armyworm",
+        "iita_stem_borer"
+      ],
+      "best_distance": 0.647208571434021,
+      "hit": true,
+      "recall": 1.0,
+      "rr": 1.0,
+      "chunk_rank": 1,
+      "chunk_rr": 1.0,
+      "latency_ms": 5.2
+    },
+    {
+      "id": "pidgin-02",
+      "answerable": true,
+      "tags": [
+        "pidgin"
+      ],
+      "crops": [
+        "maize"
+      ],
+      "retrieved": [
+        "naerls_harvest_timing",
+        "iita_maize_lifecycle_overview",
+        "naerls_maize_calendar",
+        "fao_post_harvest",
+        "naerls_vegetative_management",
+        "iita_maize_lifecycle_overview"
+      ],
+      "best_distance": 0.6003884077072144,
+      "hit": true,
+      "recall": 1.0,
+      "rr": 1.0,
+      "chunk_rank": 1,
+      "chunk_rr": 1.0,
+      "latency_ms": 4.5
+    },
+    {
+      "id": "pidgin-03",
+      "answerable": true,
+      "tags": [
+        "pidgin"
+      ],
+      "crops": [
+        "cassava"
+      ],
+      "retrieved": [
+        "iita_cassava_pest_control_2000",
+        "ispp_cassava_disease_guide_2007",
+        "ispp_cassava_disease_guide_2007",
+        "iita_cassava_basics",
+        "cimmyt_maize_disease_overview",
+        "cimmyt_downy_mildew"
+      ],
+      "best_distance": 0.6982237696647644,
+      "hit": true,
+      "recall": 1.0,
+      "rr": 1.0,
+      "chunk_rank": 1,
+      "chunk_rr": 1.0,
+      "latency_ms": 5.5
+    },
+    {
+      "id": "pidgin-04",
+      "answerable": true,
+      "tags": [
+        "pidgin"
+      ],
+      "crops": [
+        "rice"
+      ],
+      "retrieved": [
+        "iita_rice_northern_nigeria_2020",
+        "iita_vegetative_stress",
+        "iita_vegetative_stress",
+        "cimmyt_maize_disease_overview",
+        "iita_rice_basics",
+        "fao_weather_agriculture"
+      ],
+      "best_distance": 0.6940248608589172,
+      "hit": true,
+      "recall": 1.0,
+      "rr": 1.0,
+      "chunk_rank": null,
+      "chunk_rr": 0.0,
+      "latency_ms": 5.3
+    },
+    {
+      "id": "none-01",
+      "answerable": false,
+      "tags": [
+        "unanswerable"
+      ],
+      "crops": [
+        "maize"
+      ],
+      "retrieved": [
+        "naerls_kaduna_agroecology",
+        "iita_sammaz_varieties",
+        "iita_sammaz_varieties",
+        "naerls_soil_management",
+        "naerls_maize_calendar",
+        "iita_rice_basics"
+      ],
+      "best_distance": 0.8418408632278442,
+      "hit": false,
+      "recall": null,
+      "rr": 0.0,
+      "chunk_rank": null,
+      "chunk_rr": 0.0,
+      "latency_ms": 5.4
+    },
+    {
+      "id": "none-02",
+      "answerable": false,
+      "tags": [
+        "unanswerable"
+      ],
+      "crops": [],
+      "retrieved": [
+        "iita_maize_disease_scouting",
+        "iita_maize_disease_scouting",
+        "naerls_disease_management",
+        "naerls_disease_management",
+        "naerls_pest_scouting",
+        "fao_maize_smallholder_actions"
+      ],
+      "best_distance": 0.8869460821151733,
+      "hit": false,
+      "recall": null,
+      "rr": 0.0,
+      "chunk_rank": null,
+      "chunk_rr": 0.0,
+      "latency_ms": 4.5
+    },
+    {
+      "id": "none-03",
+      "answerable": false,
+      "tags": [
+        "unanswerable"
+      ],
+      "crops": [],
+      "retrieved": [
+        "fao_post_harvest",
+        "iita_growing_cassava_manual",
+        "naerls_vegetative_management",
+        "naerls_vegetative_management",
+        "naerls_vegetative_management",
+        "naerls_harvest_timing"
+      ],
+      "best_distance": 0.8687065243721008,
+      "hit": false,
+      "recall": null,
+      "rr": 0.0,
+      "chunk_rank": null,
+      "chunk_rr": 0.0,
+      "latency_ms": 4.0
+    },
+    {
+      "id": "none-04",
+      "answerable": false,
+      "tags": [
+        "unanswerable"
+      ],
+      "crops": [
+        "rice"
+      ],
+      "retrieved": [
+        "iita_rice_northern_nigeria_2020",
+        "iita_rice_northern_nigeria_2020",
+        "iita_integrated_management",
+        "iita_rice_basics",
+        "iita_sammaz_varieties",
+        "fao_post_harvest"
+      ],
+      "best_distance": 0.9038587212562561,
+      "hit": false,
+      "recall": null,
+      "rr": 0.0,
+      "chunk_rank": null,
+      "chunk_rr": 0.0,
+      "latency_ms": 4.5
+    },
+    {
+      "id": "none-05",
+      "answerable": false,
+      "tags": [
+        "unanswerable"
+      ],
+      "crops": [],
+      "retrieved": [
+        "naerls_disease_management",
+        "iita_cassava_pest_control_2000",
+        "ispp_cassava_disease_guide_2007",
+        "icrisat_sorghum_ne_nigeria_2020",
+        "cimmyt_maize_disease_overview",
+        "iita_cowpea_farmers_guide_2009"
+      ],
+      "best_distance": 0.8227285742759705,
+      "hit": false,
+      "recall": null,
+      "rr": 0.0,
+      "chunk_rank": null,
+      "chunk_rr": 0.0,
+      "latency_ms": 4.5
+    },
+    {
+      "id": "none-06",
+      "answerable": false,
+      "tags": [
+        "unanswerable",
+        "pidgin"
+      ],
+      "crops": [
+        "cowpea"
+      ],
+      "retrieved": [
+        "iita_cowpea_farmers_guide_2009",
+        "iita_cowpea_farmers_guide_2009",
+        "naerls_kaduna_agroecology",
+        "iita_cowpea_farmers_guide_2009",
+        "icrisat_sorghum_ne_nigeria_2020",
+        "iita_yam_basics"
+      ],
+      "best_distance": 0.8744555711746216,
+      "hit": false,
+      "recall": null,
+      "rr": 0.0,
+      "chunk_rank": null,
+      "chunk_rr": 0.0,
+      "latency_ms": 5.0
+    }
+  ],
+  "note": "CI run on GitHub Actions (ubuntu-latest), fastembed bge-small-en-v1.5, vector-only retrieval before #13."
+}

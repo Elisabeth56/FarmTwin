@@ -1,0 +1,24 @@
+# Yam: the stage calendar is still the coarse v1 one; no document in the corpus gives a day count
+# for yam growth stages yet. Risk rules cite the yam anthracnose papers. Heavy rain >= 50 mm is the
+# shared definition from fao_weather_agriculture.
+crop: yam
+name: Yam
+sources: [cgiar_yam_regeneration_2008, ntui_yam_anthracnose_2021, penet_yam_splash_2014]
+
+stages:
+  - {id: growing, from_day: 0, to_day: 270, description: "Vine growth and tuber development; stake when sprouts emerge."}
+  - {id: maturity, from_day: 270, to_day: 330, description: "Harvest once the foliage has dried."}
+
+risks:
+  - id: rain_splash_anthracnose
+    title: "Anthracnose spread by rain"
+    severity: medium
+    urgency: this_week
+    stages: [growing]
+    when:
+      any:
+        - observation: {type: rainfall, min: 50, within_days: 5}
+        - weather: {field: rainfall_mm, min: 50}
+    reason: Heavy rain splashes yam anthracnose spores from infected leaves onto neighbouring plants. Check leaves and vines, starting with water yam, which is the most susceptible.
+    source: penet_yam_splash_2014
+    threshold_source: fao_weather_agriculture

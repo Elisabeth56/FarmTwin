@@ -1,0 +1,56 @@
+# Cassava: stages and risk rules from the IITA cassava manual, the IITA pest field guide and the
+# CSIR-CRI disease guide. Weather triggers (heavy rain >= 50 mm, dry = no rain >= 10 mm in 10 days)
+# are the shared definitions from fao_weather_agriculture, recorded as threshold_source.
+crop: cassava
+name: Cassava
+sources: [iita_growing_cassava_manual, iita_cassava_pest_control_2000, ispp_cassava_disease_guide_2007]
+
+# Weeding at 4, 8 and 12 weeks; storage root number set by about 7 months; roots best at 9-12 months.
+stages:
+  - {id: establishment, from_day: 0, to_day: 84, description: "Sprouting and early growth; weeding at about 4, 8 and 12 weeks."}
+  - {id: root_initiation, from_day: 84, to_day: 210, description: "Storage root number is set; the crop is most vulnerable to pests."}
+  - {id: bulking, from_day: 210, to_day: 270, description: "Storage roots fill."}
+  - {id: maturity, from_day: 270, to_day: 360, description: "Roots at their best size; some varieties can stay to 15-18 months."}
+
+risks:
+  - id: dry_weather_mite_mealybug
+    title: "Mites and mealybug in dry weather"
+    severity: medium
+    urgency: this_week
+    stages: [establishment, root_initiation]
+    when:
+      all:
+        - rain_recorded: {within_days: 30}
+        - not:
+            any:
+              - observation: {type: rainfall, min: 10, within_days: 10}
+              - weather: {field: rainfall_mm, min: 5, within_days: 10}
+    fact: No rainfall observations ≥10mm in last 10 days as of {today}
+    reason: Dry weather on cassava younger than about 7 months is when mealybug and green mite build up and do the most damage. Check shoot tips and the undersides of young leaves.
+    source: iita_cassava_pest_control_2000
+    threshold_source: fao_weather_agriculture
+
+  - id: wet_weather_blight_anthracnose
+    title: "Blight and anthracnose after rain"
+    severity: medium
+    urgency: this_week
+    when:
+      any:
+        - observation: {type: rainfall, min: 50, within_days: 5}
+        - weather: {field: rainfall_mm, min: 50}
+    reason: Heavy rain helps bacterial blight and anthracnose spread on cassava. Look for angular water-soaked leaf spots, gummy ooze and stem cankers, and keep cutlasses clean between plants.
+    source: ispp_cassava_disease_guide_2007
+    threshold_source: fao_weather_agriculture
+
+  - id: waterlogging_root_rot
+    title: "Root rot from waterlogging"
+    severity: medium
+    urgency: monitor
+    stages: [bulking, maturity]
+    when:
+      any:
+        - observation: {type: rainfall, min: 50, within_days: 5}
+        - weather: {field: rainfall_mm, min: 50}
+    reason: Heavy rain can waterlog low or poorly drained parts of the field, and waterlogged soil rots cassava roots. Check for standing water.
+    source: iita_growing_cassava_manual
+    threshold_source: fao_weather_agriculture

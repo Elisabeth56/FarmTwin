@@ -1,0 +1,44 @@
+# Rice: stages for FARO 44 (about 95-110 days) from the IITA Northern Nigeria guide. Weeding at
+# 2-3 and 5-6 weeks and urea at 6-8 weeks set the vegetative stage; harvest 30-45 days after
+# flowering sets ripening at the last 35 days. Longer varieties (FARO 52, 125-135 days) run later.
+# Weather triggers are the shared definitions from fao_weather_agriculture.
+crop: rice
+name: Rice
+sources: [iita_rice_northern_nigeria_2020]
+
+stages:
+  - {id: vegetative, from_day: 0, to_day: 56, description: "Seedling and tillering; weeding at 2-3 and 5-6 weeks, urea at 6-8 weeks."}
+  - {id: reproductive, from_day: 56, to_day: 75, description: "Panicle initiation through flowering."}
+  - {id: ripening, from_day: 75, to_day: 110, description: "Grain fill; harvest about 30-45 days after flowering."}
+
+risks:
+  - id: damp_weather_blast
+    title: "Blast in damp weather"
+    severity: high
+    urgency: this_week
+    stages: [vegetative, reproductive]
+    when:
+      any:
+        - weather: {field: humidity_pct, min: 80}
+        - observation: {type: rainfall, min: 50, within_days: 5}
+        - weather: {field: rainfall_mm, min: 50}
+    reason: Damp weather favours rice blast, which attacks seedlings and flowering rice and can cost 60-100% of the crop in severe outbreaks. Scout the field and treat as soon as signs appear.
+    source: iita_rice_northern_nigeria_2020
+    threshold_source: fao_weather_agriculture
+
+  - id: water_shortage_critical_stage
+    title: "Water shortage at a critical stage"
+    severity: high
+    urgency: this_week
+    stages: [vegetative, reproductive]
+    when:
+      all:
+        - rain_recorded: {within_days: 30}
+        - not:
+            any:
+              - observation: {type: rainfall, min: 10, within_days: 10}
+              - weather: {field: rainfall_mm, min: 5, within_days: 10}
+    fact: No rainfall observations ≥10mm in last 10 days as of {today}
+    reason: Rice is most sensitive to water shortage at tillering, panicle initiation and flowering. Keep the field supplied with water if you can.
+    source: iita_rice_northern_nigeria_2020
+    threshold_source: fao_weather_agriculture

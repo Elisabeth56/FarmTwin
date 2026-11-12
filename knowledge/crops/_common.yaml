@@ -1,0 +1,21 @@
+# Rules that apply to every crop, run after the crop's own rules.
+crop: _common
+name: All crops
+risks:
+  - id: active_pest_pressure
+    title: "Pests reported"
+    severity: high
+    urgency: immediate
+    when:
+      observation: {type: pest, within_days: 7}
+    reason: Recent farmer-reported pest activity requires prompt scouting and action.
+    source: naerls_pest_scouting
+
+  - id: active_disease_pressure
+    title: "Disease reported"
+    severity: high
+    urgency: immediate
+    when:
+      observation: {type: disease, within_days: 7}
+    reason: Recent farmer-reported disease symptoms require field inspection and possible intervention.
+    source: naerls_disease_management

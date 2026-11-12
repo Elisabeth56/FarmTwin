@@ -22,7 +22,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { os: macos-14, target: macos-arm64, rust: aarch64-apple-darwin, bundles: "app,dmg" }
+          - { os: macos-15, target: macos-arm64, rust: aarch64-apple-darwin, bundles: "app,dmg" }
           - { os: macos-15-intel, target: macos-x64, rust: x86_64-apple-darwin, bundles: "app,dmg" }
           - { os: ubuntu-22.04, target: ubuntu-x64, rust: x86_64-unknown-linux-gnu, bundles: "appimage,deb" }
           - { os: windows-latest, target: win-cpu-x64, rust: x86_64-pc-windows-msvc, bundles: "msi,nsis" }

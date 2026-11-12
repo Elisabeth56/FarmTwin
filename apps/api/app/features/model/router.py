@@ -6,7 +6,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel, ConfigDict
 
 from app.ai.server import supervisor
-from app.ai.setup import LLM, setup
+from app.ai.setup import setup
 from app.errors import AppError
 
 router = APIRouter(prefix="/api/model", tags=["model"])
@@ -55,7 +55,12 @@ def restart_model():
 def setup_progress():
     p = setup.progress()
     return SetupOut(
-        state=p.state, done=p.done, total=p.total, error=p.error, model_name=LLM.name, size=LLM.size
+        state=p.state,
+        done=p.done,
+        total=p.total,
+        error=p.error,
+        model_name=setup.model.name,
+        size=setup.model.size,
     )
 
 

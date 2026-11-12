@@ -24,7 +24,8 @@
     "resources": {
       "../resources/api/": "api/",
       "../resources/llama/": "llama/",
-      "../resources/embedder/": "embedder/"
+      "../resources/embedder/": "embedder/",
+      "../resources/whisper/": "whisper/"
     },
     "category": "Productivity",
     "shortDescription": "Offline farm advice on your laptop",

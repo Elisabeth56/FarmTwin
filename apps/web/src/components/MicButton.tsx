@@ -1,5 +1,7 @@
-import { useEffect, useRef, useState } from "react";
-import { transcribeAudio } from "../lib/api";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { getVoiceStatus, transcribeAudio, type VoiceStatus } from "../lib/api";
+import { toWav } from "../lib/wav";
+import VoiceSetupSheet from "./VoiceSetupSheet";
 
 export type MicButtonProps = {
   onTranscript: (text: string) => void;
@@ -97,6 +99,20 @@ export default function MicButton({
 }: MicButtonProps) {
   const [state, setState] = useState<MicState>("idle");
   const [elapsed, setElapsed] = useState(0);
+  const [voice, setVoice] = useState<VoiceStatus | null>(null);
+  const [setupOpen, setSetupOpen] = useState(false);
+
+  const checkVoice = useCallback(() => {
+    getVoiceStatus()
+      .then(setVoice)
+      .catch(() => setVoice(null));
+  }, []);
+  useEffect(checkVoice, [checkVoice]);
+  const closeSetup = useCallback(() => setSetupOpen(false), []);
+  const voiceReady = useCallback(() => {
+    setSetupOpen(false);
+    checkVoice();
+  }, [checkVoice]);
 
   useEffect(() => {
     const busy =
@@ -142,7 +158,7 @@ export default function MicButton({
   async function handleTranscribe(blob: Blob) {
     setState("transcribing");
     try {
-      const result = await transcribeAudio(blob);
+      const result = await transcribeAudio(await toWav(blob));
       onTranscript(result.text);
       setState("idle");
     } catch (err) {
@@ -235,6 +251,10 @@ export default function MicButton({
 
   function handleClick() {
     if (disabled) return;
+    if (voice?.needs_model) {
+      setSetupOpen(true);
+      return;
+    }
     if (state === "idle" || state === "error") {
       void startRecording();
     } else if (state === "recording") {
@@ -258,14 +278,17 @@ export default function MicButton({
           ? "bg-brand-tint text-brand cursor-wait"
           : "bg-brand text-on-ink hover:bg-brand/90";
 
-  let title = "Voice input (Nigerian English)";
+  // this build has no whisper-cli (a browser or `pnpm dev`): no mic at all
+  if (!voice || (!voice.ready && !voice.needs_model)) return null;
+
+  let title = voice.needs_model ? "Turn on voice input" : "Voice input (English)";
   if (!supported) title = "Voice input not supported in this browser";
   else if (disabled) title = "Voice input unavailable right now";
   else if (isRecording) title = "Stop recording";
   else if (state === "transcribing") title = "Transcribing…";
   else if (state === "requesting-permission") title = "Requesting microphone…";
 
-  const ariaLabel = isRecording ? "Stop recording" : "Voice input (Nigerian English)";
+  const ariaLabel = isRecording ? "Stop recording" : title;
 
   return (
     <div className="flex items-center gap-2">
@@ -294,6 +317,11 @@ export default function MicButton({
       {state === "transcribing" && (
         <div className="text-[11px] text-ink-muted">Transcribing…</div>
       )}
+      <VoiceSetupSheet
+        open={setupOpen}
+        onClose={closeSetup}
+        onReady={voiceReady}
+      />
     </div>
   );
 }

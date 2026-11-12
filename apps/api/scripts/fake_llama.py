@@ -9,6 +9,7 @@ Not used by the app or the tests; never ship it.
 
 import asyncio
 import json
+import os
 
 import uvicorn
 from fastapi import FastAPI, Request
@@ -48,7 +49,7 @@ async def chat(request: Request):
         for i, word in enumerate(words):
             chunk = {"choices": [{"delta": {"content": word + (" " if i < len(words) - 1 else "")}}]}
             yield f"data: {json.dumps(chunk)}\n\n"
-            await asyncio.sleep(0.06)
+            await asyncio.sleep(float(os.environ.get("FAKE_LLAMA_DELAY", "0.06")))
         yield 'data: {"choices": [{"delta": {}}], "timings": {"predicted_ms": 1}}\n\n'
         yield "data: [DONE]\n\n"
 

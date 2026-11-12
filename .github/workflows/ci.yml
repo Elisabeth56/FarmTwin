@@ -50,6 +50,10 @@ jobs:
           uv run python scripts/retrieval_smoke_test.py "when should I spray cowpea against Maruca"
           uv run python ../../evals/run.py
           echo "::group::eval json" && cat ../../evals/results/*-retrieval.json && echo "::endgroup::"
+          # the answer eval harness end to end, against the fake model (real numbers come from a real model run)
+          touch "$RUNNER_TEMP/fake.gguf"
+          FAKE_LLAMA_DELAY=0 FARMTWIN_LLAMA_SERVER_BIN=$PWD/scripts/fake_llama.sh FARMTWIN_LLM_MODEL_PATH=$RUNNER_TEMP/fake.gguf \
+            uv run python ../../evals/answers.py | tail -25
       - uses: actions/upload-artifact@v4
         with:
           name: eval-retrieval

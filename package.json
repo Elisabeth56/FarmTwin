@@ -7,7 +7,8 @@
     "dev:api": "cd apps/api && uv run uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload",
     "build": "pnpm --filter @farmtwin/web build",
     "lint": "pnpm --filter @farmtwin/web lint",
-    "eval": "cd apps/api && uv run python ../../evals/run.py"
+    "eval": "cd apps/api && uv run python ../../evals/run.py",
+    "eval:answers": "cd apps/api && uv run python ../../evals/answers.py"
   },
   "devDependencies": {
     "concurrently": "^9.2.1"

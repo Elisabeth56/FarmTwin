@@ -10,7 +10,7 @@ const SLOTS = [[-5, -1.85], [-1.5, -1.85], [2, -1.85], [-5, 1.85], [-1.5, 1.85],
 export const LANDING_PLOTS = ['maize', 'sorghum', 'rice', 'cassava', 'yam', 'cowpea'].map(crop => ({ crop }));
 
 export function mountTwin({ frame, canvas, badge, chip, chipDot, chipText, autoRotate = true, onReady,
-  plots: plotSpec = LANDING_PLOTS, badgePlot = 0, onDemand = false }) {
+  plots: plotSpec = LANDING_PLOTS, badgePlot = 0, onDemand = false, onSelect = null }) {
 // ---------- scene ----------
 let renderer, scene, camera, controls, started = false;
 const plots = [];
@@ -196,7 +196,7 @@ function buildFarm() {
   return farm;
 }
 
-let sizer, farm, raycaster, pointer = new THREE.Vector2(), hovered = null, t0 = 0, idleTimer = 0;
+let sizer, farm, raycaster, pointer = new THREE.Vector2(), hovered = null, selected = null, viewGoal = null, home0 = null, t0 = 0, idleTimer = 0;
 const badgeAnchor = new THREE.Vector3(SLOTS[badgePlot][0], 1.9, SLOTS[badgePlot][1]);
 
 function start() {
@@ -235,6 +235,22 @@ function start() {
   canvas.addEventListener('pointermove', e => { const r = canvas.getBoundingClientRect(); pointer.x = ((e.clientX - r.left) / r.width) * 2 - 1; pointer.y = -((e.clientY - r.top) / r.height) * 2 + 1; pointer.px = e.clientX - r.left; pointer.py = e.clientY - r.top; pointer.active = true; wake(); });
   canvas.addEventListener('pointerleave', () => { pointer.active = false; wake(); });
 
+  // a click (not a drag) on a plot selects it; anywhere else clears the selection
+  let downAt = null;
+  canvas.addEventListener('pointerdown', e => { downAt = [e.clientX, e.clientY]; });
+  canvas.addEventListener('pointerup', e => {
+    if (!downAt || Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) > 6) return;
+    const r = canvas.getBoundingClientRect();
+    raycaster.setFromCamera(new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1), camera);
+    const hit = raycaster.intersectObjects(plots.map(p => p.userData.hit), false)[0]?.object.parent ?? null;
+    choose(hit === selected ? null : hit);
+  });
+  canvas.addEventListener('keydown', e => {
+    const keys = { ArrowLeft: () => turn(-0.4), ArrowRight: () => turn(0.4), '+': () => zoom(0.85), '=': () => zoom(0.85), '-': () => zoom(1.18), '0': () => resetView(), Escape: () => choose(null) };
+    if (keys[e.key]) { e.preventDefault(); keys[e.key](); }
+  });
+
+  home0 = { az: controls.getAzimuthalAngle(), polar: controls.getPolarAngle(), r: camera.position.distanceTo(controls.target) };
   resize(); sizer = new ResizeObserver(resize); sizer.observe(frame);
   t0 = performance.now(); loop();
   if (onReady) onReady();
@@ -264,7 +280,7 @@ function loop() {
   let hit = null;
   if (pointer.active) { raycaster.setFromCamera(pointer, camera); const hits = raycaster.intersectObjects(plots.map(p => p.userData.hit), false); if (hits.length) hit = hits[0].object.parent; }
   if (hit !== hovered) { hovered = hit; chip.style.display = hit ? 'flex' : 'none'; if (hit) { chipDot.style.background = hit.userData.color; chipText.textContent = hit.userData.name; } }
-  plots.forEach(g => { g.userData.lift += ((g === hovered ? 0.18 : 0) - g.userData.lift) * Math.min(dt * 10, 1); });
+  plots.forEach(g => { g.userData.lift += (liftFor(g) - g.userData.lift) * Math.min(dt * 10, 1); });
   if (hovered) chip.style.transform = `translate(${pointer.px + 14}px, ${pointer.py - 36}px)`;
 
   // weather
@@ -281,6 +297,7 @@ function loop() {
   tileMats.forEach(m => m.color.copy(dryTile).lerp(wetTile, rainAmount));
   farm.userData.grass.color.copy(dryGrass).lerp(wetGrass, rainAmount * 0.7);
 
+  if (viewGoal) easeView(dt);
   controls.update();
   renderer.render(scene, camera);
 
@@ -292,7 +309,7 @@ function loop() {
   // on demand: after a second of nothing moving, stop drawing until input or a state change
   if (onDemand) {
     const moving = el < 1600 || dragging || controls.autoRotate || pointer.active || Math.abs((rain ? 1 : 0) - rainAmount) > 0.002
-      || plots.some(g => Math.abs((g === hovered ? 0.18 : 0) - g.userData.lift) > 0.002);
+      || viewGoal !== null || plots.some(g => Math.abs(liftFor(g) - g.userData.lift) > 0.002);
     settled = moving ? now : settled;
     if (now - settled > 1000) { running = false; return; }
   }
@@ -308,8 +325,32 @@ function loop() {
   const onVisibility = () => { visible = !document.hidden; wake(); };
   document.addEventListener('visibilitychange', onVisibility);
 
+  function liftFor(g) { return g === selected ? 0.45 : g === hovered ? 0.18 : 0; }
+  function choose(g) {
+    selected = g; wake();
+    if (onSelect) onSelect(g ? plots.indexOf(g) : null);
+  }
+  function view() { return { az: controls.getAzimuthalAngle(), polar: controls.getPolarAngle(), r: camera.position.distanceTo(controls.target) }; }
+  function place({ az, polar, r }) {
+    const t = controls.target;
+    camera.position.set(t.x + Math.sin(polar) * Math.sin(az) * r, t.y + Math.cos(polar) * r, t.z + Math.sin(polar) * Math.cos(az) * r);
+  }
+  // turn, zoom and reset glide to a goal view instead of jumping
+  function easeView(dt) {
+    const v = view(), k = Math.min(dt * 7, 1);
+    let dAz = viewGoal.az - v.az; dAz = Math.atan2(Math.sin(dAz), Math.cos(dAz));
+    const next = { az: v.az + dAz * k, polar: v.polar + (viewGoal.polar - v.polar) * k, r: v.r + (viewGoal.r - v.r) * k };
+    place(next);
+    if (Math.abs(dAz) < 0.002 && Math.abs(viewGoal.r - v.r) < 0.01 && Math.abs(viewGoal.polar - v.polar) < 0.002) viewGoal = null;
+  }
+  function turn(delta) { const v = viewGoal || view(); viewGoal = { ...v, az: v.az + delta }; controls.autoRotate = false; wake(); }
+  function zoom(factor) { const v = viewGoal || view(); viewGoal = { ...v, r: Math.min(home0.r * 1.25, Math.max(home0.r * 0.6, v.r * factor)) }; wake(); }
+  function resetView() { viewGoal = { ...home0 }; wake(); }
+
   start();
   return {
+    select(index) { selected = index === null ? null : plots[index] ?? null; wake(); },
+    turn, zoom, resetView,
     setRain(on) { rain = on; badge.classList.toggle('on', on); wake(); },
     pause() { active = false; chip.style.display = 'none'; hovered = null; },
     resume() { active = true; wake(); },

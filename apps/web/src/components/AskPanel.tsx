@@ -28,13 +28,15 @@ type AskPanelProps = {
   farmId: number;
   context: AskContextChip[];
   onOpenSource: (chunk: CitedChunk) => void;
+  /** a question to put in the box (not send), e.g. from a plot in the 3D view */
+  draft?: { text: string; at: number } | null;
 };
 
 const RISK_DOT = { high: "bg-risk-high", medium: "bg-risk-medium", low: "bg-risk-low" } as const;
 const SUGGESTIONS = ["What should I do this week?", "Is my crop at risk from the recent weather?"];
 
 /** Ask about this farm. The answer streams in, cites numbered sources and ends with a checklist. */
-export default function AskPanel({ farmId, context, onOpenSource }: AskPanelProps) {
+export default function AskPanel({ farmId, context, onOpenSource, draft }: AskPanelProps) {
   const [turns, setTurns] = useState<Turn[]>([]);
   const [input, setInput] = useState("");
   const [micError, setMicError] = useState<string | null>(null);
@@ -44,7 +46,21 @@ export default function AskPanel({ farmId, context, onOpenSource }: AskPanelProp
   // unknown status counts as ready, so a slow first poll never blocks a question
   const modelReady = !model.status || model.status.state === "ready";
 
+  const box = useRef<HTMLTextAreaElement>(null);
+
   useEffect(() => () => abort.current?.abort(), []);
+
+  // a new draft replaces what's in the box (set during render, so there's no extra pass)
+  const [seenDraft, setSeenDraft] = useState(draft);
+  if (draft && draft !== seenDraft) {
+    setSeenDraft(draft);
+    setInput(draft.text);
+  }
+  useEffect(() => {
+    if (!draft) return;
+    box.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    box.current?.focus({ preventScroll: true });
+  }, [draft]);
 
   const update = (patch: (t: Turn) => Partial<Turn>) =>
     setTurns((all) => all.map((t, i) => (i === all.length - 1 ? { ...t, ...patch(t) } : t)));
@@ -146,6 +162,7 @@ export default function AskPanel({ farmId, context, onOpenSource }: AskPanelProp
           Your question
         </label>
         <textarea
+          ref={box}
           id="ask-input"
           rows={2}
           value={input}

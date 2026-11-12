@@ -17,6 +17,8 @@ const KINDS: Kind[] = [
 type LogSheetProps = {
   open: boolean;
   fields: FieldState[];
+  /** preselects a field, e.g. when opened from a plot in the 3D view; pair it with a `key` */
+  initialField?: number | null;
   onClose: () => void;
   onSaved: (obs: Observation, label: string) => void;
 };
@@ -27,9 +29,9 @@ function today(): string {
 }
 
 /** Log one reading against a field. Saving closes the sheet; the screen offers Undo. */
-export default function LogSheet({ open, fields, onClose, onSaved }: LogSheetProps) {
+export default function LogSheet({ open, fields, initialField = null, onClose, onSaved }: LogSheetProps) {
   const [kind, setKind] = useState<Kind>(KINDS[0]);
-  const [fieldId, setFieldId] = useState<number | null>(null);
+  const [fieldId, setFieldId] = useState<number | null>(initialField);
   const [value, setValue] = useState("");
   const [day, setDay] = useState(today);
   const [error, setError] = useState<string | null>(null);

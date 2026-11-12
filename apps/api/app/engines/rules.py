@@ -16,6 +16,10 @@ Rule format (full reference in docs/crop-rules.md):
                | {observation: {type, min?, max?, within_days?}}
                | {weather: {field, min?, max?, within_days?}}
                | {rule: <id of an earlier risk in the same file>}
+               | {rain_recorded: {within_days}}   # any rain log or weather reading at all
+
+    Dry-spell rules start with `rain_recorded`, so a farm with no rain data on record isn't
+    treated as a farm with no rain.
 """
 
 from __future__ import annotations
@@ -102,6 +106,8 @@ def _check_condition(cond: dict[str, Any], earlier: set[str], where: str) -> Non
         _ObsCond.model_validate(value)
     elif kind == "weather":
         _WeatherCond.model_validate(value)
+    elif kind == "rain_recorded":
+        _RecordedCond.model_validate(value)
     elif kind == "rule":
         if value not in earlier:
             raise ValueError(f"{where}: `rule: {value}` must name a risk defined above it")
@@ -116,6 +122,12 @@ class _ObsCond(BaseModel):
     min: float | None = None
     max: float | None = None
     within_days: int | None = None
+
+
+class _RecordedCond(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    within_days: int
 
 
 class _WeatherCond(BaseModel):
@@ -245,6 +257,8 @@ def _holds(cond: dict[str, Any], r: _Readings) -> tuple[bool, list[str]]:
         return value in r.fired, list(r.fired.get(value, []))
     if kind == "observation":
         return _observation(_ObsCond.model_validate(value), r)
+    if kind == "rain_recorded":
+        return _rain_recorded(_RecordedCond.model_validate(value).within_days, r), []
     return _weather(_WeatherCond.model_validate(value), r)
 
 
@@ -264,6 +278,21 @@ def _observation(c: _ObsCond, r: _Readings) -> tuple[bool, list[str]]:
         and (c.within_days is None or _age(o.get("observed_at"), r.today) in range(0, c.within_days + 1))
     ]
     return bool(hits), [_describe(o) for o in hits]
+
+
+def _rain_recorded(within_days: int, r: _Readings) -> bool:
+    """True if anything about rain was recorded recently, even zero."""
+    window = range(0, within_days + 1)
+    if any(
+        o.get("obs_type") == "rainfall" and _age(o.get("observed_at"), r.today) in window
+        for o in r.observations
+    ):
+        return True
+    return (
+        bool(r.weather)
+        and r.weather.get("rainfall_mm") is not None
+        and _age(r.weather.get("snapshot_date"), r.today) in window
+    )
 
 
 def _weather(c: _WeatherCond, r: _Readings) -> tuple[bool, list[str]]:

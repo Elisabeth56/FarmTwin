@@ -53,10 +53,12 @@ risks:
     urgency: this_week
     stages: [vegetative, flowering]
     when:
-      not:
-        any:
-          - observation: {type: rainfall, min: 10, within_days: 10}
-          - weather: {field: rainfall_mm, min: 5, within_days: 10}
+      all:
+        - rain_recorded: {within_days: 30}
+        - not:
+            any:
+              - observation: {type: rainfall, min: 10, within_days: 10}
+              - weather: {field: rainfall_mm, min: 5, within_days: 10}
     fact: No rainfall observations ≥10mm in last 10 days as of {today}
     reason: No significant rainfall recorded in the last 10 days during a moisture-sensitive stage; yield loss risk if the dry period continues.
     source: iita_vegetative_stress

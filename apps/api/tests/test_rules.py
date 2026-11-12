@@ -28,9 +28,18 @@ def test_matches_the_v1_engine(case):
     flags = evaluate(case["crop"], stage["stage"], case["observations"], case["weather"], today)
     got = sorted((f.name, f.severity, f.time_sensitivity, len(f.supporting_facts)) for f in flags)
     want = sorted(
-        (r["name"], r["severity"], r["time_sensitivity"], r["facts"]) for r in case["expected_risks"]
+        (r["name"], r["severity"], r["time_sensitivity"], r["facts"])
+        for r in case["expected_risks"]
+        # one intended change from v1: no rain data on record is no longer a dry spell
+        if not (r["name"] == "moisture_stress_dry_period" and not _has_rain_data(case))
     )
     assert got == want
+
+
+def _has_rain_data(case) -> bool:
+    return any(o["obs_type"] == "rainfall" for o in case["observations"]) or (
+        bool(case["weather"]) and case["weather"].get("rainfall_mm") is not None
+    )
 
 
 def rain(mm, days_ago):
@@ -226,15 +235,28 @@ def test_damp_weather_raises_blast_risk_on_young_rice():
 
 
 def test_dry_spell_at_a_critical_rice_stage():
-    assert "water_shortage_critical_stage" in names(evaluate("rice", "reproductive", [], None, TODAY))
+    assert "water_shortage_critical_stage" in names(
+        evaluate("rice", "reproductive", [rain(2, 15)], None, TODAY)
+    )
+    assert "water_shortage_critical_stage" not in names(evaluate("rice", "reproductive", [], None, TODAY))
     assert "water_shortage_critical_stage" not in names(
         evaluate("rice", "reproductive", [rain(20, 3)], None, TODAY)
     )
 
 
 def test_dry_weather_on_young_cassava_flags_mites_and_mealybug():
-    assert "dry_weather_mite_mealybug" in names(evaluate("cassava", "root_initiation", [], None, TODAY))
-    assert "dry_weather_mite_mealybug" not in names(evaluate("cassava", "bulking", [], None, TODAY))
+    dry = [rain(0, 12)]
+    assert "dry_weather_mite_mealybug" in names(evaluate("cassava", "root_initiation", dry, None, TODAY))
+    assert "dry_weather_mite_mealybug" not in names(evaluate("cassava", "bulking", dry, None, TODAY))
+
+
+def test_no_rain_data_is_not_a_dry_spell():
+    assert "dry_weather_mite_mealybug" not in names(evaluate("cassava", "root_initiation", [], None, TODAY))
+    assert "moisture_stress_dry_period" not in names(evaluate("maize", "vegetative", [], None, TODAY))
+    zero_rain_weather = weather(rainfall_mm=0)
+    assert "moisture_stress_dry_period" in names(
+        evaluate("maize", "vegetative", [], zero_rain_weather, TODAY)
+    )
 
 
 def test_heavy_rain_on_cassava():

@@ -33,6 +33,7 @@ Stage outside every range: `pre_planting` before day 0, `past_maturity` after th
 | `{observation: {type, min?, max?, within_days?}}` | at least one logged observation of that type is in range and no older than `within_days` |
 | `{weather: {field, min?, max?, within_days?}}` | the latest weather snapshot's `rainfall_mm`, `humidity_pct`, `temp_max_c` or `temp_min_c` is in range (and recent enough, if `within_days` is set) |
 | `{rule: <id>}` | an earlier risk in the same file fired |
+| `{rain_recorded: {within_days}}` | any rain log or weather reading in the window, even 0 mm. Dry-spell rules start with it, so a farm with no rain data is never read as a dry farm |
 | `{any: [...]}`, `{all: [...]}`, `{not: ...}` | combine the above |
 
 Each reading that makes a condition hold becomes a supporting fact on the risk, so the app and the prompt can show exactly why it fired. A `not` condition has no reading to point at, so give that rule a `fact`.

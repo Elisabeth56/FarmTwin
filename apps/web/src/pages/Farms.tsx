@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import AppShell from "../components/AppShell";
 import Button from "../components/Button";
 import CropChip from "../components/CropChip";
@@ -7,7 +7,9 @@ import FieldMosaic from "../components/FieldMosaic";
 import RiskBadge from "../components/RiskBadge";
 import { createSampleFarm, getFarmSummaries, type FarmSummary, type Risk } from "../lib/api";
 import { CROPS, cropLabel } from "../lib/crops";
+import { useModel } from "../lib/model";
 import { recall, remember } from "../lib/storage";
+import { SETUP_SEEN } from "./ModelSetup";
 import { loggedAgo } from "../lib/time";
 
 const FILTER_KEY = "ft.farms.crop";
@@ -17,6 +19,7 @@ type Load = { state: "loading" } | { state: "error"; message: string } | { state
 
 export default function Farms() {
   const [load, setLoad] = useState<Load>({ state: "loading" });
+  const { status } = useModel();
 
   useEffect(() => {
     getFarmSummaries()
@@ -24,6 +27,8 @@ export default function Farms() {
       .catch((e: Error) => setLoad({ state: "error", message: e.message }));
   }, []);
 
+  // the very first launch goes to model setup; after that it's one click away in the sidebar
+  if (status?.state === "not_set_up" && !recall(SETUP_SEEN)) return <Navigate to="/setup/model" replace />;
   if (load.state === "ready" && load.farms.length === 0) return <EmptyFarms />;
   return (
     <AppShell>

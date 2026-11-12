@@ -27,9 +27,10 @@ class Settings(BaseSettings):
     ]
 
     llama_url: str = "http://127.0.0.1:8080"
-    # set both to have the API start and supervise llama-server (ADR-027); leave unset to use
-    # a llama-server you started yourself at llama_url
+    # set to have the API start and supervise llama-server (ADR-027); leave unset to use a
+    # llama-server you started yourself at llama_url
     llama_server_bin: Path | None = None
+    # defaults to the pinned model file in models_dir (app/ai/setup.py)
     llm_model_path: Path | None = None
     llm_context: int = 4096
     llm_model: str = "qwen2.5-3b-instruct-q4_k_m"

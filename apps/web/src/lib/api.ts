@@ -507,3 +507,32 @@ export function getModelStatus(): Promise<ModelStatus> {
 export function restartModel(): Promise<ModelStatus> {
   return fetchAPI<ModelStatus>("/model/restart", { method: "POST" });
 }
+
+export type SetupProgress = {
+  state: "missing" | "downloading" | "paused" | "verifying" | "ready" | "error";
+  done: number;
+  total: number;
+  error: string;
+  model_name: string;
+  size: number;
+};
+
+export function getSetup(): Promise<SetupProgress> {
+  return fetchAPI<SetupProgress>("/model/setup");
+}
+
+export function startModelDownload(): Promise<SetupProgress> {
+  return fetchAPI<SetupProgress>("/model/setup/download", { method: "POST" });
+}
+
+export function pauseModelDownload(): Promise<SetupProgress> {
+  return fetchAPI<SetupProgress>("/model/setup/pause", { method: "POST" });
+}
+
+export function importModel(path: string): Promise<SetupProgress> {
+  return fetchAPI<SetupProgress>("/model/setup/import", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ path }),
+  });
+}

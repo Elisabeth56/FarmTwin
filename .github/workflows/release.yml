@@ -1,0 +1,127 @@
+# Desktop release (ADR-022): a v* tag builds the installers for all four targets and attaches them,
+# with a checksum file and the updater feed, to a draft GitHub release. Publishing the draft is a
+# person's call. Pull requests that touch the desktop build run the same builds and keep the
+# installers as workflow artifacts, without releasing anything.
+name: release
+on:
+  push:
+    tags: ["v*"]
+  pull_request:
+    paths: [apps/desktop/**, apps/api/farmtwin-api.spec, .github/workflows/release.yml]
+
+permissions:
+  contents: write
+
+env:
+  # the llama.cpp release whose llama-server ships in this version; recorded in the release notes
+  LLAMA_TAG: b11669
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: macos-15, target: macos-arm64, rust: aarch64-apple-darwin, bundles: "app,dmg" }
+          - { os: macos-15-intel, target: macos-x64, rust: x86_64-apple-darwin, bundles: "app,dmg" }
+          - { os: ubuntu-22.04, target: ubuntu-x64, rust: x86_64-unknown-linux-gnu, bundles: "appimage,deb" }
+          - { os: windows-latest, target: win-cpu-x64, rust: x86_64-pc-windows-msvc, bundles: "msi,nsis" }
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.rust }}
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: apps/desktop/src-tauri
+      - if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev librsvg2-dev libayatana-appindicator3-dev libxdo-dev patchelf
+      - run: pnpm install --frozen-lockfile
+
+      - name: backend, llama-server and embedder
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: apps/desktop/scripts/prepare-resources.sh ${{ matrix.target }}
+
+      # Apple silicon refuses to run unsigned code; free ad-hoc signatures for everything bundled
+      - if: runner.os == 'macOS'
+        run: |
+          find apps/desktop/resources -type f \( -perm -u+x -o -name '*.dylib' -o -name '*.so' \) \
+            -exec codesign --force --sign - {} \;
+
+      # linuxdeploy checks every ELF file in the AppImage; the frozen API's wheels keep their own
+      # libraries (numpy.libs, ...) next to them, so tell it where they are
+      - if: runner.os == 'Linux'
+        run: |
+          dirs=$(find "$PWD/apps/desktop/resources" -name '*.so*' -printf '%h\n' | sort -u | paste -sd:)
+          echo "LD_LIBRARY_PATH=$dirs${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" >> "$GITHUB_ENV"
+
+      - name: updater signing (skipped when the key isn't set up yet)
+        id: updater
+        env:
+          KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+        run: |
+          if [ -z "$KEY" ]; then echo 'config={"bundle":{"createUpdaterArtifacts":false}}' >> "$GITHUB_OUTPUT"; else echo 'config={}' >> "$GITHUB_OUTPUT"; fi
+
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ""
+          # linuxdeploy's bundled strip can't read newer ELF sections and fails the AppImage;
+          # runners have no FUSE, so AppImages extract themselves instead of mounting
+          NO_STRIP: "true"
+          APPIMAGE_EXTRACT_AND_RUN: "1"
+        with:
+          projectPath: apps/desktop
+          # empty on pull requests: build only, no release
+          tagName: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || '' }}
+          releaseName: FarmTwin ${{ github.ref_name }}
+          releaseBody: |
+            Download the installer for your laptop below, then follow the install guide: https://farmtwin-beta.vercel.app/docs/install/
+            Check a download against SHA256SUMS.txt if you like.
+          releaseDraft: true
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          includeUpdaterJson: true
+          args: --target ${{ matrix.rust }} --bundles ${{ matrix.bundles }} --config '${{ steps.updater.outputs.config }}' --verbose
+
+      - if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: farmtwin-${{ matrix.target }}
+          path: |
+            apps/desktop/src-tauri/target/${{ matrix.rust }}/release/bundle/dmg/*.dmg
+            apps/desktop/src-tauri/target/${{ matrix.rust }}/release/bundle/msi/*.msi
+            apps/desktop/src-tauri/target/${{ matrix.rust }}/release/bundle/nsis/*.exe
+            apps/desktop/src-tauri/target/${{ matrix.rust }}/release/bundle/appimage/*.AppImage
+            apps/desktop/src-tauri/target/${{ matrix.rust }}/release/bundle/deb/*.deb
+          retention-days: 7
+
+  checksums:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: SHA256SUMS.txt for every installer
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir out && cd out
+          gh release download "${{ github.ref_name }}" -R "${{ github.repository }}" \
+            -p '*.dmg' -p '*.msi' -p '*.exe' -p '*.AppImage' -p '*.deb'
+          sha256sum * > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+          gh release upload "${{ github.ref_name }}" SHA256SUMS.txt -R "${{ github.repository }}" --clobber

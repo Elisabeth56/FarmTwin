@@ -4,12 +4,20 @@ Every value can be overridden with a FARMTWIN_* environment variable or a .env f
 Data lives in the OS app data folder so an installed app never writes next to its code.
 """
 
+import sys
 from functools import lru_cache
 from pathlib import Path
 
 from platformdirs import user_data_dir
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+def _bundle_root() -> Path:
+    """The repo root in development; the unpacked bundle when frozen by PyInstaller."""
+    if getattr(sys, "frozen", False):
+        return Path(sys._MEIPASS)  # pyright: ignore[reportAttributeAccessIssue]
+    return Path(__file__).resolve().parents[3]
 
 
 class Settings(BaseSettings):
@@ -32,6 +40,8 @@ class Settings(BaseSettings):
     llama_server_bin: Path | None = None
     # defaults to the pinned model file in models_dir (app/ai/setup.py)
     llm_model_path: Path | None = None
+    # tests turn this off: each test client would start its own background index sync
+    sync_index_on_start: bool = True
     llm_context: int = 4096
     llm_model: str = "qwen2.5-3b-instruct-q4_k_m"
     embedder_model: str = "BAAI/bge-small-en-v1.5"
@@ -42,7 +52,11 @@ class Settings(BaseSettings):
     # the eval set (evals/results/baseline-retrieval.json), re-check it after corpus or embedder changes
     retrieval_max_distance: float = 0.78
     # crop rule files and corpus; the desktop build points this at its bundled copy
-    knowledge_dir: Path = Path(__file__).resolve().parents[3] / "knowledge"
+    knowledge_dir: Path = Field(default_factory=lambda: _bundle_root() / "knowledge")
+    # set by the desktop shell: the API exits when this process is gone, and only callers that
+    # know the token may ask it to shut down
+    parent_pid: int | None = None
+    shutdown_token: str | None = None
 
     @field_validator("data_dir")
     @classmethod

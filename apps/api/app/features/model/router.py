@@ -3,7 +3,7 @@
 from pathlib import Path
 
 from fastapi import APIRouter
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from app.ai.server import supervisor
 from app.ai.setup import LLM, setup
@@ -19,6 +19,8 @@ class ModelStatus(BaseModel):
 
 
 class SetupOut(BaseModel):
+    model_config = ConfigDict(protected_namespaces=())
+
     state: str
     done: int
     total: int

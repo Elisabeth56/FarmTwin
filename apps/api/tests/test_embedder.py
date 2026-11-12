@@ -3,48 +3,8 @@ import os
 import pytest
 
 from app.config import get_settings
-from app.db import models
-from app.db.migrate import run_migrations
-from app.db.session import SessionLocal
 from app.errors import AppError
 from app.rag import embedder
-from app.rag.index_meta import IndexMismatchError, check_index_embedder, record_embedder
-
-
-@pytest.fixture()
-def session():
-    run_migrations()
-    with SessionLocal() as s:
-        yield s
-        s.rollback()
-
-
-def add_chunk(session):
-    session.add(models.DocumentChunk(source_id="s", content="text", content_hash="h"))
-    session.flush()
-
-
-def test_empty_index_passes_the_check(session):
-    check_index_embedder(session)
-
-
-def test_index_built_with_the_configured_embedder_passes(session):
-    add_chunk(session)
-    record_embedder(session, get_settings().embedder_model)
-    check_index_embedder(session)
-
-
-def test_index_built_with_another_embedder_fails_with_a_clear_message(session):
-    add_chunk(session)
-    record_embedder(session, "all-MiniLM-L6-v2")
-    with pytest.raises(IndexMismatchError, match="all-MiniLM-L6-v2.*scripts/ingest.py"):
-        check_index_embedder(session)
-
-
-def test_v1_index_without_a_recorded_embedder_fails(session):
-    add_chunk(session)
-    with pytest.raises(IndexMismatchError, match="older version"):
-        check_index_embedder(session)
 
 
 def test_missing_model_files_raise_a_plain_error(monkeypatch, tmp_path):

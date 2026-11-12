@@ -38,6 +38,9 @@ def session(monkeypatch):
             )
         except Exception:
             pytest.skip("sqlite-vec is not loadable here")
+        # other tests may have indexed the real corpus; start from an empty index (rolled back below)
+        for table in ("document_chunks_vec", "document_chunks_fts", "document_chunks"):
+            cur.execute(f"DELETE FROM {table}")
         for cid, crop, title, content, vec in CHUNKS:
             s.execute(
                 text(

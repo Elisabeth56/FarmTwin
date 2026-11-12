@@ -1,4 +1,6 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+import StartupGate from "./components/StartupGate";
+import UpdateBanner from "./components/UpdateBanner";
 import { ModelStatusProvider } from "./lib/model";
 import Farms from "./pages/Farms";
 import FarmSetup from "./pages/FarmSetup";
@@ -8,8 +10,10 @@ import ModelSetup from "./pages/ModelSetup";
 
 export default function App() {
   return (
+    <StartupGate>
     <ModelStatusProvider>
     <BrowserRouter>
+      <UpdateBanner />
       <Routes>
         <Route path="/" element={<Farms />} />
         <Route path="/setup" element={<FarmSetup />} />
@@ -19,5 +23,6 @@ export default function App() {
       </Routes>
     </BrowserRouter>
     </ModelStatusProvider>
+    </StartupGate>
   );
 }

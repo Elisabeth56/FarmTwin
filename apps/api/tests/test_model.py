@@ -58,3 +58,16 @@ def test_unmanaged_model_cannot_be_restarted_from_the_app(client):
     body = client.post("/api/model/restart").json()
     assert body["error"]["code"] == "model_not_managed"
     assert client.get("/api/model/status").json()["managed"] is False
+
+
+def test_shutdown_needs_the_shell_token(client, monkeypatch):
+    from app.features.system import router as system
+
+    stopped = []
+    monkeypatch.setattr(system, "_exit", lambda reason: stopped.append(reason))
+    assert client.post("/api/shutdown").status_code == 403  # no token configured
+    monkeypatch.setattr(get_settings(), "shutdown_token", "s3cret")
+    assert client.post("/api/shutdown", headers={"X-FarmTwin-Token": "wrong"}).status_code == 403
+    assert client.post("/api/shutdown", headers={"X-FarmTwin-Token": "s3cret"}).status_code == 202
+    time.sleep(0.1)
+    assert stopped == ["shell asked"]

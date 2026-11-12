@@ -17,7 +17,10 @@ def main() -> None:
     sock.bind((settings.host, settings.port))
     print(f"FARMTWIN_PORT={sock.getsockname()[1]}", flush=True)
 
-    config = uvicorn.Config("app.main:app", log_level="info")
+    # import the app object directly, so a frozen build doesn't need to find it by name
+    from app.main import app
+
+    config = uvicorn.Config(app, log_level="info")
     uvicorn.Server(config).run(sockets=[sock])
 
 

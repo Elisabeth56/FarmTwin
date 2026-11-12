@@ -390,29 +390,19 @@ export async function askQuestionStream(
 
 // ---------- Transcribe ----------
 
-export type TranscribeResponse = {
-  text: string;
-  language_requested: string;
-  language_used: string;
-  duration_ms: number;
-};
+export type VoiceStatus = { ready: boolean; reason: string | null; needs_model: boolean };
 
-export async function transcribeAudio(
-  audioBlob: Blob,
-  language: "en" = "en",
-): Promise<TranscribeResponse> {
-  const formData = new FormData();
-  formData.append("audio", audioBlob, "recording.webm");
-  formData.append("language", language);
-  const response = await fetch(`${BASE_URL}/transcribe`, {
-    method: "POST",
-    body: formData,
-    signal: AbortSignal.timeout(90000),
-  });
-  if (!response.ok) {
-    throw new Error(await errorMessage(response));
-  }
-  return (await response.json()) as TranscribeResponse;
+export function getVoiceStatus(): Promise<VoiceStatus> {
+  return fetchAPI<VoiceStatus>("/voice/status");
+}
+
+/** Sends a 16 kHz mono WAV (lib/wav.ts) to whisper.cpp on this laptop. */
+export async function transcribeAudio(wav: Blob): Promise<{ text: string; took_ms: number }> {
+  const form = new FormData();
+  form.append("audio", wav, "recording.wav");
+  const response = await fetch(`${BASE_URL}/voice/transcribe`, { method: "POST", body: form, signal: AbortSignal.timeout(120000) });
+  if (!response.ok) throw new Error(await errorMessage(response));
+  return (await response.json()) as { text: string; took_ms: number };
 }
 
 export async function askQuestion(req: AskRequest): Promise<AskResponse> {
@@ -518,20 +508,23 @@ export type SetupProgress = {
   size: number;
 };
 
-export function getSetup(): Promise<SetupProgress> {
-  return fetchAPI<SetupProgress>("/model/setup");
+/** "model" is the language model; "voice" is the optional whisper model. Same flow for both. */
+export type SetupKind = "model" | "voice";
+
+export function getSetup(kind: SetupKind = "model"): Promise<SetupProgress> {
+  return fetchAPI<SetupProgress>(`/${kind}/setup`);
 }
 
-export function startModelDownload(): Promise<SetupProgress> {
-  return fetchAPI<SetupProgress>("/model/setup/download", { method: "POST" });
+export function startModelDownload(kind: SetupKind = "model"): Promise<SetupProgress> {
+  return fetchAPI<SetupProgress>(`/${kind}/setup/download`, { method: "POST" });
 }
 
-export function pauseModelDownload(): Promise<SetupProgress> {
-  return fetchAPI<SetupProgress>("/model/setup/pause", { method: "POST" });
+export function pauseModelDownload(kind: SetupKind = "model"): Promise<SetupProgress> {
+  return fetchAPI<SetupProgress>(`/${kind}/setup/pause`, { method: "POST" });
 }
 
-export function importModel(path: string): Promise<SetupProgress> {
-  return fetchAPI<SetupProgress>("/model/setup/import", {
+export function importModel(path: string, kind: SetupKind = "model"): Promise<SetupProgress> {
+  return fetchAPI<SetupProgress>(`/${kind}/setup/import`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ path }),

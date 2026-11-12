@@ -19,4 +19,6 @@ FarmTwin checks the file against a known fingerprint (SHA-256) before using it, 
 
 ## Voice
 
-Voice input isn't in the desktop app yet. Type your question in English or Pidgin; answers are in English.
+Voice input is optional and needs one more file, about 190 MB. Press the mic next to the question box and choose **Download** or **Import from a flash drive**, the same as the AI model. The file is checked before it's used.
+
+Voice understands English only for now. You can still type in English or Pidgin; answers are in English.

@@ -68,6 +68,7 @@ fn start_api(resources: &Path, log_dir: &Path) -> Result<Api, Box<dyn std::error
         .env("FARMTWIN_SHUTDOWN_TOKEN", &token)
         .env("FARMTWIN_LLAMA_SERVER_BIN", resources.join("llama").join(exe("llama-server")))
         .env("FARMTWIN_EMBEDDER_DIR", resources.join("embedder"))
+        .env("FARMTWIN_WHISPER_CLI_BIN", resources.join("whisper").join(exe("whisper-cli")))
         .stdout(Stdio::piped())
         .stderr(Stdio::from(std::fs::File::create(log_dir_file(log_dir, "api-console.log"))?));
     #[cfg(windows)]

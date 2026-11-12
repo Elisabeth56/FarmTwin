@@ -43,9 +43,16 @@ def host():
 def pinned(monkeypatch, tmp_path, host):
     def pin(path="/model.gguf", body=BODY):
         model = ModelFile(
-            "Test model", "model.gguf", host + path, hashlib.sha256(body).hexdigest(), len(body)
+            "Test model",
+            "model.gguf",
+            host + path,
+            hashlib.sha256(body).hexdigest(),
+            len(body),
+            "model",
+            "1 MB",
         )
         monkeypatch.setattr(model_setup, "LLM", model)
+        monkeypatch.setattr(model_setup.setup, "model", model)  # the app's instance
         return model
 
     monkeypatch.setattr(get_settings(), "llm_model_path", tmp_path / "models" / "model.gguf")
@@ -68,7 +75,7 @@ def wait(s: Setup, *states, timeout=10):
 def test_download_checks_the_file_then_starts_the_model(pinned):
     pinned()
     started = []
-    s = Setup()
+    s = Setup(model_setup.LLM, model_setup.model_path)
     s.start_download(on_ready=lambda: started.append(True))
     wait(s, "ready")
     assert model_setup.model_path().read_bytes() == BODY
@@ -80,7 +87,7 @@ def test_download_resumes_from_what_is_on_disk(pinned):
     part = model_setup.model_path().with_name("model.gguf.part")
     part.parent.mkdir(parents=True)
     part.write_bytes(BODY[:300_000])
-    s = Setup()
+    s = Setup(model_setup.LLM, model_setup.model_path)
     assert s.progress().state == "paused" and s.progress().done == 300_000
     s.start_download()
     wait(s, "ready")
@@ -90,7 +97,7 @@ def test_download_resumes_from_what_is_on_disk(pinned):
 
 def test_a_wrong_download_is_thrown_away(pinned):
     pinned(path="/other.gguf", body=BODY)  # serves different bytes than the pin expects
-    s = Setup()
+    s = Setup(model_setup.LLM, model_setup.model_path)
     s.start_download()
     p = wait(s, "error")
     assert "isn't the FarmTwin model" in p.error
@@ -102,7 +109,7 @@ def test_import_checks_before_copying(pinned, tmp_path):
     pinned()
     wrong = tmp_path / "wrong.gguf"
     wrong.write_bytes(b"x" * 1000)
-    s = Setup()
+    s = Setup(model_setup.LLM, model_setup.model_path)
     s.start_import(wrong)
     wait(s, "error")
     assert not model_setup.model_path().exists()

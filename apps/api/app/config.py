@@ -47,7 +47,11 @@ class Settings(BaseSettings):
     embedder_model: str = "BAAI/bge-small-en-v1.5"
     # fastembed model cache; the desktop build points this at the copy inside the installer
     embedder_dir: Path | None = None
-    whisper_model: str = "rishabbahal/whisper-small-nigerian-accent"
+    # whisper.cpp's CLI, run once per recording (ADR-017); the desktop build sets it. Without it,
+    # or without the voice model, voice input is off and the app says why
+    whisper_cli_bin: Path | None = None
+    # defaults to the pinned voice model in models_dir (app/ai/setup.py)
+    voice_model_path: Path | None = None
     # vector distance (L2 between normalized embeddings) above which the closest chunk counts as "not in my sources"; tuned on
     # the eval set (evals/results/baseline-retrieval.json), re-check it after corpus or embedder changes
     retrieval_max_distance: float = 0.78

@@ -15,7 +15,6 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.ai.server import supervisor
-from app.api import transcribe
 from app.config import get_settings
 from app.db import models  # noqa: F401  (ensure models are registered on Base)
 from app.db.migrate import run_migrations
@@ -27,6 +26,7 @@ from app.features.model import router as model
 from app.features.observations import router as observations
 from app.features.plantings import router as plantings
 from app.features.system import router as system
+from app.features.voice import router as voice
 from app.features.weather import router as weather
 from app.logs import install_request_logging, setup_logging
 from app.rag import embedder
@@ -84,4 +84,4 @@ app.include_router(weather.router)
 app.include_router(model.router)
 app.include_router(system.router)
 app.include_router(ask.router)
-app.include_router(transcribe.router)
+app.include_router(voice.router)

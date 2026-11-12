@@ -89,6 +89,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev librsvg2-dev libayatana-appindicator3-dev libxdo-dev
       # tauri-build checks that the bundled resource folders exist
-      - run: mkdir -p apps/desktop/resources/{api,llama,embedder} apps/web/dist
+      - run: mkdir -p apps/desktop/resources/{api,llama,embedder,whisper} apps/web/dist
       - run: cd apps/desktop/src-tauri && cargo check --locked
 

@@ -1,0 +1,45 @@
+name: twin-assets
+
+# Re-renders the 3D farm's stills and video loops when the scene changes, and commits them to the PR.
+on:
+  pull_request:
+    paths: ["packages/twin/**"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: twin-assets-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  render:
+    # forks can't be pushed to; their PRs keep the old assets until a maintainer runs this by hand
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref }}
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install playwright==1.63.0 && python -m playwright install --with-deps chromium
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - name: render
+        run: CHROME_PATH="$(python -c 'from playwright.sync_api import sync_playwright as s; p=s().start(); print(p.chromium.executable_path); p.stop()')" python packages/twin/capture/capture.py
+      - name: commit the new assets
+        run: |
+          git add apps/site/public/assets apps/web/public/twin
+          if git diff --cached --quiet; then echo "assets unchanged"; exit 0; fi
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -m "chore(twin): re-render stills and loops"
+          git push

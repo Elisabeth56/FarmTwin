@@ -1,0 +1,11 @@
+{
+  "name": "@farmtwin/twin",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "main": "twin.js",
+  "types": "twin.d.ts",
+  "dependencies": {
+    "three": "^0.160.0"
+  }
+}

@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import AppShell from "../components/AppShell";
 import AskPanel, { type AskContextChip } from "../components/AskPanel";
 import Button from "../components/Button";
+import FarmTwin3D, { canDraw3D } from "../components/FarmTwin3D";
 import FieldCard from "../components/FieldCard";
 import LogSheet from "../components/LogSheet";
 import ModelStoppedCard from "../components/ModelStoppedCard";
@@ -18,6 +19,7 @@ import {
 } from "../lib/api";
 import { cropLabel } from "../lib/crops";
 import { stageLabel } from "../lib/format";
+import { recall, remember } from "../lib/storage";
 
 type Load = { state: "loading" } | { state: "error"; message: string } | { state: "ready"; data: FarmDashboardData };
 type Undo = { obs: Observation; label: string };
@@ -31,6 +33,13 @@ export default function FarmDashboard() {
   const [logOpen, setLogOpen] = useState(false);
   const [undo, setUndo] = useState<Undo | null>(null);
   const [chunk, setChunk] = useState<CitedChunk | null>(null);
+  // the still picture is the default; the 3D choice is remembered across farms and launches
+  const [has3D] = useState(canDraw3D);
+  const [show3D, setShow3D] = useState(() => recall("farm.view") === "3d");
+  const toggle3D = () => {
+    remember("farm.view", show3D ? "still" : "3d");
+    setShow3D(!show3D);
+  };
 
   const refresh = useCallback(
     () =>
@@ -98,18 +107,33 @@ export default function FarmDashboard() {
         <ModelStoppedCard />
 
         <section className="relative animate-rise overflow-hidden rounded-xl bg-raised [animation-delay:80ms]">
-          <picture>
-            <source srcSet={`/twin/farm-${wet ? "rain" : "dry"}.webp`} type="image/webp" />
-            <img
-              src={`/twin/farm-${wet ? "rain" : "dry"}.jpg`}
-              alt={wet ? "Example farm twin in rain, shown because this farm logged heavy rain recently" : "Example farm twin in dry weather"}
-              className="aspect-[16/7] w-full object-cover"
-            />
-          </picture>
-          <span className="absolute top-4 left-4 rounded-pill bg-raised/90 px-3 py-1 text-caption text-ink-muted">
-            {/* a shared example scene until the twin draws this farm's own fields (#24) */}
-            Example twin{wet ? " · wet after recent rain" : ""}
-          </span>
+          {has3D && show3D && fields.some((f) => f.plantings.length > 0) ? (
+            <FarmTwin3D fields={fields} risks={risks} wet={wet} />
+          ) : (
+            <>
+              <picture>
+                <source srcSet={`/twin/farm-${wet ? "rain" : "dry"}.webp`} type="image/webp" />
+                <img
+                  src={`/twin/farm-${wet ? "rain" : "dry"}.jpg`}
+                  alt={wet ? "Example farm twin in rain, shown because this farm logged heavy rain recently" : "Example farm twin in dry weather"}
+                  className="aspect-[16/7] w-full object-cover"
+                />
+              </picture>
+              <span className="absolute top-4 left-4 rounded-pill bg-raised/90 px-3 py-1 text-caption text-ink-muted">
+                Example twin{wet ? " · wet after recent rain" : ""}
+              </span>
+            </>
+          )}
+          {has3D && fields.some((f) => f.plantings.length > 0) && (
+            <button
+              type="button"
+              aria-pressed={show3D}
+              onClick={toggle3D}
+              className="absolute top-3 right-3 z-20 min-h-11 rounded-pill bg-raised/90 px-4 text-small text-ink shadow-float hover:bg-raised focus-visible:outline-2 focus-visible:outline-brand"
+            >
+              {show3D ? "Show picture" : "Show this farm in 3D"}
+            </button>
+          )}
         </section>
 
         {fields.length === 0 ? (

@@ -12,6 +12,7 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
+    "@farmtwin/twin": "workspace:*",
     "@fontsource/hanken-grotesk": "^5.3.0",
     "@tailwindcss/vite": "^4.3.5",
     "@tauri-apps/api": "^2.12.4",

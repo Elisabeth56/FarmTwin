@@ -14,7 +14,7 @@ permissions:
 
 env:
   # the llama.cpp release whose llama-server ships in this version; recorded in the release notes
-  LLAMA_TAG: ""
+  LLAMA_TAG: b11669
 
 jobs:
   build:

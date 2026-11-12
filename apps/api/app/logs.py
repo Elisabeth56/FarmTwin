@@ -35,6 +35,12 @@ def setup_logging() -> None:
         h.setFormatter(fmt)
         h.addFilter(_RequestIdFilter())
         root.addHandler(h)
+    # the model health check runs every few seconds; only its failures are worth a line
+    logging.getLogger("httpx").setLevel(logging.WARNING)
+
+
+# the app polls these every second or so; logging each one would bury everything else
+POLLED = {"/api/model/status", "/api/model/setup", "/api/health"}
 
 
 def install_request_logging(app: FastAPI) -> None:
@@ -47,7 +53,9 @@ def install_request_logging(app: FastAPI) -> None:
         try:
             response = await call_next(request)
             ms = int((time.perf_counter() - started) * 1000)
-            log.info(
+            quiet = request.url.path in POLLED and response.status_code < 400
+            log.log(
+                logging.DEBUG if quiet else logging.INFO,
                 "method=%s path=%s status=%s ms=%s",
                 request.method,
                 request.url.path,

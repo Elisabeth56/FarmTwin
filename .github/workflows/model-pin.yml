@@ -1,0 +1,22 @@
+# Downloads the pinned model and checks its SHA-256, whenever the pin changes.
+name: model pin
+on:
+  pull_request:
+    paths: [apps/api/app/ai/setup.py]
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: download and compare
+        run: |
+          url=$(grep -oP 'url="\K[^"]+gguf' apps/api/app/ai/setup.py | head -1)
+          want=$(grep -oP 'sha256="\K[0-9a-f]{64}' apps/api/app/ai/setup.py | head -1)
+          size=$(grep -oP 'size=\K[0-9_]+' apps/api/app/ai/setup.py | head -1 | tr -d _)
+          curl -sSL --fail -o model.gguf "$url"
+          got=$(sha256sum model.gguf | cut -d' ' -f1)
+          echo "want $want ($size bytes)"; echo "got  $got ($(stat -c %s model.gguf) bytes)"
+          test "$got" = "$want" && test "$(stat -c %s model.gguf)" = "$size"

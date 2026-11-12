@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { useModel } from "../lib/model";
 
 const LOOK = {
@@ -17,7 +18,13 @@ export default function ModelStatusCard() {
         <span aria-hidden className={`size-2 rounded-pill ${look.dot}`} />
         {look.text}
       </span>
-      <span className="text-ink-muted">Your farm data stays on this computer.</span>
+      {status?.state === "not_set_up" ? (
+        <Link to="/setup/model" className="text-brand underline">
+          Set up the model
+        </Link>
+      ) : (
+        <span className="text-ink-muted">Your farm data stays on this computer.</span>
+      )}
     </div>
   );
 }

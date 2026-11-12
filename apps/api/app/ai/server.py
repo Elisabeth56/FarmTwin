@@ -14,6 +14,7 @@ from typing import Literal
 
 import httpx
 
+from app.ai.setup import model_path
 from app.config import get_settings
 
 logger = logging.getLogger(__name__)
@@ -39,8 +40,7 @@ class Supervisor:
 
     @property
     def managed(self) -> bool:
-        s = get_settings()
-        return bool(s.llama_server_bin and s.llm_model_path)
+        return get_settings().llama_server_bin is not None
 
     @property
     def url(self) -> str:
@@ -51,9 +51,8 @@ class Supervisor:
         with self._lock:
             if not self.managed or (self._proc and self._proc.poll() is None):
                 return
-            settings = get_settings()
-            if not (settings.llm_model_path and settings.llm_model_path.exists()):
-                logger.warning("model file missing: %s", settings.llm_model_path)
+            if not model_path().exists():
+                logger.info("no model file yet at %s", model_path())
                 return
             port = _free_port()
             self._tail.clear()
@@ -86,8 +85,7 @@ class Supervisor:
     def status(self) -> Status:
         if not self.managed:
             return Status("ready" if _healthy(self.url) else "stopped", managed=False)
-        path = get_settings().llm_model_path
-        if path is None or not path.exists():
+        if not model_path().exists():
             return Status("not_set_up", managed=True, detail="No model file yet.")
         proc = self._proc
         if proc is None or proc.poll() is not None:
@@ -109,7 +107,7 @@ def command(port: int) -> list[str]:
     s = get_settings()
     return [
         str(s.llama_server_bin),
-        "--model", str(s.llm_model_path),
+        "--model", str(model_path()),
         "--host", "127.0.0.1",
         "--port", str(port),
         "--ctx-size", str(s.llm_context),

@@ -1,4 +1,5 @@
-const BASE_URL = "/api";
+// the desktop shell injects the API's address (its port is picked at launch); in dev Vite proxies /api
+const BASE_URL: string = (window as { __FARMTWIN_API__?: string }).__FARMTWIN_API__ ?? "/api";
 
 /** Reads the API's shared error shape and returns its plain message. */
 export async function errorMessage(res: Response): Promise<string> {

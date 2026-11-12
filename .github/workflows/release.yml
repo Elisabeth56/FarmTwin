@@ -1,0 +1,99 @@
+# Desktop release (ADR-022): a v* tag builds the installers for all four targets and attaches them,
+# with a checksum file and the updater feed, to a draft GitHub release. Publishing the draft is a
+# person's call.
+name: release
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+env:
+  # the llama.cpp release whose llama-server ships in this version; recorded in the release notes
+  LLAMA_TAG: ""
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: macos-14, target: macos-arm64, rust: aarch64-apple-darwin, bundles: "app,dmg" }
+          - { os: macos-15-intel, target: macos-x64, rust: x86_64-apple-darwin, bundles: "app,dmg" }
+          - { os: ubuntu-22.04, target: ubuntu-x64, rust: x86_64-unknown-linux-gnu, bundles: "appimage,deb" }
+          - { os: windows-latest, target: win-cpu-x64, rust: x86_64-pc-windows-msvc, bundles: "msi,nsis" }
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.rust }}
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: apps/desktop/src-tauri
+      - if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev librsvg2-dev libayatana-appindicator3-dev libxdo-dev patchelf
+      - run: pnpm install --frozen-lockfile
+
+      - name: backend, llama-server and embedder
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: apps/desktop/scripts/prepare-resources.sh ${{ matrix.target }}
+
+      # Apple silicon refuses to run unsigned code; free ad-hoc signatures for everything bundled
+      - if: runner.os == 'macOS'
+        run: |
+          find apps/desktop/resources -type f \( -perm -u+x -o -name '*.dylib' -o -name '*.so' \) \
+            -exec codesign --force --sign - {} \;
+
+      - name: updater signing (skipped when the key isn't set up yet)
+        id: updater
+        env:
+          KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+        run: |
+          if [ -z "$KEY" ]; then echo 'config={"bundle":{"createUpdaterArtifacts":false}}' >> "$GITHUB_OUTPUT"; else echo 'config={}' >> "$GITHUB_OUTPUT"; fi
+
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ""
+        with:
+          projectPath: apps/desktop
+          tagName: ${{ github.ref_name }}
+          releaseName: FarmTwin ${{ github.ref_name }}
+          releaseBody: |
+            Download the installer for your laptop below, then follow the install guide: https://farmtwin-beta.vercel.app/docs/install/
+            Check a download against SHA256SUMS.txt if you like.
+          releaseDraft: true
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          includeUpdaterJson: true
+          args: --target ${{ matrix.rust }} --bundles ${{ matrix.bundles }} --config '${{ steps.updater.outputs.config }}'
+
+  checksums:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: SHA256SUMS.txt for every installer
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir out && cd out
+          gh release download "${{ github.ref_name }}" -R "${{ github.repository }}" \
+            -p '*.dmg' -p '*.msi' -p '*.exe' -p '*.AppImage' -p '*.deb'
+          sha256sum * > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+          gh release upload "${{ github.ref_name }}" SHA256SUMS.txt -R "${{ github.repository }}" --clobber

@@ -1,0 +1,7 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "What the FarmTwin window may do: pick a model file, update, and restart after an update.",
+  "windows": ["main"],
+  "permissions": ["core:default", "dialog:allow-open", "updater:default", "process:allow-restart"]
+}

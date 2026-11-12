@@ -1,3 +1,5 @@
+import logging
+
 from sqlalchemy import create_engine, event
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
@@ -23,8 +25,8 @@ def _load_sqlite_vec(dbapi_connection, connection_record):
         sqlite_vec.load(dbapi_connection)
         dbapi_connection.enable_load_extension(False)
     except Exception:
-        # sqlite-vec is only needed from Day 2 onward; ignore load failures for now.
-        pass
+        # farms and logs still work without it; search won't, so make the cause easy to find
+        logging.getLogger(__name__).exception("sqlite-vec failed to load; search is unavailable")
 
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

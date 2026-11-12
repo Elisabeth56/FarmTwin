@@ -1,4 +1,6 @@
 @import "@fontsource/hanken-grotesk/400.css";
+/* the wordmark is the only bold text on the site */
+@import "@fontsource/hanken-grotesk/latin-700.css";
   :root{
     --ground:#ECEEE8;--surface:#F5F6F2;--raised:#FBFCF9;--ink:#1F3328;--ink-muted:#58675E;--ink-faint:#7A877E;--hairline:#D5DAD2;
     --brand:#2E6B45;--brand-tint:#CFE6A8;--on-ink:#ECEEE8;
@@ -46,7 +48,7 @@
   .nav{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:20;width:calc(100% - 32px);max-width:960px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 8px 8px 18px;background:var(--raised);border-radius:9999px;box-shadow:var(--float);transition:transform .35s var(--ui),padding .3s var(--ui)}
   .nav.hide{transform:translate(-50%,-150%)}
   .nav.tight{padding-top:4px;padding-bottom:4px}
-  .logo{display:flex;align-items:center;gap:8px;font-size:20px;letter-spacing:-.02em;text-decoration:none}
+  .logo{display:flex;align-items:center;gap:8px;font-size:20px;font-weight:700;letter-spacing:-.03em;text-decoration:none}
   .logo svg{transition:transform .5s var(--reveal)}
   .logo:hover svg{transform:rotate(-8deg) translateY(-1px)}
   .links{display:flex;gap:2px;padding:4px;border-radius:9999px;background:rgb(31 51 40 / .06);position:relative}

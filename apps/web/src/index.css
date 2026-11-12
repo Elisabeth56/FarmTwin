@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "@fontsource/hanken-grotesk/400.css";
 @import "@fontsource/hanken-grotesk/500.css";
+@import "@fontsource/hanken-grotesk/latin-700.css";
 
 /* FarmTwin design tokens. Every colour, radius, shadow and curve in the app comes from here.
    Values mirror the FarmTwin design system (light and dark). The font is bundled, never fetched. */

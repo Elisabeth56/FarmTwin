@@ -5,7 +5,7 @@
 #   embedder/  the search embedder, so search works offline from the first launch
 #
 #   ./scripts/prepare-resources.sh <macos-arm64|macos-x64|ubuntu-x64|win-cpu-x64>
-# LLAMA_TAG picks the llama.cpp release (default: the latest); the tag used is printed.
+# LLAMA_TAG picks the llama.cpp build; it is pinned so installers are reproducible. The tag used is printed.
 set -euo pipefail
 target="${1:?usage: prepare-resources.sh <macos-arm64|macos-x64|ubuntu-x64|win-cpu-x64>}"
 here="$(cd "$(dirname "$0")/.." && pwd)"
@@ -18,7 +18,8 @@ echo "== backend"
 cp -R "$api/dist/farmtwin-api/." "$res/api/"
 
 echo "== llama-server"
-tag="${LLAMA_TAG:-$(gh release view -R ggml-org/llama.cpp --json tagName -q .tagName)}"
+# llama.cpp's "latest" release is a source-only vX.Y.Z tag; the prebuilt binaries are on the bNNNN tags
+tag="${LLAMA_TAG:-b11669}"
 echo "llama.cpp $tag ($target)"
 tmp="$(mktemp -d)"
 gh release download "$tag" -R ggml-org/llama.cpp -D "$tmp" -p "llama-$tag-bin-$target.zip" -p "llama-$tag-bin-$target.tar.gz"

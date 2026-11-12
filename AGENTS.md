@@ -56,6 +56,7 @@ The v2 layout is set by ADR-026 (`docs/decisions/0026-website-and-repo-layout.md
 - `apps/api/` — FastAPI, SQLAlchemy models, deterministic engines, RAG glue, and its scripts.
 - `apps/desktop/` — Tauri shell (added in M5).
 - `apps/site/` — Astro + Starlight website (added in M6).
+- `packages/twin/` — the 3D farm scene shared by the site and the app (ADR-028).
 - `knowledge/` — curated corpus and crop rule files.
 - `evals/` — golden sets, benchmark and WER harnesses, saved results.
 - `docs/` — architecture, decisions, and the frozen v1 documents in `docs/v1/`.

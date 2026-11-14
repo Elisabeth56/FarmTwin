@@ -74,6 +74,8 @@
   .frame.live picture{opacity:0;transition:opacity .9s var(--reveal)}
   .frame[data-tier="lite"] video{display:block}
   .frame[data-tier="lite"] picture{visibility:hidden}
+  .to3d{position:absolute;right:16px;top:16px;z-index:3;font:inherit;font-size:13px;border:none;cursor:pointer;padding:8px 14px;border-radius:9999px;background:var(--ink);color:var(--raised);min-height:36px}
+  .to3d:hover{opacity:.9}
   .tier-note{position:absolute;left:16px;top:16px;font-size:12px;color:var(--ink-muted);background:var(--surface);padding:4px 10px;border-radius:9999px;z-index:2}
   .badge{position:absolute;left:0;top:0;display:flex;flex-direction:column;align-items:center;pointer-events:none;opacity:0;transition:opacity .4s var(--ui);z-index:2}
   .badge.on{opacity:1}

@@ -5,13 +5,14 @@ const frame = $('frame'), note = $('tierNote'), vid = $('liteVid'), badge = $('b
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 let twin = null, rain = false, tier = 'still';
 
+const canDraw = (() => { try { return !!document.createElement('canvas').getContext('webgl2'); } catch (e) { return false; } })();
+
+// the scene only draws while it moves, so most laptops get 3D; video is for data saver and very small devices
 function detect() {
-  if (reduce) return 'still';
-  if (!document.createElement('canvas').getContext('webgl2')) return 'still';
+  if (reduce || !canDraw) return 'still';
   const c = navigator.connection;
   if (c && c.saveData) return 'lite';
-  if (navigator.deviceMemory && navigator.deviceMemory < 4) return 'lite';
-  if ((navigator.hardwareConcurrency || 4) < 4) return 'lite';
+  if (navigator.deviceMemory && navigator.deviceMemory < 2) return 'lite';
   return 'full';
 }
 const read = () => { try { return localStorage.getItem('ft-tier') || 'auto'; } catch (e) { return 'auto'; } };
@@ -33,6 +34,8 @@ async function apply(choice) {
   document.querySelectorAll('.tbtn').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.t === choice)));
   $('liteBtn').setAttribute('aria-pressed', String(choice === 'still'));
   setStill();
+  // the video and the still can't be turned; offer the 3D farm whenever the device can draw it
+  $('to3d').hidden = tier === 'full' || !canDraw;
   if (tier === 'full') {
     note.textContent = '3D · drag to turn';
     if (!twin) {
@@ -54,5 +57,6 @@ $('rain').addEventListener('click', () => {
   if (tier === 'full' && twin) twin.setRain(rain); else if (tier === 'lite') setVideo(); else setStill();
 });
 document.querySelectorAll('.tbtn').forEach(b => b.addEventListener('click', () => { save(b.dataset.t); apply(b.dataset.t); }));
+$('to3d').addEventListener('click', () => { save('full'); apply('full'); });
 $('liteBtn').addEventListener('click', () => { const v = read() === 'still' ? 'auto' : 'still'; save(v); apply(v); });
 apply(read());

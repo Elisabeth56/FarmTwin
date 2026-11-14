@@ -12,6 +12,7 @@ import DownloadCards from "../components/DownloadCards.astro";
         <video id="liteVid" muted loop playsinline preload="none" aria-hidden="true"></video>
         <canvas id="c" aria-label="Interactive 3D farm. Drag to turn it."></canvas>
         <span class="tier-note" id="tierNote">Loading</span>
+        <button class="to3d" id="to3d" type="button" hidden>Turn it in 3D</button>
         <div class="badge" id="badge"><span class="p"><span class="dot" style="background:var(--risk-high)"></span>Fungal risk · high</span><span class="stem"></span></div>
         <div class="chip" id="chip"><span class="dot" id="chipDot"></span><span id="chipText"></span></div>
       </div>

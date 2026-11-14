@@ -7,6 +7,12 @@
    Values mirror the FarmTwin design system (light and dark). The font is bundled, never fetched. */
 
 :root {
+  /* the logo keeps its own colours in both themes, like an app icon */
+  --mark-tile: #2e6b45;
+  --mark-side: #1f3328;
+  --mark-shade: #14231b;
+  --mark-field: #cfe6a8;
+  --mark-maize: #e3b341;
   --ground: #eceee8;
   --surface: #f5f6f2;
   --raised: #fbfcf9;

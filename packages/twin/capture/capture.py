@@ -58,22 +58,6 @@ def still(pg, name: str, rain: bool, out: pathlib.Path) -> None:
     ffmpeg("-i", str(png), "-q:v", "7", str(out / f"{name}.jpg"))
 
 
-# the "Who it's for" cards: (name, azimuth, polar, zoom, rain), portrait 4:5
-PEOPLE = [("officers", 0.6, 0.95, 0.78, True), ("farmers", -0.9, 1.05, 0.7, False), ("students", 2.6, 1.25, 0.6, False)]
-
-
-def people(pg) -> None:
-    pg.set_viewport_size({"width": 800, "height": 1000})
-    for name, az, polar, zoom, rain in PEOPLE:
-        pg.evaluate(f"twin.setRain({str(rain).lower()})")
-        pg.evaluate(f"twin.setView({az}, {polar}); twin.zoom({zoom})")
-        pg.wait_for_timeout(2500)
-        png = FRAMES / f"people-{name}.png"
-        pg.screenshot(path=str(png))
-        ffmpeg("-i", str(png), "-vf", "scale=640:-1", "-c:v", "libwebp", "-quality", "78", str(SITE / f"people-{name}.webp"))
-        ffmpeg("-i", str(png), "-vf", "scale=640:-1", "-q:v", "6", str(SITE / f"people-{name}.jpg"))
-
-
 def serve() -> http.server.ThreadingHTTPServer:
     class Quiet(http.server.SimpleHTTPRequestHandler):
         def log_message(self, *args):
@@ -87,7 +71,7 @@ def serve() -> http.server.ThreadingHTTPServer:
 
 def check_sizes() -> list[str]:
     over = []
-    for f in [*SITE.glob("farm-*"), *SITE.glob("people-*"), *APP.glob("farm-*")]:
+    for f in [*SITE.glob("farm-*"), *APP.glob("farm-*")]:
         limit = MAX_VIDEO if f.suffix in (".webm", ".mp4") else MAX_STILL
         if f.stat().st_size > limit:
             over.append(f"{f.relative_to(ROOT)}: {f.stat().st_size} bytes (limit {limit})")
@@ -108,7 +92,6 @@ def main() -> int:
         for name, rain in (("farm-dry", False), ("farm-rain", True)):
             still(pg, name, rain, SITE)
             loop(pg, name, rain)
-        people(pg)
         # the app shows the farm's real risks beside the picture, so its stills carry no badge
         pg.add_style_tag(content=".badge{display:none!important}")
         for name, rain in (("farm-dry", False), ("farm-rain", True)):

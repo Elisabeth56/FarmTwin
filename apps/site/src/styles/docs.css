@@ -78,3 +78,32 @@ header.header {
 .sidebar-content a[aria-current="page"] {
   font-weight: 400;
 }
+
+/* Starlight's side columns run full height behind the header; with the header floating, their
+   divider lines showed through it. Tone separates the columns instead. */
+.sidebar-pane,
+.right-sidebar {
+  border-inline: none !important;
+}
+
+/* without the side lines, the rule under the title ended mid-air */
+.content-panel + .content-panel {
+  border-top: none !important;
+}
+
+/* Starlight places these against an edge-to-edge header; the floating one sits 12px in */
+.right-sidebar {
+  padding-top: calc(var(--sl-nav-height) + 12px) !important;
+}
+@media (max-width: 49.99rem) {
+  .sl-menu-button {
+    top: 24px !important;
+    inset-inline-end: 24px !important;
+  }
+  mobile-starlight-toc nav {
+    top: calc(var(--sl-nav-height) + 12px) !important;
+  }
+  .main-frame {
+    padding-top: calc(var(--sl-nav-height) + var(--sl-mobile-toc-height) + 12px) !important;
+  }
+}

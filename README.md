@@ -4,7 +4,7 @@ A desktop app for Nigerian smallholder farmers and extension officers: it keeps 
 
 ![The farm screen: the farm's own plots in 3D with a fungal-risk badge after heavy rain, then each field's crop stage](docs/images/app-farm.jpg)
 
-**Website and docs:** [farmtwin-beta.vercel.app](https://farmtwin-beta.vercel.app) · **Installers:** [Releases](https://github.com/Elisabeth56/FarmTwin/releases) (first release pending) · **Case study:** [docs/case-study.md](docs/case-study.md) · **v1 demo video:** [YouTube](https://youtu.be/j7z2c7UC6_I)
+**Website and docs:** [farmtwin-beta.vercel.app](https://farmtwin-beta.vercel.app) · **Try it in the browser:** [demo](https://farmtwin-beta.vercel.app/demo/) · **Installers:** [Releases](https://github.com/Elisabeth56/FarmTwin/releases) (first release pending) · **Case study:** [docs/case-study.md](docs/case-study.md) · **v1 demo video:** [YouTube](https://youtu.be/j7z2c7UC6_I)
 
 ## The problem
 

@@ -11,7 +11,18 @@ const LOOK = {
 /** Sidebar card: the model's state at a glance. */
 export default function ModelStatusCard() {
   const { status } = useModel();
-  const look = status ? LOOK[status.state] : { dot: "bg-ink-faint", text: "Checking the model…" };
+  const look = status
+    ? LOOK[status.state]
+    : { dot: "bg-ink-faint", text: "Checking the model…" };
+  if (import.meta.env.VITE_DEMO === "1") {
+    return (
+      <div className="flex flex-col gap-1 rounded-md bg-surface p-3 text-caption">
+        <span className="text-ink">Website demo</span>
+        <span className="text-ink-muted">Nothing you log here is saved.</span>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-1 rounded-md bg-surface p-3 text-caption">
       <span role="status" className="flex items-center gap-2 text-ink">
@@ -23,7 +34,9 @@ export default function ModelStatusCard() {
           Set up the model
         </Link>
       ) : (
-        <span className="text-ink-muted">Your farm data stays on this computer.</span>
+        <span className="text-ink-muted">
+          Your farm data stays on this computer.
+        </span>
       )}
     </div>
   );

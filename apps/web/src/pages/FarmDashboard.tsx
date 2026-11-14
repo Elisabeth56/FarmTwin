@@ -40,7 +40,12 @@ export default function FarmDashboard() {
   const [chunk, setChunk] = useState<CitedChunk | null>(null);
   // the still picture is the default; the 3D choice is remembered across farms and launches
   const [has3D] = useState(canDraw3D);
-  const [show3D, setShow3D] = useState(() => recall("farm.view") === "3d");
+  // the website demo opens in 3D; the app opens on the picture until you choose
+  const [show3D, setShow3D] = useState(
+    () =>
+      (recall("farm.view") ??
+        (import.meta.env.VITE_DEMO === "1" ? "3d" : "still")) === "3d",
+  );
   const toggle3D = () => {
     remember("farm.view", show3D ? "still" : "3d");
     setShow3D(!show3D);
@@ -138,11 +143,11 @@ export default function FarmDashboard() {
             <>
               <picture>
                 <source
-                  srcSet={`/twin/farm-${wet ? "rain" : "dry"}.webp`}
+                  srcSet={`${import.meta.env.BASE_URL}twin/farm-${wet ? "rain" : "dry"}.webp`}
                   type="image/webp"
                 />
                 <img
-                  src={`/twin/farm-${wet ? "rain" : "dry"}.jpg`}
+                  src={`${import.meta.env.BASE_URL}twin/farm-${wet ? "rain" : "dry"}.jpg`}
                   alt={
                     wet
                       ? "Example farm twin in rain, shown because this farm logged heavy rain recently"
@@ -237,7 +242,12 @@ export default function FarmDashboard() {
           role="status"
           className="fixed inset-x-4 bottom-6 z-50 mx-auto flex max-w-md animate-rise items-center justify-between gap-4 rounded-pill bg-ink py-2 pr-2 pl-5 text-small text-on-ink shadow-float"
         >
-          <span>{undo.label} logged. Stages and risks are updated.</span>
+          <span>
+            {undo.label} logged.{" "}
+            {import.meta.env.VITE_DEMO === "1"
+              ? "The demo doesn't recalculate risks."
+              : "Stages and risks are updated."}
+          </span>
           <button
             type="button"
             onClick={() => void undoLast()}

@@ -1,0 +1,356 @@
+{
+ "recorded_at": "2026-11-14T11:14:20+00:00",
+ "farms": [
+  {
+   "id": 1,
+   "name": "Sample farm",
+   "region": "Zaria, Kaduna",
+   "latitude": null,
+   "longitude": null,
+   "area_hectares": 2.1,
+   "created_at": "2026-11-14T11:14:20"
+  }
+ ],
+ "summaries": [
+  {
+   "id": 1,
+   "name": "Sample farm",
+   "region": "Zaria, Kaduna",
+   "area_hectares": 2.1,
+   "plots": [
+    {
+     "planting_id": 1,
+     "crop": "maize",
+     "field": "Main field",
+     "share": 1.0
+    },
+    {
+     "planting_id": 2,
+     "crop": "cowpea",
+     "field": "East plot",
+     "share": 0.6
+    },
+    {
+     "planting_id": 3,
+     "crop": "sorghum",
+     "field": "Back plot",
+     "share": 0.5
+    }
+   ],
+   "risks": [
+    {
+     "id": "heavy_rainfall_fungal_risk",
+     "title": "Fungal risk after heavy rain",
+     "severity": "high",
+     "urgency": "this_week",
+     "reason": "Heavy recent rainfall on vegetative maize creates ideal conditions for fungal foliar diseases.",
+     "facts": [
+      "Rainfall on 2026-11-12: 62mm"
+     ],
+     "source": "cimmyt_maize_disease_overview",
+     "crop": "maize",
+     "field": "Main field",
+     "planting_id": 1
+    },
+    {
+     "id": "combined_rain_humidity_outbreak_risk",
+     "title": "Outbreak risk: rain plus humidity",
+     "severity": "high",
+     "urgency": "immediate",
+     "reason": "Heavy rainfall combined with sustained high humidity on vegetative maize is the classic trigger for a fungal disease outbreak; act before symptoms appear.",
+     "facts": [
+      "Rainfall on 2026-11-12: 62mm",
+      "Weather on 2026-11-13: humidity 86%"
+     ],
+     "source": "cimmyt_maize_disease_overview",
+     "crop": "maize",
+     "field": "Main field",
+     "planting_id": 1
+    },
+    {
+     "id": "pests_at_flowering_or_podding",
+     "title": "Pests at flowering or podding",
+     "severity": "high",
+     "urgency": "immediate",
+     "reason": "Pests during cowpea flowering and podding hit the pods directly; pod-sucking bugs alone can cost 30-70% of the yield. The guide sprays at flower bud initiation, again 10 days later, and a third time if Maruca or pod bugs are heavy.",
+     "facts": [
+      "Pest report on 2026-11-13: Small insects inside the flowers"
+     ],
+     "source": "iita_cowpea_farmers_guide_2009",
+     "crop": "cowpea",
+     "field": "East plot",
+     "planting_id": 2
+    },
+    {
+     "id": "active_pest_pressure",
+     "title": "Pests reported",
+     "severity": "high",
+     "urgency": "immediate",
+     "reason": "Recent farmer-reported pest activity requires prompt scouting and action.",
+     "facts": [
+      "Pest report on 2026-11-13: Small insects inside the flowers"
+     ],
+     "source": "naerls_pest_scouting",
+     "crop": "cowpea",
+     "field": "East plot",
+     "planting_id": 2
+    },
+    {
+     "id": "high_humidity_foliar_pressure",
+     "title": "Leaf disease pressure from humidity",
+     "severity": "medium",
+     "urgency": "this_week",
+     "reason": "Sustained humidity at or above 80% on maize in the vegetative/flowering window elevates foliar disease pressure.",
+     "facts": [
+      "Weather on 2026-11-13: humidity 86%"
+     ],
+     "source": "cimmyt_maize_disease_overview",
+     "crop": "maize",
+     "field": "Main field",
+     "planting_id": 1
+    }
+   ],
+   "last_logged_at": "2026-11-14T11:14:20"
+  }
+ ],
+ "farm": {
+  "id": 1,
+  "name": "Sample farm",
+  "region": "Zaria, Kaduna",
+  "latitude": null,
+  "longitude": null,
+  "area_hectares": 2.1,
+  "created_at": "2026-11-14T11:14:20"
+ },
+ "dashboard": {
+  "farm": {
+   "id": 1,
+   "name": "Sample farm",
+   "region": "Zaria, Kaduna",
+   "latitude": null,
+   "longitude": null,
+   "area_hectares": 2.1,
+   "created_at": "2026-11-14T11:14:20"
+  },
+  "fields": [
+   {
+    "id": 1,
+    "name": "Main field",
+    "area_hectares": 1.0,
+    "soil_type": "sandy loam",
+    "plantings": [
+     {
+      "id": 1,
+      "crop": "maize",
+      "variety": "SAMMAZ 15",
+      "stage": "vegetative",
+      "day": 38,
+      "cycle_days": 120,
+      "progress": 0.31666666666666665,
+      "harvest_start": "2027-01-23",
+      "harvest_end": "2027-02-04"
+     }
+    ]
+   },
+   {
+    "id": 2,
+    "name": "East plot",
+    "area_hectares": 0.6,
+    "soil_type": "sandy loam",
+    "plantings": [
+     {
+      "id": 2,
+      "crop": "cowpea",
+      "variety": null,
+      "stage": "flowering",
+      "day": 40,
+      "cycle_days": 85,
+      "progress": 0.47058823529411764,
+      "harvest_start": "2026-12-20",
+      "harvest_end": "2026-12-29"
+     }
+    ]
+   },
+   {
+    "id": 3,
+    "name": "Back plot",
+    "area_hectares": 0.5,
+    "soil_type": "loam",
+    "plantings": [
+     {
+      "id": 3,
+      "crop": "sorghum",
+      "variety": "SAMSORG 14",
+      "stage": "seedling",
+      "day": 12,
+      "cycle_days": 120,
+      "progress": 0.1,
+      "harvest_start": "2027-02-18",
+      "harvest_end": "2027-03-02"
+     }
+    ]
+   }
+  ],
+  "rainfall": [
+   {
+    "day": "2026-11-01",
+    "mm": null
+   },
+   {
+    "day": "2026-11-02",
+    "mm": null
+   },
+   {
+    "day": "2026-11-03",
+    "mm": null
+   },
+   {
+    "day": "2026-11-04",
+    "mm": null
+   },
+   {
+    "day": "2026-11-05",
+    "mm": null
+   },
+   {
+    "day": "2026-11-06",
+    "mm": null
+   },
+   {
+    "day": "2026-11-07",
+    "mm": null
+   },
+   {
+    "day": "2026-11-08",
+    "mm": 18.0
+   },
+   {
+    "day": "2026-11-09",
+    "mm": null
+   },
+   {
+    "day": "2026-11-10",
+    "mm": null
+   },
+   {
+    "day": "2026-11-11",
+    "mm": null
+   },
+   {
+    "day": "2026-11-12",
+    "mm": 62.0
+   },
+   {
+    "day": "2026-11-13",
+    "mm": 12.0
+   },
+   {
+    "day": "2026-11-14",
+    "mm": null
+   }
+  ],
+  "risks": [
+   {
+    "id": "heavy_rainfall_fungal_risk",
+    "title": "Fungal risk after heavy rain",
+    "severity": "high",
+    "urgency": "this_week",
+    "reason": "Heavy recent rainfall on vegetative maize creates ideal conditions for fungal foliar diseases.",
+    "facts": [
+     "Rainfall on 2026-11-12: 62mm"
+    ],
+    "source": "cimmyt_maize_disease_overview",
+    "crop": "maize",
+    "field": "Main field",
+    "planting_id": 1
+   },
+   {
+    "id": "combined_rain_humidity_outbreak_risk",
+    "title": "Outbreak risk: rain plus humidity",
+    "severity": "high",
+    "urgency": "immediate",
+    "reason": "Heavy rainfall combined with sustained high humidity on vegetative maize is the classic trigger for a fungal disease outbreak; act before symptoms appear.",
+    "facts": [
+     "Rainfall on 2026-11-12: 62mm",
+     "Weather on 2026-11-13: humidity 86%"
+    ],
+    "source": "cimmyt_maize_disease_overview",
+    "crop": "maize",
+    "field": "Main field",
+    "planting_id": 1
+   },
+   {
+    "id": "pests_at_flowering_or_podding",
+    "title": "Pests at flowering or podding",
+    "severity": "high",
+    "urgency": "immediate",
+    "reason": "Pests during cowpea flowering and podding hit the pods directly; pod-sucking bugs alone can cost 30-70% of the yield. The guide sprays at flower bud initiation, again 10 days later, and a third time if Maruca or pod bugs are heavy.",
+    "facts": [
+     "Pest report on 2026-11-13: Small insects inside the flowers"
+    ],
+    "source": "iita_cowpea_farmers_guide_2009",
+    "crop": "cowpea",
+    "field": "East plot",
+    "planting_id": 2
+   },
+   {
+    "id": "active_pest_pressure",
+    "title": "Pests reported",
+    "severity": "high",
+    "urgency": "immediate",
+    "reason": "Recent farmer-reported pest activity requires prompt scouting and action.",
+    "facts": [
+     "Pest report on 2026-11-13: Small insects inside the flowers"
+    ],
+    "source": "naerls_pest_scouting",
+    "crop": "cowpea",
+    "field": "East plot",
+    "planting_id": 2
+   },
+   {
+    "id": "high_humidity_foliar_pressure",
+    "title": "Leaf disease pressure from humidity",
+    "severity": "medium",
+    "urgency": "this_week",
+    "reason": "Sustained humidity at or above 80% on maize in the vegetative/flowering window elevates foliar disease pressure.",
+    "facts": [
+     "Weather on 2026-11-13: humidity 86%"
+    ],
+    "source": "cimmyt_maize_disease_overview",
+    "crop": "maize",
+    "field": "Main field",
+    "planting_id": 1
+   }
+  ],
+  "recent_logs": [
+   {
+    "id": 3,
+    "field": "East plot",
+    "obs_type": "pest",
+    "value_numeric": null,
+    "value_text": "Small insects inside the flowers",
+    "unit": null,
+    "observed_at": "2026-11-13T08:00:00"
+   },
+   {
+    "id": 1,
+    "field": "Main field",
+    "obs_type": "rainfall",
+    "value_numeric": 62.0,
+    "value_text": null,
+    "unit": "mm",
+    "observed_at": "2026-11-12T08:00:00"
+   },
+   {
+    "id": 2,
+    "field": "Main field",
+    "obs_type": "rainfall",
+    "value_numeric": 18.0,
+    "value_text": null,
+    "unit": "mm",
+    "observed_at": "2026-11-08T08:00:00"
+   }
+  ]
+ },
+ "answers": {}
+}

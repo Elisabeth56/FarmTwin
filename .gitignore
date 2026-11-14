@@ -43,3 +43,4 @@ Thumbs.db
 # api local data
 apps/api/.data/
 .env
+apps/site/public/demo/

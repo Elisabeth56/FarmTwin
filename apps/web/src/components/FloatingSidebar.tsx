@@ -16,7 +16,7 @@ export default function FloatingSidebar({ items, footer }: FloatingSidebarProps)
   return (
     <nav
       aria-label="Main"
-      className="sticky top-4 z-30 mx-4 flex items-center gap-2 rounded-pill bg-raised p-2 shadow-float md:fixed md:top-4 md:bottom-4 md:left-4 md:mx-0 md:w-56 md:flex-col md:items-stretch md:rounded-xl md:p-4"
+      className="sticky top-[var(--shell-top,1rem)] z-30 mx-4 flex items-center gap-2 rounded-pill bg-raised p-2 shadow-float md:fixed md:top-[var(--shell-top,1rem)] md:bottom-4 md:left-4 md:mx-0 md:w-56 md:flex-col md:items-stretch md:rounded-xl md:p-4"
     >
       <div className="px-2 md:mb-6">
         <Logo />

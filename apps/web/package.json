@@ -9,7 +9,8 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "typecheck": "tsc -b",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run --passWithNoTests",
+    "build:demo": "tsc -b && vite build --mode demo"
   },
   "dependencies": {
     "@farmtwin/twin": "workspace:*",

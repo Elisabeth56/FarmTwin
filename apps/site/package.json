@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "pnpm --filter @farmtwin/web build:demo && astro build",
     "preview": "astro preview",
     "check": "astro check"
   },

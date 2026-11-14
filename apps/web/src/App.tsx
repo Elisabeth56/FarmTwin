@@ -1,4 +1,5 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+import DemoBanner from "./components/DemoBanner";
 import StartupGate from "./components/StartupGate";
 import UpdateBanner from "./components/UpdateBanner";
 import { ModelStatusProvider } from "./lib/model";
@@ -12,8 +13,8 @@ export default function App() {
   return (
     <StartupGate>
     <ModelStatusProvider>
-    <BrowserRouter>
-      <UpdateBanner />
+    <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+      {import.meta.env.VITE_DEMO === "1" ? <DemoBanner /> : <UpdateBanner />}
       <Routes>
         <Route path="/" element={<Farms />} />
         <Route path="/setup" element={<FarmSetup />} />

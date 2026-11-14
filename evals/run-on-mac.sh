@@ -34,7 +34,10 @@ if [ "${1:-quick}" != "app" ]; then
   echo "== answer eval (FarmTwin starts and stops the model itself)"
   if [ "${1:-quick}" = "full" ]; then pnpm eval:answers; else pnpm eval:answers -- --sample 10; fi
   echo
-  echo "Results are in evals/results/. Commit and push that file, or send it to Claude."
+  echo "== recording the website demo's answers with the real model"
+  (cd apps/api && uv run python scripts/fetch_embedder.py && uv run python scripts/record_demo.py --answers)
+  echo
+  echo "Results are in evals/results/ and apps/web/src/demo/fixtures.json. Commit and push both."
 fi
 
 echo

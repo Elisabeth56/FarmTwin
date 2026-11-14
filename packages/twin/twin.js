@@ -364,7 +364,7 @@ function loop() {
     },
     // capture hooks for rendering the lite loop and stills
     setView(azimuth, polar = 1.0) {
-      controls.autoRotate = false; controls.enableDamping = false;
+      controls.autoRotate = false; controls.enableDamping = false; viewGoal = null;
       const r = camera.position.distanceTo(controls.target);
       camera.position.set(Math.sin(polar) * Math.sin(azimuth) * r, Math.cos(polar) * r - 0.6, Math.sin(polar) * Math.cos(azimuth) * r);
       controls.update();
